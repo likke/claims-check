@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
 from . import fixture
 from .agent import run_review
@@ -86,7 +86,25 @@ def replay():
     runs = sorted((ROOT / "demo").glob("live-run-*.json"))
     if not runs:
         raise HTTPException(404, "No recorded live run")
-    return json.loads(runs[-1].read_text(encoding="utf-8"))
+    run = json.loads(runs[-1].read_text(encoding="utf-8"))
+    if "inputs" not in run:  # runs recorded before inputs were saved: rebuild them from the run itself
+        run["inputs"] = {
+            "product": run.get("product", ""), "pack": run.get("pack", "Tech claims"), "supplement": run.get("supplement", False),
+            "sources": " ".join(c["text"] for c in run.get("sources", []) if c.get("origin") == "pasted")
+                       + "".join("\n" + url for url in run.get("fetched_urls", {})),
+            "key_messages": [m["message"] for m in (run.get("coverage") or {}).get("messages", [])],
+        }
+    clip = ROOT / "demo" / "live-check.mp4"
+    run["video_url"] = "/api/replay/video" if clip.exists() else None
+    return run
+
+
+@app.get("/api/replay/video")
+def replay_video():
+    clip = ROOT / "demo" / "live-check.mp4"
+    if not clip.exists():
+        raise HTTPException(404, "No recorded clip")
+    return FileResponse(clip, media_type="video/mp4")
 
 
 @app.post("/api/reviews")

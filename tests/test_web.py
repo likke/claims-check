@@ -86,3 +86,19 @@ def test_replay_serves_the_recorded_live_run(client):
     assert response.status_code == 200
     run = response.json()
     assert run["provider"]["name"] == "meta" and run["agent"]["planner_modes"].get("native_tools")
+
+
+def test_replay_carries_the_recorded_inputs_and_clip(client):
+    run = client.get("/api/replay").json()
+    inputs = run["inputs"]
+    assert inputs["product"] == "Dasho" and inputs["key_messages"] == ["Named approver before posting"]
+    assert "named human approver" in inputs["sources"] and "Ledgerly" not in inputs["sources"]
+    assert run["video_url"] == "/api/replay/video"
+    clip = client.get(run["video_url"])
+    assert clip.status_code == 200 and clip.headers["content-type"] == "video/mp4"
+
+
+def test_new_reviews_record_their_inputs(client):
+    review_id = start(client)
+    result = read_sse(client, review_id)[-1][1]
+    assert result["inputs"]["product"] == "Ledgerly AI" and "fixture://ledgerly-ai/pricing" in result["inputs"]["sources"]

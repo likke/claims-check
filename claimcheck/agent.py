@@ -60,7 +60,7 @@ def build_state(turns: dict, frames: list[dict], sources_text: str, key_messages
     return ReviewState(
         sentences=sentences, duration=float(duration or 0.0), timing=timing, frames=frames,
         sources=SourceIndex.from_pack(sources_text, list(pack.rules)), key_messages=[m.strip() for m in key_messages if m.strip()],
-        pack=pack, product=product, supplement=supplement,
+        pack=pack, product=product, supplement=supplement, sources_text=sources_text,
     )
 
 
@@ -207,6 +207,8 @@ class Agent:
             "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "provider": self.provider.info(),
             "pack": state.pack.name,
+            "inputs": {"product": state.product, "pack": state.pack.name, "supplement": state.supplement,
+                       "sources": state.sources_text, "key_messages": state.key_messages},
             "product": state.product,
             "supplement": state.supplement,
             "duration": round(state.duration, 2),

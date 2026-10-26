@@ -86,6 +86,7 @@ class ReviewState:
     pack: Pack
     product: str = ""
     supplement: bool = False
+    sources_text: str = ""
     claims: list[Claim] = field(default_factory=list)
     claims_extracted: bool = False
     disclosure: dict | None = None

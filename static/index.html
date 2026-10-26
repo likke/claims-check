@@ -121,7 +121,7 @@ ol.rounds .why{color:var(--muted);font-size:15px}
       <div class="full">
         <label for="video">Creator video <span class="hint" id="video-hint">15 to 90 seconds</span></label>
         <div class="drop"><input type="file" id="video" name="video" accept="video/*"></div>
-        <video id="player" controls playsinline></video>
+        <video id="player" controls playsinline preload="auto"></video>
       </div>
       <div>
         <label for="product">Product name</label>
@@ -245,6 +245,7 @@ $('#form').addEventListener('submit', async e => {
 
 $('#replay').addEventListener('click', async () => {
   const run = await (await fetch('/api/replay')).json();
+  showRecordedInputs(run);
   reset(); reviewId = null;
   $('#trace-note').textContent = `Replay of a recorded live run (${run.created_at.replace('T', ' ').slice(0, 16)} UTC, ${run.provider.label}). Timing is the real timing, played 3 times faster.`;
   $('#results').scrollIntoView({behavior: 'smooth', block: 'start'});
@@ -255,6 +256,26 @@ $('#replay').addEventListener('click', async () => {
   }
   finish(run);
 });
+
+function showRecordedInputs(run){
+  const inputs = run.inputs || {};
+  $('#product').value = inputs.product || '';
+  $('#sources').value = inputs.sources || '';
+  $('#messages').value = (inputs.key_messages || []).join('\n');
+  $('#pack').value = inputs.pack || 'Tech claims';
+  $('#supplement').checked = !!inputs.supplement;
+  $('#supplement-row').classList.toggle('hidden', $('#pack').value !== 'FDA beauty');
+  $('#video').value = '';
+  const player = $('#player');
+  if (run.video_url) {
+    player.src = run.video_url; player.style.display = 'block';
+    player.addEventListener('loadedmetadata', () => { player.currentTime = 2; }, {once: true});
+    document.querySelector('.drop').classList.add('hidden');
+  }
+  $('#video-hint').textContent = `recorded clip, ${Number(run.duration).toFixed(1)} s`;
+  $('#provider').innerHTML = `<span class="dot"></span><span><b>Recorded run</b> · ${esc(run.provider.label)}</span>`;
+  $('#form-note').textContent = 'Showing the inputs of the recorded run.';
+}
 
 function addEvent(e){
   const el = document.createElement('div');
