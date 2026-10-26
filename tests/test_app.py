@@ -59,6 +59,17 @@ class LiveMock(app.FixtureProvider):
     def check_disclosure(self, transcript, frames):
         self.calls.append(("disclosure_frames",frames)); return True
 
+class RewriteMock(LiveMock):
+    def __init__(self, revised):
+        super().__init__()
+        self.revised = revised
+    def rewrite_line(self, claim, reason, evidence, round_number=1, neighbouring_lines=""):
+        self.calls.append(("rewrite_context", neighbouring_lines))
+        return self.revised
+    def judge_claim(self, claim, evidence, failure_reason=""):
+        self.calls.append(("judge_reason", failure_reason))
+        return super().judge_claim(claim, evidence)
+
 def test_native_tool_fallback(monkeypatch):
     provider=app.MetaProvider.__new__(app.MetaProvider)
     provider.mode="tools"
@@ -76,6 +87,24 @@ def test_round_two_reason_and_frame_disclosure():
     assert result["claims"][0]["start"] == 2.25
     assert result["claims"][0]["end"] == 3.4
     assert result["claims"][0]["estimated"] is False
+
+def test_rounds_keep_history_context_and_failure_reason():
+    provider = RewriteMock("We help you feel better with care.")
+    result = app.run_review(b"x", "source", "", "Tech claims", provider)
+    claim = result["claims"][0]
+    assert len(claim["rounds"]) == 2
+    assert claim["rounds"][0]["verdict"] == "fail"
+    assert claim["rounds"][1]["verdict"] == "pass"
+    assert ("judge_reason", "round 1 failed") in provider.calls
+    assert ("rewrite_context", "") in provider.calls
+
+def test_rewrite_that_drops_product_claim_is_rejected():
+    provider = RewriteMock("Thanks for watching!")
+    result = app.run_review(b"x", "source", "", "Tech claims", provider)
+    claim = result["claims"][0]
+    assert claim["verdict"] == "fail"
+    assert claim["rounds"][1]["verdict"] == "fail"
+    assert claim["rounds"][1]["reason"] == "Rewrite removed the product claim."
 
 def test_meta_claim_extraction_uses_model_and_estimates_text_timing(monkeypatch):
     provider = app.MetaProvider.__new__(app.MetaProvider)

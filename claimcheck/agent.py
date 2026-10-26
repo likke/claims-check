@@ -1,5 +1,7 @@
 """Plan, act, and observe review workflow."""
 import uuid
+import inspect
+import re
 
 from .packs import pack_guidance
 from .providers import get_provider
@@ -38,15 +40,30 @@ def run_review(video, sources, messages, pack, provider=None, emit=None):
     claims = provider.extract_claims(transcription)
     log("extract_claims", {}, claims)
     for claim in claims:
+        quote = claim["quote"]
+        position = transcript.find(quote)
+        before = transcript[:position].strip() if position >= 0 else ""
+        after = transcript[position + len(quote):].strip() if position >= 0 else ""
+        neighbours = " ".join(([before.split(".")[-1].strip()] if before else []) + ([after.split(".")[0].strip()] if after else []))
         evidence = search_source(claim["quote"], sources + "\n" + guidance)
         log("search_source", {"query": claim["quote"]}, evidence)
         verdict = provider.judge_claim(claim["quote"], evidence)
         log("judge_claim", {"claim": claim["quote"]}, verdict)
         claim["rounds"].append(verdict)
         if verdict.get("verdict") == "fail":
-            revised = provider.rewrite_line(claim["quote"], verdict.get("reason", ""), evidence, 1)
+            rewrite_args = (claim["quote"], verdict.get("reason", ""), evidence, 1)
+            if "neighbouring_lines" in inspect.signature(provider.rewrite_line).parameters:
+                revised = provider.rewrite_line(*rewrite_args, neighbouring_lines=neighbours)
+            else:
+                revised = provider.rewrite_line(*rewrite_args)
+            if not _keeps_product_claim(claim["quote"], revised):
+                revised = ""
             log("rewrite_line", {"claim": claim["quote"], "failure_reason": verdict.get("reason")}, revised)
-            retry = provider.judge_claim(revised, evidence)
+            if revised:
+                judge_parameters = inspect.signature(provider.judge_claim).parameters
+                retry = provider.judge_claim(revised, evidence, failure_reason=verdict.get("reason", "")) if "failure_reason" in judge_parameters else provider.judge_claim(revised, evidence)
+            else:
+                retry = {"verdict": "fail", "reason": "Rewrite removed the product claim.", "evidence": ""}
             log("judge_claim", {"claim": revised, "round": 2, "failure_reason": verdict.get("reason")}, retry)
             claim["rounds"].append(retry)
             claim["suggested_line"] = revised
@@ -58,3 +75,11 @@ def run_review(video, sources, messages, pack, provider=None, emit=None):
     log("check_coverage", {}, coverage)
     log("finish", {}, {"claim_count": len(claims)})
     return {"id": str(uuid.uuid4()), "transcript": transcript, "claims": claims, "disclosure": disclosed, "coverage": coverage, "trace": trace, "frames": public_frames}
+
+
+def _keeps_product_claim(original, revised):
+    """Reject empty or purely conversational rewrites that drop the product claim."""
+    if not isinstance(revised, str) or not revised.strip():
+        return False
+    words = re.findall(r"[\w]+", revised)
+    return len(words) >= 4 and bool(re.search(r"\b(help|support|flag|review|product|service|care|claim|use|work)\b", revised, re.I))

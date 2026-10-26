@@ -128,12 +128,26 @@ class MetaProvider(FixtureProvider):
     def json_plan(self, prompt):
         return self._json_call(prompt)
 
-    def judge_claim(self, claim, evidence):
-        prompt = f"Judge whether this advertising claim is supported by sources. Return JSON verdict (pass/fail), evidence, reason. Claim: {claim}\nSources: {evidence}"
-        return self._json_call(prompt)
+    def judge_claim(self, claim, evidence, failure_reason=""):
+        prompt = (f"Judge whether this advertising claim is supported by sources. Return JSON verdict (pass/fail), "
+                  f"evidence (copy the exact supporting source chunk), reason. Claim: {claim}\nSources: {evidence}")
+        if failure_reason:
+            prompt += "\nPrevious round failed because: " + failure_reason + ". Verify that this issue is corrected."
+        verdict = self._json_call(prompt)
+        cited = str(verdict.get("evidence", "")).strip()
+        if verdict.get("verdict") == "pass" and cited not in evidence:
+            verdict["verdict"] = "fail"
+            verdict["reason"] = "The verdict did not cite a supporting source chunk."
+        return verdict
 
-    def rewrite_line(self, claim, reason, evidence, round_number=1):
-        return self._output(self._spark(f"Rewrite this line to be true according to sources. Preserve the creator's point and voice; never delete the claim. Round {round_number}. Failure reason: {reason}\nLine: {claim}\nSources: {evidence}"))
+    def rewrite_line(self, claim, reason, evidence, round_number=1, neighbouring_lines=""):
+        prompt = ("Rewrite the false factual product claim as one complete transcript line. Keep the creator's point, "
+                  "product claim, and language style (keep Taglish Taglish). State only what the source chunks support; "
+                  "never delete the claim. Return JSON {line:string}. "
+                  f"Round {round_number}. Failure reason: {reason}\nNeighbouring transcript lines: {neighbouring_lines}"
+                  f"\nFalse line: {claim}\nContradicting source chunks: {evidence}")
+        result = self._json_call(prompt)
+        return str(result.get("line", ""))
 
     def check_disclosure(self, transcript, frames):
         return bool(self._json_call("Return JSON {disclosed:boolean}. Is paid disclosure present in the speech or these video frames? Speech: " + transcript, frames).get("disclosed"))
