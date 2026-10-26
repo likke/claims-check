@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import tempfile
 import os
 import threading
 import uuid
@@ -14,13 +15,12 @@ from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
 from . import fixture
 from .agent import run_review
-from .media import MediaError, extract_media
+from .media import FORMATS, MAX_CHECK_SECONDS, MediaError, extract_media, make_proxy, needs_proxy, probe, timeline_art
 from .packs import get_pack
 from .providers import get_provider
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_UPLOAD = 80 * 1024 * 1024
-MAX_SECONDS = 120
 
 app = FastAPI(title="Dasho Claim Check")
 
@@ -35,6 +35,7 @@ class Job:
         self.done = False
         self.decision: dict | None = None
         self.lock = threading.Lock()
+        self.video_path: Path | None = None
 
     def push(self, event: dict):
         with self.lock:
@@ -44,23 +45,37 @@ class Job:
 JOBS: dict[str, Job] = {}
 
 
-def _worker(job: Job, provider, video: bytes | None, params: dict):
+def _worker(job: Job, provider, video: bytes | None, suffix: str, params: dict):
     try:
-        if provider.needs_media:
-            job.push({"seq": 0, "t": 0, "kind": "media", "summary": "Extracting audio and sampling frames with ffmpeg"})
-            media = extract_media(video or b"")
-            if media["duration"] > MAX_SECONDS:
-                raise MediaError(f"The video is {media['duration']:.0f} s long; the limit is {MAX_SECONDS} s.")
-            if not media["wav"]:
-                raise MediaError("The video has no audio track.")
-            job.push({"seq": 0, "t": 0, "kind": "media", "summary": f"{media['duration']:.1f} s video, {len(media['frames'])} frames at "
-                      + ", ".join(f"{f['time']}s" for f in media["frames"])})
-            wav, frames = media["wav"], media["frames"]
-            # Frame images go to the page for thumbnails; they are not kept in the review trace.
-            job.push({"seq": 0, "t": 0, "kind": "frames", "frames": [{"time": f["time"], "image": f["image"]} for f in frames]})
-        else:
-            wav, frames = b"", provider.frames()
-        job.result = run_review(provider, wav=wav, frames=frames, emit=job.push, **params)
+        wav, frames, extra = b"", [], {}
+        if not provider.needs_media:
+            frames = provider.frames()
+        if video:
+            folder = Path(tempfile.mkdtemp(prefix=f"claimcheck-{job.id}-"))
+            original = folder / f"original{suffix}"
+            original.write_bytes(video)
+            info = probe(original)
+            proxy = make_proxy(original, folder / "proxy.mp4", info) if needs_proxy(info) else None
+            job.video_path = proxy or original
+            job.push({"seq": 0, "t": 0, "kind": "media_info", **info, "proxy": bool(proxy), "layout": f"layout-{info['orientation']}",
+                      "video_url": f"/api/reviews/{job.id}/video",
+                      "summary": f"{info['display_width']}x{info['display_height']} {info['orientation']}, {info['video_codec']}"
+                                 + (f", rotated {info['rotation']} degrees" if info["rotation"] else "")
+                                 + (", playing a browser-safe H.264 copy" if proxy else "")})
+            job.push({"seq": 0, "t": 0, "kind": "art", **timeline_art(job.video_path, min(info["duration"] or 1, MAX_CHECK_SECONDS))})
+            extra["media"] = info
+            if provider.needs_media:
+                media = extract_media(video, info)
+                if media["trimmed"]:
+                    job.push({"seq": 0, "t": 0, "kind": "warning",
+                              "summary": f"The clip is {media['full_duration']:.0f} s long; only the first {MAX_CHECK_SECONDS} s are checked."})
+                if not info["has_audio"]:
+                    extra.update(no_audio=True, duration=media["duration"])
+                wav, frames = media["wav"], media["frames"]
+                job.push({"seq": 0, "t": 0, "kind": "frames", "frames": [{"time": f["time"], "image": f["image"]} for f in frames]})
+        elif provider.needs_media:
+            raise MediaError("Upload a video (15 to 90 seconds).")
+        job.result = run_review(provider, wav=wav, frames=frames, emit=job.push, **params, **extra)
     except Exception as error:
         job.error = f"{type(error).__name__}: {error}"
     finally:
@@ -68,7 +83,15 @@ def _worker(job: Job, provider, video: bytes | None, params: dict):
 
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/review", response_class=HTMLResponse)
 def home():
+    """The review screen (default)."""
+    return (ROOT / "static" / "review.html").read_text(encoding="utf-8")
+
+
+@app.get("/classic", response_class=HTMLResponse)
+def classic():
+    """The earlier agent-app screen, kept until the review screen replaces it."""
     return (ROOT / "static" / "index.html").read_text(encoding="utf-8")
 
 
@@ -119,11 +142,16 @@ def replay():
         }
     clip = paths["clip"]
     has_clip = bool(clip and clip.exists())
+    if has_clip:
+        info = probe(clip)
+        playable = _replay_playable(clip, info)
+        run["media"] = {**info, "proxy": playable != clip, "layout": f"layout-{info['orientation']}"}
     run["video_url"] = "/api/replay/video" if has_clip else None
     run["video_name"] = clip.name if has_clip else None
     # Where the paid-partnership label sits in this clip, when the config knows it (our generated test clip does).
     run["label_box"] = paths["label_box"] if has_clip else None
     run["frame_images"] = _frame_images(clip, [f["time"] for f in run.get("frames", [])]) if has_clip else []
+    run["art"] = timeline_art(clip, run.get("duration") or 1.0) if has_clip else {}
     return run
 
 
@@ -140,11 +168,24 @@ def _frame_images(clip: Path, times: list[float]) -> list[dict]:
     return images
 
 
+def _replay_playable(clip: Path, info: dict) -> Path:
+    """The replay clip, or a cached H.264 copy of it when the browser may not play the original."""
+    if not needs_proxy(info):
+        return clip
+    stat = clip.stat()
+    cached = ROOT / ".cache" / f"{clip.stem}-{int(stat.st_mtime)}-{stat.st_size}.mp4"
+    if not cached.exists():
+        cached.parent.mkdir(exist_ok=True)
+        make_proxy(clip, cached, info)
+    return cached
+
+
 @app.get("/api/replay/video")
 def replay_video():
     clip = replay_config()["clip"]
     if not clip or not clip.exists():
         raise HTTPException(404, "No recorded clip")
+    clip = _replay_playable(clip, probe(clip))
     media = {".mov": "video/quicktime", ".webm": "video/webm"}.get(clip.suffix.lower(), "video/mp4")
     return FileResponse(clip, media_type=media)
 
@@ -160,6 +201,9 @@ async def start_review(
 ):
     provider = get_provider()
     data = await video.read() if video is not None else b""
+    suffix = Path(video.filename or "").suffix.lower() if video is not None else ""
+    if data and suffix not in FORMATS:
+        raise HTTPException(415, "Upload an MP4, MOV, M4V or WebM video.")
     if provider.needs_media and not data:
         raise HTTPException(400, "Upload a video (15 to 90 seconds).")
     if len(data) > MAX_UPLOAD:
@@ -172,7 +216,7 @@ async def start_review(
         "sources": sources, "key_messages": key_messages.splitlines(), "pack": get_pack(pack),
         "product": product.strip(), "supplement": supplement.lower() in ("1", "true", "on", "yes"),
     }
-    threading.Thread(target=_worker, args=(job, provider, data, params), daemon=True).start()
+    threading.Thread(target=_worker, args=(job, provider, data, suffix, params), daemon=True).start()
     return {"id": job.id, "provider": provider.info()}
 
 
@@ -204,6 +248,16 @@ async def events(review_id: str):
             await asyncio.sleep(0.1)
 
     return StreamingResponse(stream(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/api/reviews/{review_id}/video")
+def review_video(review_id: str):
+    """The clip as the browser should play it: the H.264 copy when one was made, else the original."""
+    job = _job(review_id)
+    if not job.video_path or not job.video_path.exists():
+        raise HTTPException(404, "No video for this review")
+    media = {".mov": "video/quicktime", ".webm": "video/webm", ".m4v": "video/mp4"}.get(job.video_path.suffix.lower(), "video/mp4")
+    return FileResponse(job.video_path, media_type=media)
 
 
 @app.get("/api/reviews/{review_id}")
@@ -248,3 +302,11 @@ def ask(payload: dict):
     except Exception as error:
         raise HTTPException(502, f"The model could not answer: {error}")
     return {"answer": str(data.get("answer", "")).strip() or "No answer.", "provider": provider.info()["name"]}
+
+
+def _art_from_bytes(video: bytes, duration: float) -> dict:
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix="claimcheck-art-") as tmp:
+        path = Path(tmp) / "clip"
+        path.write_bytes(video)
+        return timeline_art(path, duration)

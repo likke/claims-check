@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dasho Claim Check · Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/*
+  Design rules (round 4):
+  type 14 / 17 / 22 / 32 / 44 only; paper, ink, blue, red, olive only;
+  1px rules are separate elements, never a border on one edge;
+  corners 0 to 6px; no shadows, gradients, pills, chips, icons or emoji.
+*/
+:root{--paper:#f5f3ee;--ink:#171717;--muted:#5e5b55;--rule:#d8d3c8;--blue:#2f5da8;--red:#b42318;--olive:#7a8460;--white:#fffdf9}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.5 "Source Sans 3",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:Newsreader,Georgia,serif;font-weight:500;margin:0;letter-spacing:-0.005em}
+h1{font-size:44px;line-height:1.1}
+h2{font-size:32px;line-height:1.15}
+h3{font-size:22px;line-height:1.25}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.small{font-size:14px}.muted{color:var(--muted)}
+.hidden{display:none!important}
+.rule{height:1px;background:var(--rule);width:100%}
+a,.link{color:var(--blue);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--white);border-radius:4px;padding:9px 18px;cursor:pointer;font-weight:600}
+.btn.plain{background:transparent;color:var(--ink)}
+.btn.olive{border-color:var(--olive);background:var(--olive)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.on{background:var(--olive);border-color:var(--olive);color:var(--white)}
+.btn.plain.on{background:var(--ink);border-color:var(--ink)}
+input[type=text],textarea,select{width:100%;background:var(--white);border:1px solid var(--rule);border-radius:4px;padding:8px 10px}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+label{display:block;font-weight:600;margin-bottom:4px}
+
+.page{max-width:1440px;margin:0 auto;padding:28px 32px 40px}
+.masthead{display:flex;align-items:baseline;justify-content:space-between;gap:12px 24px;flex-wrap:wrap}
+.masthead .meta{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+.status{margin:6px 0 20px}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:40px;align-items:start}
+.video{position:relative;background:#111;border-radius:4px;overflow:hidden}
+.video video{display:block;width:100%;aspect-ratio:var(--ar,16/9);background:#111;object-fit:contain}
+.lbox{position:absolute;border:2px solid var(--blue);border-radius:2px;opacity:0;transition:opacity .3s;pointer-events:none}
+.lbox.on{opacity:1}
+.lbox span{position:absolute;left:-2px;bottom:100%;margin-bottom:4px;background:var(--blue);color:var(--white);font-size:14px;padding:1px 8px;border-radius:2px;white-space:nowrap}
+.vcol{width:100%;margin:0 auto}
+body.layout-vertical .grid{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
+body.layout-square .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--arn,1.7778))}
+.novideo{aspect-ratio:var(--ar,16/9);display:flex;align-items:center;justify-content:center;color:#d8d3c8;padding:24px;text-align:center}
+
+/* timecode ruler */
+.ruler{position:relative;margin-top:14px;padding-top:34px;user-select:none}
+.ticks{position:relative;height:34px;cursor:pointer}
+.tick{position:absolute;bottom:0;width:1px;height:8px;background:var(--muted)}
+.tick.major{height:14px;background:var(--ink)}
+.tick span{position:absolute;bottom:18px;left:0;transform:translateX(-50%);font-size:14px;color:var(--muted)}
+.base{position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--ink)}
+.pin{position:absolute;top:0;z-index:2;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:0;cursor:pointer}
+.pin b{width:24px;height:24px;border-radius:3px;background:var(--blue);color:var(--white);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.pin i{width:1px;height:44px;background:var(--blue)}
+.pin.red b{background:var(--red)}.pin.red i{background:var(--red)}
+.pin.drop{animation:drop .45s ease-out}
+@keyframes drop{from{transform:translate(-50%,-18px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+.playhead{position:absolute;top:30px;bottom:0;width:1px;background:var(--ink);pointer-events:none;left:0}
+.art{display:block;width:100%;height:54px;object-fit:fill;margin-top:8px;border-radius:2px}
+.art.wave{height:40px;margin-top:4px;opacity:.85}
+
+/* event log */
+.log{margin-top:36px}
+.log h2{font-size:22px;margin-bottom:10px;font-family:Newsreader,Georgia,serif}
+.logrow{display:grid;grid-template-columns:72px minmax(0,190px) minmax(0,1fr);gap:16px;padding:7px 0;align-items:baseline}
+.logrow.head{color:var(--muted);font-size:14px;padding-top:0}
+.logrow .tc{font-variant-numeric:tabular-nums}
+.logrow.new{animation:fade .35s ease}
+.logrow .guard{color:var(--muted);font-size:14px}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* notes */
+.notes h2{margin-bottom:14px}
+.note{display:grid;grid-template-columns:34px 64px minmax(0,1fr);gap:4px 12px;padding:18px 0;animation:fade .35s ease}
+.note .n{font-family:Newsreader,Georgia,serif;font-size:22px;line-height:1.25}
+.note .tc{padding-top:3px}
+.note .body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.quote{font-family:Newsreader,Georgia,serif;font-size:22px;line-height:1.35}
+.label{font-weight:600}
+.issue{color:var(--ink)}
+.ok-line{color:var(--muted)}
+.revs{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.rev .head{font-size:14px;color:var(--muted)}
+.struck{color:var(--red);text-decoration:line-through;text-decoration-thickness:1.5px}
+.why{font-size:14px;color:var(--red)}
+.suggested{display:inline;text-decoration:underline;text-decoration-skip-ink:none;text-decoration-color:var(--olive);text-decoration-thickness:2px;text-underline-offset:5px}
+.suggested-tag{font-size:14px;color:var(--olive);font-weight:600;margin-left:10px;white-space:nowrap}
+.rev.swap{animation:swap .6s ease}
+@keyframes swap{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.struck.turn{animation:turnred .6s ease}
+@keyframes turnred{from{color:var(--ink);text-decoration-color:transparent}to{color:var(--red)}}
+.source{font-size:14px;color:var(--muted)}
+.source b{color:var(--ink);font-weight:600}
+.decide{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.decided{font-size:14px;color:var(--muted)}
+
+/* approve */
+.approve{margin-top:32px;display:grid;grid-template-columns:auto minmax(0,320px) auto minmax(0,1fr);gap:14px;align-items:center}
+.approve h3{white-space:nowrap}
+
+/* setup */
+.setup{margin-bottom:28px}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-top:14px}
+.full{grid-column:1/-1}
+
+@media (max-width:980px){
+  .page{padding:18px 16px 32px}
+  h1{font-size:32px}
+  h2{font-size:22px}
+  .grid{grid-template-columns:1fr;gap:28px}
+  .left,.right{display:contents}
+  .m-video{order:1}.m-ruler{order:2}.m-notes{order:3}.m-log{order:4}
+  .vcol{display:contents}
+  body.layout-vertical .m-video,body.layout-vertical .m-ruler{width:100%;max-width:calc(68vh * var(--arn,1.7778));margin:0 auto}
+  .grid{display:flex;flex-direction:column}
+  .log{margin-top:0}
+  .logrow{grid-template-columns:54px minmax(0,1fr);gap:4px 12px}
+  .logrow .detail{grid-column:2}
+  .logrow.head{display:none}
+  .note{grid-template-columns:28px 52px minmax(0,1fr)}
+  .note .body{grid-column:1/-1}
+  .quote{font-size:22px}
+  .approve{grid-template-columns:1fr}
+  .setup-grid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <h1>Dasho Claim Check</h1>
+    <div class="meta small"><span id="provider" class="muted">Loading</span><button type="button" class="link small hidden" id="replay">Replay recorded run</button><button type="button" class="link small hidden" id="new-check">New check</button></div>
+  </header>
+  <p class="status muted" id="status">Upload a creator video to review it before it posts.</p>
+
+  <section class="setup" id="setup">
+    <div class="rule"></div>
+    <form id="form" class="setup-grid">
+      <div class="full"><label for="video">Creator video <span class="small muted" id="video-hint">15 to 90 seconds</span></label><input type="file" id="video" name="video" accept="video/mp4,video/quicktime,video/x-m4v,video/webm,.mp4,.mov,.m4v,.webm"></div>
+      <div><label for="product">Product</label><input type="text" id="product" name="product" autocomplete="off"></div>
+      <div><label for="pack">Rule pack</label><select id="pack" name="pack"><option>Tech claims</option><option>FDA beauty</option></select></div>
+      <div class="full"><label for="sources">Source pack <span class="small muted">docs; one URL per line</span></label><textarea id="sources" name="sources" rows="3"></textarea></div>
+      <div class="full"><label for="messages">Key messages <span class="small muted">one per line</span></label><textarea id="messages" name="key_messages" rows="2"></textarea></div>
+      <div class="full"><button type="submit" class="btn" id="run">Review this video</button> <span class="small muted" id="form-note"></span></div>
+    </form>
+    <div class="rule" style="margin-top:20px"></div>
+  </section>
+
+  <div class="grid">
+    <div class="left">
+      <div class="vcol">
+      <div class="m-video">
+        <div class="video" id="stage"><video id="player" playsinline preload="auto" controls class="hidden"></video><div class="novideo" id="novideo">No video yet.</div><div class="lbox" id="lbox"><span id="lbox-tag"></span></div></div>
+      </div>
+      <div class="m-ruler">
+        <div class="ruler" id="ruler">
+          <div class="ticks" id="ticks"></div>
+          <div class="playhead" id="playhead"></div>
+          <img class="art hidden" id="strip" alt="Frame strip, one frame per second">
+          <img class="art wave hidden" id="wave" alt="Audio waveform">
+        </div>
+      </div>
+      </div>
+      <section class="log m-log">
+        <h2>Event log</h2>
+        <div class="logrow head"><span>Time</span><span>Event</span><span class="detail">Detail</span></div>
+        <div class="rule"></div>
+        <div id="log"></div>
+      </section>
+    </div>
+    <div class="right">
+      <section class="notes m-notes">
+        <h2>Review notes</h2>
+        <div class="rule"></div>
+        <div id="notes"><p class="muted" style="padding:18px 0">Notes appear here as the agent finds them.</p></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="rule" style="margin-top:32px"></div>
+  <section class="approve" id="approve-bar">
+    <h3>Approve the post</h3>
+    <input type="text" id="reviewer" placeholder="Your name" aria-label="Your name" autocomplete="name">
+    <button type="button" class="btn" id="approve" disabled>Approve the post</button>
+    <span class="small muted" id="approve-note">Decide each claim note first.</span>
+  </section>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tc = t => { if (t === null || t === undefined || isNaN(t)) return '—'; const s = Math.round(t); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const params = new URLSearchParams(location.search);
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait = ms => new Promise(r => setTimeout(r, REDUCED ? 0 : ms));
+
+let config = null, reviewId = null, source = null, S = null;
+const fresh = () => ({duration: 0, claims: new Map(), notes: [], sources: {}, running: false, replay: false, done: false, lastT: 0, decisions: {}});
+S = fresh();
+
+/* ---------------- start ---------------- */
+async function init(){
+  config = await (await fetch('/api/config')).json();
+  setProvider(config.provider);
+  $('#product').value = config.example.product; $('#sources').value = config.example.sources; $('#messages').value = config.example.key_messages;
+  if (!config.needs_video) $('#video-hint').textContent = 'optional offline (fictional Ledgerly AI script)';
+  const replay = await fetch('/api/replay', {method: 'HEAD'});
+  if (replay.ok) $('#replay').classList.remove('hidden');
+  if (params.get('auto') === 'run') $('#form').requestSubmit();
+  if (params.get('auto') === 'replay' && replay.ok) replayRun();
+}
+function setProvider(p, recorded){
+  const kind = recorded ? 'Recorded run' : p.name === 'meta' ? 'Meta Model API' : p.name === 'open' ? 'Muse Spark Open' : 'Offline fixture';
+  $('#provider').textContent = `${kind}: ${p.label.replace(/^[^·]*·\s*/, '')}`;
+}
+$('#replay').addEventListener('click', () => replayRun());
+$('#new-check').addEventListener('click', () => location.href = location.pathname);
+
+function begin(videoUrl, replay){
+  S = fresh(); S.running = true; S.replay = replay;
+  $('#setup').classList.add('hidden'); $('#new-check').classList.remove('hidden');
+  $('#notes').innerHTML = ''; $('#log').innerHTML = ''; $('#ticks').innerHTML = '';
+  $('#approve').disabled = true; $('#approve-note').textContent = 'Decide each claim note first.';
+  const p = $('#player');
+  if (videoUrl) { p.src = videoUrl; p.classList.remove('hidden'); $('#novideo').classList.add('hidden'); p.muted = params.has('auto') || p.muted; }
+  else { p.classList.add('hidden'); p.removeAttribute('src'); $('#novideo').classList.remove('hidden'); $('#novideo').textContent = 'Offline fixture: no video file. Ledgerly AI is a fictional product.'; }
+  status();
+}
+function status(){
+  $('#status').textContent = S.done ? `Review finished in ${Math.round(S.lastT)} s. ${S.replay ? 'Recorded run, replayed.' : ''}` : `Reviewing. ${Math.round(S.lastT)} s so far.`;
+}
+
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const form = new FormData($('#form')), file = $('#video').files[0];
+  if (config.needs_video && !file) { $('#form-note').textContent = 'Add the creator video first.'; return; }
+  if (!file) form.delete('video');
+  $('#run').disabled = true;
+  const response = await fetch('/api/reviews', {method: 'POST', body: form});
+  const body = await response.json();
+  $('#run').disabled = false;
+  if (!response.ok) { $('#form-note').textContent = body.detail || 'The review could not start.'; return; }
+  setProvider(config.provider);
+  begin(file ? URL.createObjectURL(file) : null, false); reviewId = body.id;
+  source = new EventSource(`/api/reviews/${reviewId}/events`);
+  source.addEventListener('step', ev => apply(JSON.parse(ev.data)));
+  source.addEventListener('result', ev => { source.close(); finish(JSON.parse(ev.data)); });
+  source.addEventListener('failed', ev => { source.close(); $('#status').textContent = 'The review failed: ' + JSON.parse(ev.data).error; });
+});
+
+async function replayRun(){
+  const run = await (await fetch('/api/replay')).json();
+  setProvider(run.provider, true);
+  begin(run.video_url, true); reviewId = null;
+  applyMedia(run.media, run.video_url);
+  S.labelBox = run.label_box || null;
+  (run.sources || []).forEach(c => S.sources[c.id] = c);
+  showArt(run.art || {});
+  const speed = +(params.get('speed') || 3), stop = +(params.get('stop') || 0);
+  let last = 0;
+  for (const event of run.trace) {
+    await new Promise(r => setTimeout(r, Math.min(2600, Math.max(160, (event.t - last) * 1000 / speed))));
+    last = event.t;
+    if (event.kind === 'start' && !event.duration) event.duration = run.duration;
+    apply(event);
+    if (stop && event.seq >= stop) { S.frozen = true; return; }
+  }
+  finish(run);
+}
+
+/* ---------------- ruler ---------------- */
+function drawRuler(){
+  const dur = S.duration; if (!dur) return;
+  const step = dur <= 20 ? 1 : dur <= 60 ? 5 : 10;
+  const ticks = [];
+  for (let s = 0; s <= Math.floor(dur); s++) {
+    const major = s % step === 0;
+    ticks.push(`<span class="tick ${major ? 'major' : ''}" style="left:${s / dur * 100}%">${major ? `<span>${tc(s).replace(/^00:/, '0:')}</span>` : ''}</span>`);
+  }
+  $('#ticks').innerHTML = ticks.join('') + '<span class="base"></span>';
+  S.notes.forEach(n => placePin(n, false));
+}
+function showArt(art){
+  if (art.strip) { $('#strip').src = 'data:image/jpeg;base64,' + art.strip; $('#strip').classList.remove('hidden'); }
+  if (art.wave) { $('#wave').src = 'data:image/png;base64,' + art.wave; $('#wave').classList.remove('hidden'); }
+}
+function placePin(note, drop){
+  if (!S.duration || note.time === null || note.time === undefined) return;
+  let pin = document.getElementById('pin-' + note.n);
+  if (!pin) {
+    pin = document.createElement('button'); pin.type = 'button'; pin.id = 'pin-' + note.n; pin.className = 'pin';
+    pin.innerHTML = `<b>${note.n}</b><i></i>`;
+    pin.addEventListener('click', () => { scrubTo(note.time + (note.scr ? 0.1 : 0)); if (note.scr) showLabelBox(note.scr); document.getElementById('note-' + note.n).scrollIntoView({block: 'nearest', behavior: REDUCED ? 'auto' : 'smooth'}); });
+    $('#ruler').appendChild(pin);
+    if (drop) pin.classList.add('drop');
+  }
+  pin.style.left = `${Math.max(0, Math.min(100, note.time / S.duration * 100))}%`;
+  // notes at (nearly) the same second sit side by side instead of hiding each other
+  const near = S.notes.filter(o => o.n < note.n && o.time !== null && o.time !== undefined && Math.abs(o.time - note.time) < S.duration * 0.03).length;
+  pin.style.marginLeft = `${near * 28}px`;
+  pin.classList.toggle('red', note.state === 'open-red');
+}
+$('#ticks').addEventListener('click', e => {
+  const r = $('#ticks').getBoundingClientRect();
+  if (S.duration) scrubTo((e.clientX - r.left) / r.width * S.duration);
+});
+let scrubbing = null;
+function scrubTo(t){
+  const p = $('#player'), has = p.src && !p.classList.contains('hidden');
+  const from = has ? p.currentTime : (S.head || 0);
+  cancelAnimationFrame(scrubbing);
+  const t0 = performance.now(), ms = REDUCED ? 0 : 450;
+  const step = now => {
+    const k = ms ? Math.min(1, (now - t0) / ms) : 1, eased = 1 - Math.pow(1 - k, 3);
+    const at = from + (t - from) * eased;
+    S.head = at; setHead(at);
+    if (has) p.currentTime = at;
+    if (k < 1) scrubbing = requestAnimationFrame(step); else if (has) p.pause();
+  };
+  scrubbing = requestAnimationFrame(step);
+}
+function applyMedia(m, url){
+  if (!m) return;
+  document.body.classList.remove('layout-vertical', 'layout-square', 'layout-landscape');
+  document.body.classList.add(m.layout || `layout-${m.orientation}`);
+  const ar = m.display_width && m.display_height ? m.display_width / m.display_height : 16 / 9;
+  document.body.style.setProperty('--ar', `${m.display_width} / ${m.display_height}`);
+  document.body.style.setProperty('--arn', ar.toFixed(4));
+  const p = $('#player');
+  if (url && (m.proxy || !p.src)) { p.src = url; p.classList.remove('hidden'); $('#novideo').classList.add('hidden'); }
+}
+function showLabelBox(scr){
+  const box = scr && (scr.box || S.labelBox);
+  const p = $('#player');
+  if (!box || !p.src || p.classList.contains('hidden')) return;
+  const place = () => {
+    // map frame fractions onto the drawn picture inside the player (object-fit: contain)
+    const vw = p.videoWidth || 16, vh = p.videoHeight || 9, ew = p.clientWidth, eh = p.clientHeight;
+    const k = Math.min(ew / vw, eh / vh), cw = vw * k, ch = vh * k, ox = (ew - cw) / 2, oy = (eh - ch) / 2;
+    Object.assign($('#lbox').style, {left: `${ox + box.x * cw}px`, top: `${oy + box.y * ch}px`, width: `${box.w * cw}px`, height: `${box.h * ch}px`});
+    $('#lbox-tag').textContent = `${tc(scr.time)} label`;
+    $('#lbox').classList.add('on');
+  };
+  if (p.readyState >= 1) place(); else p.addEventListener('loadedmetadata', place, {once: true});
+  clearTimeout(S.boxTimer);
+  S.boxTimer = setTimeout(() => { if (!S.frozen) $('#lbox').classList.remove('on'); }, REDUCED ? 3000 : 2800);
+}
+function setHead(t){ if (S.duration) $('#playhead').style.left = `${Math.max(0, Math.min(100, t / S.duration * 100))}%`; }
+$('#player').addEventListener('timeupdate', () => setHead($('#player').currentTime));
+
+/* ---------------- event log ---------------- */
+function log(time, event, detail, guard){
+  const row = document.createElement('div');
+  row.className = 'logrow new';
+  row.innerHTML = `<span class="tc">${time === null || time === undefined ? '—' : tc(time)}</span><span>${esc(event)}${guard ? ' <span class="guard">by guard</span>' : ''}</span><span class="detail">${esc(detail)}</span>`;
+  const rule = document.createElement('div'); rule.className = 'rule';
+  $('#log').appendChild(row); $('#log').appendChild(rule);
+}
+
+/* ---------------- events ---------------- */
+function apply(e){
+  if (e.t) { S.lastT = +e.t; status(); }
+  if (e.kind === 'art') { showArt(e); return; }
+  if (e.kind === 'media_info') { applyMedia(e, e.video_url); log(null, 'Clip read', e.summary); return; }
+  if (e.kind === 'warning') { log(null, 'Clip trimmed', e.summary); return; }
+  if (e.kind === 'frames' || e.kind === 'media') return;
+  if (e.kind === 'transcribed') { /^No audio/.test(e.summary) ? log(null, 'No audio track', e.summary.replace(/^No audio track:\s*/, '')) : log(null, 'Speech transcribed', e.summary.replace(/^Speech transcribed:\s*/, '')); return; }
+  if (e.kind === 'start') { S.duration = e.duration || S.duration; drawRuler(); return; }
+  if (e.kind === 'plan') {
+    const tools = (e.actions || []).map(a => a.tool);
+    const list = [...new Set(tools)].map(t => t + (tools.filter(x => x === t).length > 1 ? ' ×' + tools.filter(x => x === t).length : '')).join(', ');
+    log(null, 'Planned', `${list}${e.mode === 'native_tools' ? ' (Muse Spark tool call)' : e.mode === 'json_planner' ? ' (Muse Spark JSON plan)' : ' (fixed policy)'}`);
+    return;
+  }
+  if (['cap_reached', 'planner_fallback', 'planner_stalled', 'planner_error'].includes(e.kind)) { log(null, e.kind.replace(/_/g, ' '), e.summary); return; }
+  if (e.kind === 'action') onAction(e);
+}
+
+function onAction(e){
+  const o = e.observation || {}, guard = e.by === 'guard';
+  if (o.error) { log(null, `${e.tool} refused`, o.error, guard); return; }
+  switch (e.tool) {
+    case 'extract_claims':
+      (o.claims || []).forEach(c => S.claims.set(c.id, {id: c.id, quote: c.quote, origin: c.origin, start: c.start, rounds: [], status: 'pending'}));
+      log(null, 'Claims found', (o.claims || []).map(c => `${c.id} at ${tc(c.start)}`).join(', ') || 'none', guard);
+      break;
+    case 'judge_claim': {
+      const c = S.claims.get(o.claim_id); if (!c) break;
+      const judged = {verdict: o.verdict, judgement: o.judgement, reason: o.reason, chunk_id: o.chunk_id, evidence: o.evidence, origin: o.evidence_origin || (S.sources[o.chunk_id] || {}).origin || ''};
+      if (String(o.target).startsWith('rewrite')) {
+        const r = c.rounds[c.rounds.length - 1]; Object.assign(r, judged);
+        if (o.verdict === 'pass') { c.status = 'fixed'; log(c.start, `Revision ${r.round} checked`, `Matches ${o.chunk_id}`, guard); revisionPassed(c, r); }
+        else { log(c.start, `Revision ${r.round} rejected`, o.reason, guard); renderNote(noteFor(c)); }
+      } else {
+        c.rounds.push({round: 0, line: o.line || c.quote, ...judged});
+        c.status = o.verdict === 'pass' ? 'pass' : 'fail';
+        if (c.status === 'pass') { log(c.start, 'Source matched', `${c.id} matches ${o.chunk_id}`, guard); addNote({kind: 'verified', time: c.start, claim: c}); }
+        else { log(c.start, 'Note added', o.reason, guard); addNote({kind: 'claim', time: c.start, claim: c}); }
+      }
+      break;
+    }
+    case 'rewrite_line': {
+      const c = S.claims.get(o.claim_id); if (!c) break;
+      const rejected = String(o.code_check || '').startsWith('rejected');
+      c.rounds.push({round: o.round, line: o.line, verdict: rejected ? 'fail' : 'pending', judgement: rejected ? 'rejected_by_code' : '', reason: rejected ? o.code_check.replace(/^rejected:\s*/, '') : ''});
+      log(c.start, rejected ? `Revision ${o.round} rejected` : `Revision ${o.round} written`, rejected ? o.code_check.replace(/^rejected:\s*/, '') : o.line, guard);
+      renderNote(noteFor(c));
+      break;
+    }
+    case 'check_disclosure': {
+      const scr = o.on_screen || {}, sp = o.spoken || {};
+      if (scr.found) { log(scr.time, 'Label found on screen', `“${scr.text}”`, guard); addNote({kind: 'disclosure', time: scr.time, text: scr.text, how: 'on screen', scr}); scrubTo(scr.time + 0.1); showLabelBox(scr); }
+      else if (sp.found) { log(sp.time, 'Disclosure spoken', `“${sp.quote}”`, guard); addNote({kind: 'disclosure', time: sp.time, text: sp.quote, how: 'spoken'}); }
+      else { log(null, 'No disclosure found', 'Not on screen and not spoken', guard); addNote({kind: 'nodisclosure', time: null}); }
+      if (o.required_disclaimer) log(o.required_disclaimer.time, o.required_disclaimer.found ? 'Required line found' : 'Required line missing', o.required_disclaimer.label, guard);
+      break;
+    }
+    case 'check_coverage':
+      (o.messages || []).forEach(m => {
+        log(m.time, m.status === 'covered' ? 'Key message covered' : m.status === 'partly' ? 'Key message partly covered' : 'Key message missing', `“${m.message}”`, guard);
+        addNote({kind: 'message', time: m.time, message: m});
+      });
+      break;
+    case 'fetch_source': log(null, 'Source read', o.url, guard); break;
+    case 'search_source': log(null, 'Source searched', (o.hits || []).map(h => h.id).join(', '), guard); break;
+    case 'finish': log(null, 'Review finished', o.summary || '', guard); break;
+  }
+}
+
+/* ---------------- notes ---------------- */
+function noteFor(c){ return S.notes.find(n => n.claim === c); }
+function addNote(note){
+  if (note.claim && noteFor(note.claim)) return renderNote(noteFor(note.claim));
+  note.n = S.notes.length + 1; S.notes.push(note);
+  S.notes.sort((a, b) => (a.time ?? 1e9) - (b.time ?? 1e9));
+  S.notes.forEach((n, i) => { n.n = i + 1; });
+  $('#notes').innerHTML = '';
+  S.notes.forEach(n => renderNote(n, n === note));
+  document.querySelectorAll('.pin').forEach(p => p.remove());
+  S.notes.forEach(n => placePin(n, n === note));
+  updateApprove();
+}
+function sourceLine(r){
+  if (!r || !r.chunk_id) return '';
+  return `<p class="source"><b>Source</b> ${esc(r.chunk_id)}${r.origin ? ', ' + esc(r.origin) : ''}: “${esc(r.evidence)}”</p>`;
+}
+function renderNote(note, fresh){
+  if (!note) return;
+  let el = document.getElementById('note-' + note.n);
+  const html = noteHtml(note);
+  if (!el) {
+    el = document.createElement('article'); el.className = 'note'; el.id = 'note-' + note.n;
+    const rule = document.createElement('div'); rule.className = 'rule'; rule.id = 'rule-' + note.n;
+    $('#notes').appendChild(el); $('#notes').appendChild(rule);
+  }
+  el.innerHTML = html;
+  el.querySelectorAll('[data-decide]').forEach(b => b.addEventListener('click', () => { S.decisions[note.n] = b.dataset.decide; renderNote(note); updateApprove(); }));
+  el.querySelector('.tc-btn') && el.querySelector('.tc-btn').addEventListener('click', () => scrubTo(note.time));
+}
+function noteHtml(note){
+  const head = `<span class="n">${note.n}</span><span class="tc">${note.time === null || note.time === undefined ? '—' : `<button type="button" class="link tc-btn">${tc(note.time)}</button>`}</span>`;
+  let body = '';
+  if (note.kind === 'disclosure') {
+    body = `<h3>Disclosure label</h3><p class="quote">“${esc(note.text)}”</p><p class="ok-line">Found ${esc(note.how)} at ${tc(note.time)}.</p>`;
+  } else if (note.kind === 'nodisclosure') {
+    body = `<h3>Disclosure label</h3><p class="issue">No paid-partnership label on screen or in speech.</p>`;
+  } else if (note.kind === 'message') {
+    const m = note.message;
+    body = `<h3>Key message</h3><p class="quote">“${esc(m.message)}”</p><p class="${m.status === 'covered' ? 'ok-line' : 'issue'}">${m.status === 'covered' ? `Covered at ${tc(m.time)}.` : m.status === 'partly' ? 'Partly covered.' : 'Not said in the video.'}</p>`;
+  } else if (note.kind === 'verified') {
+    const r = note.claim.rounds[0];
+    body = `<h3>Checked against source</h3><p class="quote">“${esc(note.claim.quote)}”</p><p class="ok-line">Checked against source ${esc(r.chunk_id || '')}.</p>${sourceLine(r)}`;
+  } else {
+    const c = note.claim, first = c.rounds[0] || {}, revs = c.rounds.filter(r => r.round > 0);
+    const passed = revs.find(r => r.verdict === 'pass');
+    const title = first.judgement === 'contradicted' ? 'Contradicted by source' : first.judgement === 'rule' ? 'Breaks a pack rule' : 'Not supported by source';
+    const history = [`<div class="rev"><div class="head">Original, in the video</div><p class="quote struck">“${esc(c.quote)}”</p></div>`]
+      .concat(revs.map(r => r.verdict === 'pass'
+        ? `<div class="rev ${note.swapped === r.round ? 'swap' : ''}"><div class="head">Revision ${r.round}</div><p class="quote"><span class="suggested">“${esc(r.line)}”</span><span class="suggested-tag">Suggested</span></p></div>`
+        : r.verdict === 'pending'
+          ? `<div class="rev"><div class="head">Revision ${r.round}, checking against sources</div><p class="quote">“${esc(r.line)}”</p></div>`
+          : `<div class="rev"><div class="head">Revision ${r.round}</div><p class="quote struck turn">“${esc(r.line)}”</p><p class="why">Rejected on check: ${esc(shortReason(c, r.reason))}</p></div>`)).join('');
+    const decision = S.decisions[note.n];
+    const buttons = S.done || passed || revs.length >= 2
+      ? `<div class="decide"><button type="button" class="btn olive ${decision === 'accept' ? 'on' : ''}" data-decide="accept">Accept</button><button type="button" class="btn plain ${decision === 'reject' ? 'on' : ''}" data-decide="reject">Reject</button>${decision ? `<span class="decided">${decision === 'accept' ? (passed ? 'Suggested line accepted.' : 'Flag accepted: the line must change.') : 'Note rejected by the reviewer.'}</span>` : ''}</div>`
+      : '';
+    body = `<h3>${title}</h3><p class="issue">${esc(first.reason || '')}</p><div class="revs">${history}</div>${passed ? sourceLine(passed) : sourceLine(first)}${buttons}`;
+  }
+  return head + `<div class="body">${body}</div>`;
+}
+function shortReason(c, reason){
+  const r = String(reason || '');
+  const topic = r.match(/drops the creator's topic[^(]*\(([^)]*)\)/i);
+  if (topic) {
+    const words = topic[1].split(',').map(x => x.trim()).filter(Boolean);
+    const found = words.map(w => c.quote.split(/\s+/).find(q => q.toLowerCase().replace(/[^\p{L}\p{N}%]/gu, '').startsWith(w.toLowerCase()))).filter(Boolean).map(q => q.replace(/[^\p{L}\p{N}%]/gu, ''));
+    const alpha = found.filter(w => /\p{L}{2,}/u.test(w));
+    const best = alpha.find(w => w === w.toUpperCase()) || alpha.sort((a, b) => b.length - a.length)[0] || found[0];
+    return best ? `dropped the ${best} point.` : 'dropped the creator’s point.';
+  }
+  return r;
+}
+async function revisionPassed(c, r){
+  const note = noteFor(c);
+  if (!note) return;
+  await wait(250);
+  note.swapped = r.round;
+  renderNote(note);
+  placePin(note, false);
+}
+
+/* ---------------- finish and approval ---------------- */
+function claimNotes(){ return S.notes.filter(n => n.kind === 'claim'); }
+function updateApprove(){
+  const open = claimNotes().filter(n => !S.decisions[n.n]).length;
+  const ready = S.done && open === 0 && !S.replay;
+  $('#approve').disabled = !ready;
+  $('#approve-note').textContent = S.replay ? (open ? `Decide ${open} claim note${open > 1 ? 's' : ''} first. Approval is off in a replay.` : 'Approval is off in a replay.')
+    : !S.done ? 'The review is still running.' : open ? `Decide ${open} claim note${open > 1 ? 's' : ''} first.` : 'Ready for your approval.';
+}
+function finish(r){
+  S.running = false; S.done = true;
+  (r.sources || []).forEach(c => S.sources[c.id] = c);
+  if (r.duration && !S.duration) { S.duration = r.duration; drawRuler(); }
+  r.claims.forEach(rc => {
+    const c = S.claims.get(rc.id); if (!c) return;
+    c.status = rc.status; c.rounds = rc.rounds.map(x => ({...x, origin: x.evidence_origin || (S.sources[x.chunk_id] || {}).origin || ''}));
+  });
+  S.lastT = r.trace && r.trace.length ? r.trace[r.trace.length - 1].t : S.lastT;
+  status();
+  S.notes.forEach(n => renderNote(n));
+  updateApprove();
+}
+$('#approve').addEventListener('click', async () => {
+  const reviewer = $('#reviewer').value.trim();
+  if (!reviewer) { $('#reviewer').focus(); $('#approve-note').textContent = 'Add your name first.'; return; }
+  const response = await fetch(`/api/reviews/${reviewId}/decision`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({decision: 'approved', reviewer})});
+  const body = await response.json();
+  $('#approve-note').textContent = response.ok ? `Approved by ${body.reviewer}.` : (body.detail || 'Could not record the approval.');
+});
+init();
+</script>
+</body>
+</html>

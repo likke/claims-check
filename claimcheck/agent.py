@@ -234,14 +234,29 @@ class Agent:
 
 
 def run_review(provider, *, wav: bytes = b"", frames: list[dict] | None = None, sources: str, key_messages: list[str],
-               pack: Pack, product: str = "", supplement: bool = False, emit=None, cap: int = ACTION_CAP, fetcher=fetch_url) -> dict:
-    """Transcribe, build the state, run the agent and the guard. Returns the review."""
+               pack: Pack, product: str = "", supplement: bool = False, emit=None, cap: int = ACTION_CAP, fetcher=fetch_url,
+               no_audio: bool = False, duration: float | None = None, media: dict | None = None) -> dict:
+    """Transcribe, build the state, run the agent and the guard. Returns the review.
+
+    ``no_audio`` skips transcription (the clip has no audio track); the agent
+    then works from on-screen text only, and the trace says so.
+    """
     trace = Trace(emit)
     calls_before = len(provider.calls)
-    transcription = provider.transcribe(wav, [product] if product else [])
-    turns = transcription.get("turns", [])
-    trace.add("transcribed", summary=f"Speech transcribed: {len(turns)} turns, timing {transcription.get('timing')}",
-              model_calls=len(provider.calls) - calls_before, text=" ".join(t.get("text", "") for t in turns))
+    if no_audio:
+        transcription = {"turns": [], "duration": duration, "timing": "no audio"}
+        trace.add("transcribed", summary="No audio track: transcription skipped. Claims come from on-screen text only.",
+                  model_calls=0, text="")
+    else:
+        transcription = provider.transcribe(wav, [product] if product else [])
+        turns = transcription.get("turns", [])
+        trace.add("transcribed", summary=f"Speech transcribed: {len(turns)} turn{'s' if len(turns) != 1 else ''}, timing {transcription.get('timing')}",
+                  model_calls=len(provider.calls) - calls_before, text=" ".join(t.get("text", "") for t in turns))
+    if duration and not transcription.get("duration"):
+        transcription["duration"] = duration
     state = build_state(transcription, frames or [], sources, key_messages, pack, product, supplement)
     agent = Agent(state, provider, cap=cap, fetcher=fetcher, trace=trace)
-    return agent.run()
+    result = agent.run()
+    if media:
+        result["media"] = media
+    return result
