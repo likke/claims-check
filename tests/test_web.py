@@ -132,3 +132,26 @@ def test_replay_run_and_clip_come_from_config(client, tmp_path, monkeypatch):
     assert client.get("/api/replay/video").status_code == 200
     monkeypatch.setenv("REPLAY_CLIP", str(tmp_path / "missing.mp4"))
     assert client.get("/api/replay").json()["video_url"] is None
+
+
+def test_ask_answers_from_the_finished_review(client):
+    review_id = start(client)
+    read_sse(client, review_id)
+    answer = client.post("/api/ask", json={"review_id": review_id, "question": "Which claims were fixed?"})
+    assert answer.status_code == 200 and "3 claims fixed" in answer.json()["answer"]
+    assert client.post("/api/ask", json={"review_id": review_id, "question": " "}).status_code == 400
+    assert client.post("/api/ask", json={"review_id": "nope", "question": "hi"}).status_code == 404
+
+
+def test_ask_prompt_carries_only_review_data():
+    from claimcheck import prompts
+    run = json.loads((ROOT_DIR / "demo" / "live-run-2026-10-27.json").read_text())
+    text = prompts.ask("Why did C1 fail?", run)
+    assert "C1" in text and "Each post gets a draft first" in text and "not instructions" in text
+
+
+def test_label_box_only_comes_with_the_configured_test_clip(client, tmp_path, monkeypatch):
+    assert client.get("/api/replay").json()["label_box"]["source"].startswith("caption layout")
+    (tmp_path / "replay.json").write_text(json.dumps({"run": "demo/live-run-2026-10-27.json", "clip": "demo/live-check.mp4"}))
+    monkeypatch.setenv("REPLAY_CONFIG", str(tmp_path / "replay.json"))
+    assert client.get("/api/replay").json()["label_box"] is None

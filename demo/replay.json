@@ -1,4 +1,12 @@
 {
   "run": "demo/live-run-2026-10-27.json",
-  "clip": "demo/live-check.mp4"
+  "clip": "demo/live-check.mp4",
+  "label_box": {
+    "x": 0.178,
+    "y": 0.736,
+    "w": 0.644,
+    "h": 0.139,
+    "time": 1.0,
+    "source": "caption layout in demo/make_test_video.sh (1280x720: 824x100 box, 90 px above the bottom)"
+  }
 }

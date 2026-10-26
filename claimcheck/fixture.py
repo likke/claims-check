@@ -153,6 +153,12 @@ class FixtureProvider(BaseProvider):
             "disclaimer": {"found": False, "where": "none", "quote": ""},
         }
 
+    def _ask(self, ctx):
+        run = ctx["run"]
+        counts = {s: sum(1 for c in run["claims"] if c["status"] == s) for s in ("pass", "fixed", "fail")}
+        return {"answer": f"Offline fixture answer: {counts['fixed']} claims fixed, {counts['pass']} verified, {counts['fail']} still false. "
+                          "Connect the Meta Model API for real answers."}
+
     def _check_coverage(self, ctx):
         out = []
         for message in ctx["messages"]:

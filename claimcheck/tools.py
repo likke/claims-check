@@ -62,6 +62,19 @@ def _snap_frame(state: ReviewState, at) -> dict | None:
     return best
 
 
+def _valid_box(box):
+    """A model-drawn box [left, top, width, height] in frame fractions, or None if it is not a sane box."""
+    if not isinstance(box, (list, tuple)) or len(box) != 4:
+        return None
+    try:
+        left, top, width, height = (float(v) for v in box)
+    except (TypeError, ValueError):
+        return None
+    if min(left, top) < 0 or width <= 0.01 or height <= 0.01 or left + width > 1.001 or top + height > 1.001:
+        return None
+    return {"x": round(left, 4), "y": round(top, 4), "w": round(width, 4), "h": round(height, 4), "source": "Muse Spark vision"}
+
+
 def _images(state: ReviewState) -> list[dict]:
     return [{"time": f["time"], "image": f["image"]} for f in state.frames if f.get("image")]
 
@@ -376,7 +389,8 @@ class ToolBox:
             frame = _snap_frame(state, model_screen.get("frame_time"))
             text = str(model_screen.get("text", "")).strip()
             if frame is not None and text:
-                on_screen = {"found": True, "text": text, "time": frame["time"], "how": "model vision, frame time verified"}
+                on_screen = {"found": True, "text": text, "time": frame["time"], "how": "model vision, frame time verified",
+                             "box": _valid_box(model_screen.get("box"))}
             else:
                 notes.append("model reported an on-screen disclosure without a sampled frame time; ignored")
         if not on_screen["found"]:

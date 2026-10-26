@@ -263,3 +263,12 @@ def test_claim_inside_a_long_unpunctuated_turn_gets_an_estimated_offset():
     assert late.estimated and early.estimated
     assert 6.0 <= late.start < late.end <= 9.0
     assert 2.0 < early.start < 5.0
+
+
+def test_vision_box_is_kept_only_when_sane():
+    turns = [{"start": 0.0, "end": 4.0, "text": "Ledgerly AI flags unusual charges for review."}]
+    for box, expected in (([0.2, 0.7, 0.6, 0.15], True), ([0.9, 0.9, 0.5, 0.5], False), ("near the bottom", False)):
+        answer = {"spoken": {"found": False}, "on_screen": {"found": True, "frame_time": 1.0, "text": "Paid partnership", "box": box}, "frame_text": []}
+        st = state(turns, SOURCES, frames=[dict(f) for f in FRAMES])
+        ToolBox(st, Scripted(responses={"check_disclosure": answer})).run("check_disclosure", {})
+        assert (st.disclosure["on_screen"]["box"] is not None) is expected

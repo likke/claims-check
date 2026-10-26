@@ -100,7 +100,7 @@ def replay_config() -> dict:
         runs = sorted((ROOT / "demo").glob("live-run-*.json"))
         run = str(runs[-1]) if runs else None
     resolve = lambda value: (Path(value) if Path(value).is_absolute() else ROOT / value) if value else None
-    return {"run": resolve(run), "clip": resolve(clip)}
+    return {"run": resolve(run), "clip": resolve(clip), "label_box": config.get("label_box")}
 
 
 @app.api_route("/api/replay", methods=["GET", "HEAD"])
@@ -121,6 +121,8 @@ def replay():
     has_clip = bool(clip and clip.exists())
     run["video_url"] = "/api/replay/video" if has_clip else None
     run["video_name"] = clip.name if has_clip else None
+    # Where the paid-partnership label sits in this clip, when the config knows it (our generated test clip does).
+    run["label_box"] = paths["label_box"] if has_clip else None
     run["frame_images"] = _frame_images(clip, [f["time"] for f in run.get("frames", [])]) if has_clip else []
     return run
 
@@ -226,3 +228,23 @@ def decide(review_id: str, payload: dict):
               "open_failures": sum(1 for c in job.result["claims"] if c["status"] == "fail")}
     job.result["approval"] = record
     return record
+
+
+@app.post("/api/ask")
+def ask(payload: dict):
+    """Answer a question about a finished review from its result JSON, with the configured model."""
+    job = _job(str(payload.get("review_id", "")))
+    if not job.done or job.result is None:
+        raise HTTPException(409, "The review is still running.")
+    question = str(payload.get("question", "")).strip()
+    if not question:
+        raise HTTPException(400, "Ask a question.")
+    if len(question) > 500:
+        raise HTTPException(400, "Keep the question under 500 characters.")
+    from . import prompts
+    provider = get_provider()
+    try:
+        data = provider.complete_json("ask", prompts.ask(question, job.result), context={"question": question, "run": job.result})
+    except Exception as error:
+        raise HTTPException(502, f"The model could not answer: {error}")
+    return {"answer": str(data.get("answer", "")).strip() or "No answer.", "provider": provider.info()["name"]}
