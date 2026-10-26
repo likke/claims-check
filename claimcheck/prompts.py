@@ -79,6 +79,8 @@ Rules:
 - Keep the creator's point and topic. Correct only what the sources do not support. The new line still talks about the same subject with the same key words (if the creator talks about FDA violations, the new line still names FDA or claim risks), stated the way the sources state it.
 - Keep the same language mix. If the line mixes Tagalog and English (Taglish), the new line does too.
 - State only what the source chunks support. Never delete the claim and never replace it with a pleasantry or a call to action.
+- Replace the overclaim (guarantees, 100%, zero, all, cures) with what the source actually says. A strong fix often states what the product does, and says plainly what it does not promise when a source says so.
+- Check every word of the new line against the chunks you cite. Remove anything those chunks do not say.
 - One {medium}, similar length, natural to say out loud.
 Rule pack: {pack.name}. {pack.guidance}
 

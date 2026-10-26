@@ -148,3 +148,32 @@ def quote_in(quote: str, text: str, threshold: float = 0.9) -> bool:
     if normalise(quote).strip(" .\"'") in normalise(text):
         return True
     return containment(quote, text) >= threshold and len(tokens(quote)) >= 3
+
+
+def quote_span(quote: str, matched: list[Sentence]) -> tuple[float, float, bool]:
+    """Start and end time of ``quote`` inside the matched sentences.
+
+    Word times are spread evenly across each sentence, so a quote that covers
+    only part of a sentence gets an estimated time (marked ``True``). A quote
+    that covers whole sentences keeps their times and their own flag.
+    """
+    words = []
+    for sentence in matched:
+        sentence_words = tokens(sentence.text)
+        step = (sentence.end - sentence.start) / max(1, len(sentence_words))
+        for k, word in enumerate(sentence_words):
+            words.append((word, sentence.start + k * step, sentence.start + (k + 1) * step))
+    quote_words = tokens(quote)
+    whole = (matched[0].start, matched[-1].end, any(s.estimated for s in matched)) if matched else (0.0, 0.0, True)
+    if not words or not quote_words or len(quote_words) >= len(words):
+        return whole
+    size = len(quote_words)
+    best_index, best_score = 0, -1
+    for i in range(len(words) - size + 1):
+        window = [w[0] for w in words[i : i + size]]
+        score = sum(1 for word in quote_words if word in window)
+        if score > best_score:
+            best_index, best_score = i, score
+    if best_index == 0 and size == len(words):
+        return whole
+    return round(words[best_index][1], 2), round(words[best_index + size - 1][2], 2), True

@@ -20,9 +20,10 @@ def test_taglish_spoken_disclosure_is_found_and_verified():
     st = state(turns, SOURCES)
     observation, summary = ToolBox(st, provider).run("check_disclosure", {})
     assert st.disclosure["disclosed"] is True
-    assert st.disclosure["spoken"] == {"found": True, "quote": answer["spoken"]["quote"], "time": 0.0,
-                                       "how": "model, quote verified in transcript"}
-    assert "spoken at 0.0s" in summary
+    spoken = st.disclosure["spoken"]
+    assert spoken["found"] and spoken["quote"] == answer["spoken"]["quote"] and spoken["how"] == "model, quote verified in transcript"
+    assert 0.5 < spoken["time"] < 0.7  # the quote starts at word 3 of a 2.8 s sentence
+    assert f"spoken at {spoken['time']}s" in summary
 
 
 def test_taglish_disclosure_found_by_code_when_the_model_misses_it():
@@ -249,3 +250,16 @@ def test_open_weights_provider_uses_chat_completions(monkeypatch):
     assert provider.plan("state", TOOL_SPECS).actions == [{"tool": "extract_claims", "args": {}}]
     assert provider.complete_json("x", "prompt", images=[{"time": 1, "image": "aW1n"}]) == {"ok": True}
     assert seen[1]["messages"][0]["content"][1]["type"] == "image_url"
+
+
+def test_claim_inside_a_long_unpunctuated_turn_gets_an_estimated_offset():
+    # Seen live on 27 Oct: ASR returned one unpunctuated 9 s turn.
+    turns = [{"start": 0.0, "end": 9.0, "text": "i tried it for our posts it guarantees zero violations every draft gets an approver"}]
+    provider = Scripted(responses={"extract_claims": {"claims": [{"sentence": 0, "quote": "every draft gets an approver"},
+                                                                 {"sentence": 0, "quote": "it guarantees zero violations"}], "on_screen_claims": []}})
+    st = state(turns, SOURCES)
+    ToolBox(st, provider).run("extract_claims", {})
+    late, early = st.claims
+    assert late.estimated and early.estimated
+    assert 6.0 <= late.start < late.end <= 9.0
+    assert 2.0 < early.start < 5.0

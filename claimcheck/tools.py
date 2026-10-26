@@ -14,7 +14,7 @@ from . import prompts
 from .packs import hard_rule_hits
 from .sources import Chunk, fetch_url
 from .state import MAX_REWRITES, Claim, ReviewState
-from .text import TAGALOG_MARKERS, containment, content_terms, has_tagalog, is_taglish, locate, normalise, quote_in, stem, tokens
+from .text import TAGALOG_MARKERS, containment, content_terms, has_tagalog, is_taglish, locate, normalise, quote_in, quote_span, stem, tokens
 
 DISCLOSURE = re.compile(
     r"(paid partnership|sponsored|bayad na partnership|may bayad|in partnership with|partnership with|#ad\b|\bad:|binayaran)",
@@ -171,9 +171,10 @@ class ToolBox:
             seen.add(key)
             first, last = matched[0], matched[-1]
             around = [s.text for s in state.sentences if s.index in (first.index - 1, last.index + 1)]
+            start, end, estimated = quote_span(quote, matched)
             state.claims.append(Claim(
-                id=f"C{len(state.claims) + 1}", quote=quote, start=first.start, end=last.end,
-                estimated=any(s.estimated for s in matched) or state.timing == "estimated", origin="speech",
+                id=f"C{len(state.claims) + 1}", quote=quote, start=start, end=end,
+                estimated=estimated or state.timing == "estimated", origin="speech",
                 kind=str(item.get("kind", "other")), sentence_index=first.index, context=" ".join(around),
             ))
         for item in data.get("on_screen_claims") or []:
@@ -355,7 +356,7 @@ class ToolBox:
             quote = str(model_spoken.get("quote", ""))
             matched, _ = locate(quote, state.sentences)
             if matched and quote.strip():
-                spoken = {"found": True, "quote": quote, "time": round(matched[0].start, 2), "how": "model, quote verified in transcript"}
+                spoken = {"found": True, "quote": quote, "time": quote_span(quote, matched)[0], "how": "model, quote verified in transcript"}
             else:
                 notes.append("model reported a spoken disclosure whose quote is not in the transcript; ignored")
         if not spoken["found"]:
@@ -434,7 +435,7 @@ class ToolBox:
             if status != "missing":
                 matched, _ = locate(quote, state.sentences) if quote else ([], 0)
                 if matched:
-                    time = round(matched[0].start, 2)
+                    time = quote_span(quote, matched)[0]
                 else:
                     note = "quote not found in transcript, so the status was lowered"
                     status = "partly" if status == "covered" and quote else "missing"
