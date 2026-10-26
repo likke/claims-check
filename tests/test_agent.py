@@ -207,3 +207,12 @@ def test_a_pass_without_a_real_citation_is_downgraded(bad):
     first = result["claims"][0]["rounds"][0]
     assert first["verdict"] == "fail" and first["judgement"] == "not_supported"
     assert first["checks"]
+
+
+def test_rewrite_that_changes_the_subject_is_rejected():
+    from claimcheck.packs import get_pack
+    from claimcheck.tools import rewrite_floor
+    original = "It guarantees zero FDA violations, 100%."
+    # Seen live on 27 Oct: true to the source, but no longer about FDA risk at all.
+    assert any("drops the creator's topic" in p for p in rewrite_floor(original, "It checks creator content before it posts.", get_pack("tech")))
+    assert rewrite_floor(original, "It flags possible FDA claim issues for a human reviewer before posting.", get_pack("tech")) == []

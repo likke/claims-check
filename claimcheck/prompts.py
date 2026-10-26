@@ -43,7 +43,7 @@ Return JSON only:
 Use an empty list when there are none."""
 
 
-def judge_claim(pack, line, chunks, target, original=None, original_reason=None) -> str:
+def judge_claim(pack, line, chunks, target, original=None, original_reason=None, product="", context="") -> str:
     rewrite_part = ""
     keeps = ""
     if target == "rewrite":
@@ -51,6 +51,8 @@ def judge_claim(pack, line, chunks, target, original=None, original_reason=None)
         keeps = ',"keeps_point":true|false,"keeps_point_reason":"<one sentence>"'
     return f"""You verify advertising claims for a brand team. Decide whether the line is supported by the brand's sources. Only the numbered source chunks count. Do not use outside knowledge.
 Rule pack: {pack.name}. {pack.guidance}
+Product: {product or "(not given)"}. Pronouns such as "it" or "siya" in the line refer to the product.
+Lines around it in the video: "{context}"
 
 Line to verify: "{line}"{rewrite_part}
 Source chunks:
@@ -60,7 +62,8 @@ Verdicts:
 - "supported": a chunk states what the line says. Absolute words (guarantees, 100%, zero, all, every, never) must be backed by the chunk too.
 - "contradicted": a chunk says the opposite or limits the claim.
 - "not_supported": no chunk states it.
-{"For a rewrite, keeps_point is true only when the new line still makes the creator's product point (same topic and benefit, still a real product statement, not a deletion and not a vague pleasantry)." if target == "rewrite" else ""}
+Cite the product source chunk (S...) that supports or limits the line. Cite a rule chunk (R...) only when no product chunk is relevant.
+{"For a rewrite, keeps_point is true only when the new line still makes the creator's product point: the same subject and benefit as the original (for example, still about FDA or claim risk if the original was), still a real product statement, not a deletion, not a generic line about something else, and not a pleasantry." if target == "rewrite" else ""}
 Return JSON only:
 {{"verdict":"supported|contradicted|not_supported","chunk_id":"<id of the chunk you rely on>","evidence_quote":"<words copied exactly from that chunk>","reason":"<one plain sentence>"{keeps}}}"""
 
@@ -73,7 +76,7 @@ def rewrite_line(pack, claim, reason, evidence_chunk, chunks, previous=None) -> 
     evidence = f"[{evidence_chunk.id}] {evidence_chunk.text}" if evidence_chunk else "no chunk states it"
     return f"""You fix one line in a creator's sponsored video so the brand can approve it. Write in the creator's own voice.
 Rules:
-- Keep the creator's point and topic. Correct only what the sources do not support.
+- Keep the creator's point and topic. Correct only what the sources do not support. The new line still talks about the same subject with the same key words (if the creator talks about FDA violations, the new line still names FDA or claim risks), stated the way the sources state it.
 - Keep the same language mix. If the line mixes Tagalog and English (Taglish), the new line does too.
 - State only what the source chunks support. Never delete the claim and never replace it with a pleasantry or a call to action.
 - One {medium}, similar length, natural to say out loud.

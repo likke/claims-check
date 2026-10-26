@@ -14,7 +14,7 @@ from . import prompts
 from .packs import hard_rule_hits
 from .sources import Chunk, fetch_url
 from .state import MAX_REWRITES, Claim, ReviewState
-from .text import containment, has_tagalog, is_taglish, locate, normalise, quote_in, tokens
+from .text import TAGALOG_MARKERS, containment, content_terms, has_tagalog, is_taglish, locate, normalise, quote_in, stem, tokens
 
 DISCLOSURE = re.compile(
     r"(paid partnership|sponsored|bayad na partnership|may bayad|in partnership with|partnership with|#ad\b|\bad:|binayaran)",
@@ -82,6 +82,11 @@ def rewrite_floor(original: str, line: str, pack) -> list[str]:
         problems.append(f"The rewrite has {new_words} words against {original_words}; it is too short to keep the creator's point.")
     if normalise(line).strip(" .!") == normalise(original).strip(" .!"):
         problems.append("The rewrite repeats the failed line.")
+    filler = {stem(word) for word in TAGALOG_MARKERS} | {"grabe", "guys", "uy", "really", "so", "super", "talaga"}
+    topic = set(content_terms(original)) - filler
+    if len(topic) >= 2 and not topic & set(content_terms(line)):
+        problems.append("The rewrite drops the creator's topic: it shares no key word with the original line ("
+                        + ", ".join(sorted(topic)[:6]) + ").")
     if is_taglish(original) and not has_tagalog(line):
         problems.append("The creator's line is Taglish but the rewrite is English only.")
     for rule in hard_rule_hits(pack, line):
@@ -224,7 +229,7 @@ class ToolBox:
             line, extra = claim.rounds[-1]["line"], claim.rounds[-1].get("cited_chunks", []) + [claim.rounds[0].get("chunk_id") or ""]
         chunks = self._evidence(claim, line, chunk_ids if isinstance(chunk_ids, list) else [], extra)
         original_reason = claim.rounds[0].get("reason") if claim.rounds else None
-        prompt = prompts.judge_claim(state.pack, line, chunks, target, claim.quote, original_reason)
+        prompt = prompts.judge_claim(state.pack, line, chunks, target, claim.quote, original_reason, state.product, claim.context)
         data = self.provider.complete_json(
             "judge_claim", prompt,
             context={"line": line, "original": claim.quote, "target": target, "chunks": [c.as_dict() for c in chunks], "pack": state.pack.key},

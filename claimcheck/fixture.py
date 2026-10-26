@@ -44,10 +44,10 @@ FRAMES = [
 REWRITES = {
     "guarantees zero fraud": [
         "Grabe, it catches all fraud bago pa mangyari.",
-        "Grabe, it flags unusual charges para ma-review agad ng team mo.",
+        "Grabe, it flags unusual charges para ma-check ng human reviewer ang fraud risk.",
     ],
     "lahat ng bank": ["Connected na siya sa 12 partner banks dito sa Pilipinas."],
-    "zero fraud. 100%": ["Flags unusual charges for review"],
+    "zero fraud. 100%": ["Flags unusual charges to fight fraud"],
 }
 
 ABSOLUTE = re.compile(r"\b(guarantee[sd]?|zero|100%?|hundred percent|lahat|all|never|always)\b", re.I)
