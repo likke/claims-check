@@ -1,185 +1,329 @@
-"""Fixture, Meta, and OpenAI-compatible model providers."""
-import base64
+"""Model providers.
+
+- MetaProvider: Meta Model API (https://api.meta.ai/v1). Muse Voice Transcribe
+  for speech, Muse Spark /responses for text, vision and native tool calling.
+- OpenAICompatibleProvider: Muse Spark Open (open weights) served by any
+  OpenAI-compatible endpoint, for example a local server or Fireworks.
+- FixtureProvider (in fixture.py): offline demo with a fictional product.
+
+Every provider exposes the same four calls: transcribe, complete_json, plan
+and info. The agent never knows which one it is talking to.
+"""
+from __future__ import annotations
+
 import json
 import os
 import re
-import urllib.request
-from typing import Any
+import time
+from collections import Counter
+from dataclasses import dataclass
 
-from .media import extract_media
-from .tools import check_coverage, check_disclosure, judge_claim, rewrite_line
+import httpx
 
-TOOLS = ["search_source", "fetch_source", "judge_claim", "rewrite_line", "check_disclosure", "check_coverage", "finish"]
-
-
-class FixtureProvider:
-    def transcribe(self, video: bytes) -> str:
-        return "Ledgerly AI guarantees zero FDA violations. Sulit ito!"
-
-    def extract_claims(self, transcription):
-        text = transcription.get("text", "") if isinstance(transcription, dict) else transcription
-        return [{"quote": match.group().strip(), "start": round(match.start() / 12, 1), "end": round((match.start() + len(match.group())) / 12, 1), "estimated": True, "rounds": []} for match in re.finditer(r"[^.!?]+[.!?]?", text) if re.search(r"\b(guarantee|guarantees|cure|treat|prevents|eliminates|100%|zero)\b", match.group(), re.I)]
-
-    def frames(self, video: bytes) -> list[dict[str, Any]]:
-        return [{"time": 1.2, "text": "Paid partnership", "claims": []}]
-
-    def plan(self, context, history):
-        return {"tool": "search_source", "input": {"query": "capabilities"}, "mode": "fixture"}
-
-    def json_plan(self, prompt):
-        return {"tool": "finish", "input": {}, "mode": "json"}
-
-    def judge_claim(self, claim, evidence):
-        return judge_claim(claim, evidence)
-
-    def rewrite_line(self, claim, reason, evidence, round_number=1):
-        return rewrite_line(claim, reason, evidence)
-
-    def check_disclosure(self, transcript, frames):
-        return check_disclosure(transcript, frames)
-
-    def check_coverage(self, transcript, key_messages):
-        return check_coverage(transcript, key_messages)
+from .prompts import JSON_PLANNER_SUFFIX, tools_text
 
 
-class MetaProvider(FixtureProvider):
-    """Meta.ai v1 provider for Muse Voice Transcribe and Muse Spark."""
+class ProviderError(RuntimeError):
+    pass
+
+
+class ToolsRejected(ProviderError):
+    """The endpoint refused a request that carried a tools array."""
+
+
+@dataclass
+class PlanResult:
+    mode: str  # "native_tools", "json_planner" or "fixture_planner"
+    actions: list[dict]
+    reasoning: str = ""
+    fallback_reason: str | None = None
+    calls: int = 1
+
+
+def parse_json(text: str) -> dict:
+    text = (text or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[a-zA-Z]*\s*|\s*```$", "", text)
+    start, end = text.find("{"), text.rfind("}")
+    if start < 0 or end < start:
+        raise ValueError("no JSON object in model output")
+    value = json.loads(text[start : end + 1])
+    if not isinstance(value, dict):
+        raise ValueError("model output is not a JSON object")
+    return value
+
+
+def normalise_actions(raw, tool_names: list[str]) -> list[dict]:
+    actions = []
+    for item in raw or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("tool") or item.get("name") or "").strip()
+        args = item.get("args") if "args" in item else item.get("arguments", item.get("input", {}))
+        if isinstance(args, str):
+            try:
+                args = json.loads(args or "{}")
+            except json.JSONDecodeError:
+                args = {}
+        actions.append({"tool": name, "args": args if isinstance(args, dict) else {}})
+    return actions
+
+
+class BaseProvider:
+    name = "base"
+    label = ""
+    needs_media = True
+
     def __init__(self):
+        self.calls: list[dict] = []
+        self.tool_mode = "native"
+
+    # -- bookkeeping ------------------------------------------------------
+    def _record(self, kind: str, task: str, started: float, ok: bool, tokens: int | None = None):
+        self.calls.append({"kind": kind, "task": task, "ms": int((time.monotonic() - started) * 1000), "ok": ok, "tokens": tokens})
+
+    def usage(self) -> dict:
+        tasks = Counter(c["task"] for c in self.calls)
+        return {
+            "model_calls": sum(1 for c in self.calls if c["kind"] == "model"),
+            "asr_calls": sum(1 for c in self.calls if c["kind"] == "asr"),
+            "tokens": sum(c["tokens"] or 0 for c in self.calls),
+            "by_task": dict(tasks),
+        }
+
+    def info(self) -> dict:
+        return {"name": self.name, "label": self.label}
+
+    # -- shared behaviour -------------------------------------------------
+    def complete_json(self, task: str, prompt: str, images: list[dict] | None = None, context: dict | None = None) -> dict:
+        text = self._generate(prompt, images, task)
+        try:
+            return parse_json(text)
+        except (ValueError, json.JSONDecodeError):
+            text = self._generate("Your previous answer was not valid JSON. Return one JSON object only.\n\n" + prompt, images, task + "_retry")
+            return parse_json(text)
+
+    def plan(self, prompt: str, tools: list[dict], context: dict | None = None) -> PlanResult:
+        names = [t["name"] for t in tools]
+        fallback = None
+        if self.tool_mode == "native":
+            try:
+                calls, text = self._native_tools(prompt, tools)
+                actions = normalise_actions(calls, names)
+                if not actions and text:
+                    try:
+                        actions = normalise_actions(parse_json(text).get("actions"), names)
+                    except (ValueError, json.JSONDecodeError):
+                        pass
+                return PlanResult("native_tools", actions, reasoning=text.strip())
+            except ToolsRejected as rejected:
+                self.tool_mode = "json"
+                fallback = str(rejected)
+        data = self.complete_json("plan", prompt + JSON_PLANNER_SUFFIX.format(tools=tools_text(tools)), context=context)
+        return PlanResult("json_planner", normalise_actions(data.get("actions"), names),
+                          reasoning=str(data.get("reasoning", "")), fallback_reason=fallback)
+
+    # -- provider specific ------------------------------------------------
+    def transcribe(self, wav: bytes, keywords: list[str]) -> dict:
+        raise NotImplementedError
+
+    def _generate(self, prompt: str, images: list[dict] | None, task: str) -> str:
+        raise NotImplementedError
+
+    def _native_tools(self, prompt: str, tools: list[dict]) -> tuple[list[dict], str]:
+        raise NotImplementedError
+
+
+def _post(client: httpx.Client, url: str, **kwargs) -> httpx.Response:
+    """POST with one retry on rate limits, server errors and timeouts."""
+    for attempt in range(2):
+        try:
+            response = client.post(url, **kwargs)
+        except (httpx.TimeoutException, httpx.TransportError) as error:
+            if attempt:
+                raise ProviderError(f"request to {url} failed: {error}") from None
+            time.sleep(2)
+            continue
+        if response.status_code in (429, 500, 502, 503, 504) and not attempt:
+            time.sleep(2)
+            continue
+        return response
+    raise ProviderError(f"request to {url} failed")
+
+
+def _error_text(response: httpx.Response) -> str:
+    return f"HTTP {response.status_code}: {response.text[:300]}"
+
+
+class MetaProvider(BaseProvider):
+    name = "meta"
+
+    def __init__(self, api_key: str | None = None, client: httpx.Client | None = None):
+        super().__init__()
+        self.api_key = api_key or os.environ["MODEL_API_KEY"]
         self.base_url = os.getenv("MODEL_BASE_URL", "https://api.meta.ai/v1").rstrip("/")
-        self.api_key = os.environ["MODEL_API_KEY"]
-        self.asr_model = os.getenv("ASR_MODEL", "muse-voice-transcribe")
-        self.model = os.getenv("MODEL_NAME", "muse-spark")
-        self.mode = "tools"
+        self.model = os.getenv("MODEL_NAME", "muse-spark-1.3")
+        self.asr_model = os.getenv("ASR_MODEL", "muse-voice-transcribe-1.0")
+        self.planner_effort = os.getenv("PLANNER_REASONING", "low")
+        self.task_effort = os.getenv("TASK_REASONING", "")
+        self.client = client or httpx.Client(timeout=180)
+        self.label = f"Meta cloud · {self.model} + {self.asr_model}"
 
-    def _request(self, path, payload):
-        request = urllib.request.Request(self.base_url + path, data=json.dumps(payload).encode(), headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"})
-        with urllib.request.urlopen(request, timeout=120) as response:
-            return json.loads(response.read())
+    def info(self) -> dict:
+        return {"name": self.name, "label": self.label, "model": self.model, "asr_model": self.asr_model, "base_url": self.base_url}
 
-    def transcribe(self, video):
-        audio, self._frames = extract_media(video)
-        result = self._request("/audio/transcriptions", {"model": self.asr_model, "file": base64.b64encode(audio).decode(), "language": "tl,en", "prompt": "Tagalog and English (Taglish) speech", "response_format": "verbose_json", "timestamp_granularities": ["segment"]})
-        return {"text": result.get("text", result.get("transcript", "")), "segments": result.get("segments", []), "duration": result.get("duration")}
+    def _headers(self) -> dict:
+        return {"Authorization": f"Bearer {self.api_key}"}
 
-    def extract_claims(self, transcription):
-        segments = transcription.get("segments", [])
-        text = transcription.get("text", "")
-        if not segments and text:
-            duration = transcription.get("duration") or max(1, len(text.split()) / 2.5)
-            sentences = [part.strip() for part in re.findall(r"[^.!?]+[.!?]?", text) if part.strip()]
-            total = max(1, sum(len(part.split()) for part in sentences))
-            cursor = 0.0
-            segments = []
-            for sentence in sentences:
-                span = duration * len(sentence.split()) / total
-                segments.append({"text": sentence, "start": cursor, "end": cursor + span, "estimated": True})
-                cursor += span
-        prompt = ("Extract every factual product or performance claim from these timestamped speech segments. "
-                  "Return JSON only as {claims:[{quote,start,end,estimated}]}. Preserve exact quote and seconds. "
-                  "Use segment timestamps; estimated is true only when timing was estimated. Segments: " + json.dumps(segments))
-        claims = self._json_call(prompt).get("claims", [])
-        return [{"quote": item["quote"], "start": float(item["start"]), "end": float(item["end"]), "estimated": bool(item.get("estimated", False)), "rounds": []} for item in claims]
-
-    def frames(self, video):
-        return [{"time": frame["time"], "image": base64.b64encode(frame["image"]).decode()} for frame in getattr(self, "_frames", [])]
-
-    def _spark(self, instruction, images=None):
-        content = [{"type": "input_text", "text": instruction}]
-        for image in images or []:
-            content.append({"type": "input_image", "image_url": "data:image/jpeg;base64," + image["image"]})
-        return self._request("/responses", {"model": getattr(self, "model", "muse-spark"), "input": content})
+    def _responses(self, payload: dict, task: str) -> dict:
+        started = time.monotonic()
+        response = _post(self.client, self.base_url + "/responses", json=payload, headers=self._headers())
+        if response.status_code >= 400:
+            self._record("model", task, started, False)
+            if "tools" in payload and response.status_code in (400, 404, 422):
+                raise ToolsRejected(_error_text(response))
+            raise ProviderError(_error_text(response))
+        data = response.json()
+        self._record("model", task, started, True, (data.get("usage") or {}).get("total_tokens"))
+        return data
 
     @staticmethod
-    def _output(result):
-        if "output_text" in result:
-            return result["output_text"]
-        for item in result.get("output", []):
-            for content in item.get("content", []):
-                if content.get("type") in ("output_text", "text"):
-                    return content.get("text", "")
-        return ""
+    def output_text(data: dict) -> str:
+        if isinstance(data.get("output_text"), str):
+            return data["output_text"]
+        parts = []
+        for item in data.get("output", []):
+            if item.get("type") == "message":
+                for content in item.get("content", []):
+                    if content.get("type") in ("output_text", "text"):
+                        parts.append(content.get("text", ""))
+        return "\n".join(parts)
 
-    def _json_call(self, prompt, images=None):
-        raw = self._output(self._spark(prompt, images))
-        for attempt in range(2):
-            try:
-                match = re.search(r"\{.*\}", raw, re.S)
-                return json.loads(match.group() if match else raw)
-            except (TypeError, json.JSONDecodeError):
-                if attempt:
-                    raise
-                raw = self._output(self._spark("Return valid JSON only. Previous response was invalid.\n" + prompt, images))
+    @staticmethod
+    def _content(prompt: str, images: list[dict] | None) -> list[dict]:
+        content = [{"type": "input_text", "text": prompt}]
+        for image in images or []:
+            content.append({"type": "input_image", "image_url": "data:image/jpeg;base64," + image["image"]})
+        return content
 
-    def plan(self, context, history):
-        schema = [{"type": "function", "name": name, "description": f"Run {name}", "parameters": {"type": "object", "properties": {"query": {"type": "string"}, "claim": {"type": "string"}}, "additionalProperties": True}} for name in TOOLS]
-        try:
-            result = self._request("/responses", {"model": getattr(self, "model", "muse-spark"), "input": [{"type": "input_text", "text": json.dumps({"context": context, "history": history})}], "tools": schema})
-            for item in result.get("output", []):
-                if item.get("type") == "function_call":
-                    self.mode = "tools"
-                    return {"tool": item.get("name"), "input": json.loads(item.get("arguments", "{}")), "mode": "tools"}
-            raise ValueError("No tool call in response")
-        except Exception:
-            self.mode = "json"
-            plan = self._json_call("Choose one tool from " + json.dumps(TOOLS) + ". Return {tool,input}. Context/history: " + json.dumps({"context": context, "history": history}))
-            plan["mode"] = "json"
-            return plan
+    def _generate(self, prompt, images, task):
+        payload = {"model": self.model, "input": [{"type": "message", "role": "user", "content": self._content(prompt, images)}]}
+        if self.task_effort:
+            payload["reasoning"] = {"effort": self.task_effort}
+        return self.output_text(self._responses(payload, task))
 
-    def json_plan(self, prompt):
-        return self._json_call(prompt)
+    def _native_tools(self, prompt, tools):
+        payload = {
+            "model": self.model,
+            "input": [{"type": "message", "role": "user", "content": self._content(prompt, None)}],
+            "tools": [{"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]} for t in tools],
+            "tool_choice": "auto",
+            "parallel_tool_calls": True,
+        }
+        if self.planner_effort:
+            payload["reasoning"] = {"effort": self.planner_effort}
+        data = self._responses(payload, "plan")
+        calls = [{"tool": item.get("name"), "args": item.get("arguments", "{}")} for item in data.get("output", []) if item.get("type") == "function_call"]
+        return calls, self.output_text(data)
 
-    def judge_claim(self, claim, evidence, failure_reason=""):
-        prompt = (f"Judge whether this advertising claim is supported by sources. Return JSON verdict (pass/fail), "
-                  f"evidence (copy the exact supporting source chunk), reason. Claim: {claim}\nSources: {evidence}")
-        if failure_reason:
-            prompt += "\nPrevious round failed because: " + failure_reason + ". Verify that this issue is corrected."
-        verdict = self._json_call(prompt)
-        cited = str(verdict.get("evidence", "")).strip()
-        if verdict.get("verdict") == "pass" and cited not in evidence:
-            verdict["verdict"] = "fail"
-            verdict["reason"] = "The verdict did not cite a supporting source chunk."
-        return verdict
-
-    def rewrite_line(self, claim, reason, evidence, round_number=1, neighbouring_lines=""):
-        prompt = ("Rewrite the false factual product claim as one complete transcript line. Keep the creator's point, "
-                  "product claim, and language style (keep Taglish Taglish). State only what the source chunks support; "
-                  "never delete the claim. Return JSON {line:string}. "
-                  f"Round {round_number}. Failure reason: {reason}\nNeighbouring transcript lines: {neighbouring_lines}"
-                  f"\nFalse line: {claim}\nContradicting source chunks: {evidence}")
-        result = self._json_call(prompt)
-        return str(result.get("line", ""))
-
-    def check_disclosure(self, transcript, frames):
-        return self._json_call("Return JSON {disclosed:boolean,how:string,timestamp:number|null}. Check spoken English or Tagalog speech and on-screen disclosure text. Set how to spoken or on screen and timestamp to the matching speech/frame time when available. Speech: " + transcript, frames)
-
-    def check_coverage(self, transcript, key_messages):
-        return self._json_call(f"For each required message, return JSON {{messages:[{{message,status,quote}}]}}. Status must be covered, partly, or missing. Quote an exact transcript excerpt supporting covered or partly; quote must be empty for missing. Speech: {transcript}\nRequired messages: {key_messages}")
+    def transcribe(self, wav, keywords):
+        settings = {"model": self.asr_model, "mode": "ENDPOINTING", "audioEncoding": "WAV",
+                    "languageBias": ["Tagalog", "English"], "keywords": [k for k in keywords if k][:10]}
+        started = time.monotonic()
+        response = _post(
+            self.client, self.base_url + "/asr/transcribe", headers=self._headers(),
+            files={"request": (None, json.dumps(settings), "application/json"), "audio": ("audio.wav", wav, "audio/wav")},
+        )
+        if response.status_code >= 400:
+            self._record("asr", "transcribe", started, False)
+            raise ProviderError("speech transcription failed: " + _error_text(response))
+        data = response.json()
+        self._record("asr", "transcribe", started, True)
+        turns = [{"start": t.get("startMs", 0) / 1000, "end": t.get("endMs", 0) / 1000, "text": t.get("transcript", "")}
+                 for t in data.get("turns") or [] if t.get("transcript", "").strip()]
+        duration = (data.get("audioDurationMs") or 0) / 1000 or None
+        if not turns and data.get("transcript", "").strip():
+            turns = [{"start": 0.0, "end": duration or 0.0, "text": data["transcript"], "estimated": True}]
+        return {"turns": turns, "duration": duration, "timing": "asr"}
 
 
-class OpenAICompatibleProvider(FixtureProvider):
-    """Chat Completions compatible local provider used for Muse Spark Open."""
-    def __init__(self):
-        self.base_url = os.getenv("MODEL_BASE_URL", "http://localhost:1234/v1").rstrip("/")
-        self.api_key = os.getenv("MODEL_API_KEY", "local")
-        self.model = os.getenv("MODEL_NAME", "muse-spark-open")
+class OpenAICompatibleProvider(BaseProvider):
+    """Muse Spark Open behind an OpenAI-compatible /chat/completions endpoint."""
+    name = "open"
 
-    def _chat(self, messages, **kwargs):
-        payload = {"model": self.model, "messages": messages, **kwargs}
-        request = urllib.request.Request(self.base_url + "/chat/completions", data=json.dumps(payload).encode(), headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"})
-        with urllib.request.urlopen(request, timeout=120) as response:
-            return json.loads(response.read())
+    def __init__(self, client: httpx.Client | None = None):
+        super().__init__()
+        self.base_url = os.getenv("OPEN_BASE_URL", "http://localhost:8000/v1").rstrip("/")
+        self.api_key = os.getenv("OPEN_API_KEY", "local")
+        self.model = os.getenv("OPEN_MODEL", "muse-spark-open")
+        self.asr_model = os.getenv("OPEN_ASR_MODEL", "whisper-1")
+        self.client = client or httpx.Client(timeout=180)
+        self.label = f"Muse Spark Open · {self.model} at {self.base_url}"
 
-    def json_plan(self, prompt):
-        for attempt in range(2):
-            result = self._chat([{"role": "user", "content": prompt if attempt == 0 else "Return valid JSON only. " + prompt}])
-            content = result.get("choices", [{}])[0].get("message", {}).get("content", "")
-            try:
-                match = re.search(r"\{.*\}", content, re.S)
-                return json.loads(match.group() if match else content)
-            except (TypeError, json.JSONDecodeError):
-                if attempt:
-                    raise
+    def info(self) -> dict:
+        return {"name": self.name, "label": self.label, "model": self.model, "base_url": self.base_url}
+
+    def _chat(self, payload: dict, task: str) -> dict:
+        started = time.monotonic()
+        response = _post(self.client, self.base_url + "/chat/completions", json=payload, headers={"Authorization": f"Bearer {self.api_key}"})
+        if response.status_code >= 400:
+            self._record("model", task, started, False)
+            if "tools" in payload and response.status_code in (400, 404, 422):
+                raise ToolsRejected(_error_text(response))
+            raise ProviderError(_error_text(response))
+        data = response.json()
+        self._record("model", task, started, True, (data.get("usage") or {}).get("total_tokens"))
+        return data
+
+    def _generate(self, prompt, images, task):
+        if images:
+            content = [{"type": "text", "text": prompt}] + [
+                {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + i["image"]}} for i in images]
+        else:
+            content = prompt
+        data = self._chat({"model": self.model, "messages": [{"role": "user", "content": content}]}, task)
+        return ((data.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+
+    def _native_tools(self, prompt, tools):
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "tools": [{"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["parameters"]}} for t in tools],
+            "tool_choice": "auto",
+        }
+        message = ((self._chat(payload, "plan").get("choices") or [{}])[0].get("message")) or {}
+        calls = [{"tool": c.get("function", {}).get("name"), "args": c.get("function", {}).get("arguments", "{}")} for c in message.get("tool_calls") or []]
+        return calls, message.get("content") or ""
+
+    def transcribe(self, wav, keywords):
+        if os.getenv("MODEL_API_KEY"):
+            meta = MetaProvider(client=self.client)
+            result = meta.transcribe(wav, keywords)
+            self.calls.extend(meta.calls)
+            return result
+        started = time.monotonic()
+        url = os.getenv("OPEN_ASR_URL", self.base_url + "/audio/transcriptions")
+        response = _post(self.client, url, headers={"Authorization": f"Bearer {self.api_key}"},
+                         data={"model": self.asr_model, "response_format": "verbose_json"}, files={"file": ("audio.wav", wav, "audio/wav")})
+        if response.status_code >= 400:
+            self._record("asr", "transcribe", started, False)
+            raise ProviderError("speech transcription failed: " + _error_text(response))
+        data = response.json()
+        self._record("asr", "transcribe", started, True)
+        turns = [{"start": s.get("start", 0.0), "end": s.get("end", 0.0), "text": s.get("text", "")} for s in data.get("segments") or []]
+        if not turns and data.get("text"):
+            turns = [{"start": 0.0, "end": data.get("duration") or 0.0, "text": data["text"], "estimated": True}]
+        return {"turns": turns, "duration": data.get("duration"), "timing": "asr"}
 
 
-def get_provider():
-    return MetaProvider() if os.getenv("MODEL_API_KEY") else FixtureProvider()
+def get_provider(name: str | None = None):
+    from .fixture import FixtureProvider
+
+    choice = (name or os.getenv("CLAIMCHECK_PROVIDER") or "").strip().lower()
+    if not choice:
+        choice = "meta" if os.getenv("MODEL_API_KEY") else "fixture"
+    if choice == "meta":
+        return MetaProvider()
+    if choice in ("open", "muse-spark-open", "openai"):
+        return OpenAICompatibleProvider()
+    return FixtureProvider()

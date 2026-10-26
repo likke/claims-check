@@ -1,3 +1,5 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+HERE = Path(__file__).resolve().parent
+sys.path[:0] = [str(HERE.parent), str(HERE)]

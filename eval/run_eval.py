@@ -1,43 +1,80 @@
 #!/usr/bin/env python3
-"""Evaluate fictional or privately supplied labeled ad copy."""
-import argparse, csv, json, sys
+"""Score the claim judge and the disclosure check against labelled ad lines.
+
+Each row is judged as one claim under the FDA beauty pack, with a source pack
+that only says the product is fictional. B1 (drug-like or unproven claim) is
+predicted when the claim fails; D1 (paid disclosure) when check_disclosure
+finds one. Uses the configured provider (fixture offline, Meta with a key).
+"""
+import argparse
+import csv
+import json
+import re
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import app
+
+from claimcheck.agent import build_state  # noqa: E402
+from claimcheck.packs import get_pack  # noqa: E402
+from claimcheck.providers import get_provider  # noqa: E402
+from claimcheck.state import Claim  # noqa: E402
+from claimcheck.tools import ToolBox  # noqa: E402
 
 LABELS = ["B1_drug_like_or_unproven_claim", "D1_paid_disclosure_creator"]
 
-def metrics(rows, label, prediction_key):
-    tp=fp=fn=tn=agree=0
+
+def metrics(rows, label, key):
+    tp = fp = fn = tn = agree = 0
     for row in rows:
-        actual=row[label].strip().lower(); pred=str(row[prediction_key]).lower()
-        pred="yes" if pred in ("yes","true","pass") else "no" if pred in ("no","false","fail") else "unclear"
-        if pred==actual: agree+=1
-        if actual=="yes" and pred=="yes": tp+=1
-        elif actual=="no" and pred=="yes": fp+=1
-        elif actual=="yes" and pred=="no": fn+=1
-        elif actual=="no" and pred=="no": tn+=1
-    return {"precision":tp/(tp+fp) if tp+fp else 0,"recall":tp/(tp+fn) if tp+fn else 0,"agreement":agree/len(rows) if rows else 0,"confusion":{"tp":tp,"fp":fp,"fn":fn,"tn":tn,"unclear":sum(str(r[prediction_key]).lower()=="unclear" for r in rows)}}
+        actual, predicted = row[label].strip().lower(), row[key]
+        agree += predicted == actual
+        tp += actual == "yes" and predicted == "yes"
+        fp += actual == "no" and predicted == "yes"
+        fn += actual == "yes" and predicted == "no"
+        tn += actual == "no" and predicted == "no"
+    return {"precision": tp / (tp + fp) if tp + fp else 0, "recall": tp / (tp + fn) if tp + fn else 0,
+            "agreement": agree / len(rows) if rows else 0,
+            "confusion": {"tp": tp, "fp": fp, "fn": fn, "tn": tn, "unclear_labels": sum(r[label].strip().lower() == "unclear" for r in rows)}}
+
 
 def run(path, limit=None, out=None, provider=None):
-    provider=provider or app.get_provider()
-    with open(path,newline="",encoding="utf-8") as f: rows=list(csv.DictReader(f))
-    if limit is not None: rows=rows[:limit]
-    results=[]
+    provider = provider or get_provider()
+    with open(path, newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))[:limit]
+    results = []
     for row in rows:
-        text=row["ad_text"]
-        claim=provider.judge_claim(text,[text])
-        disclosure=provider.check_disclosure(text,[])
-        results.append({**row,"pred_B1":"yes" if claim.get("verdict")=="fail" else "no","pred_D1":"yes" if disclosure else "no","judge":claim})
-    summary={LABELS[0]:metrics(results,LABELS[0],"pred_B1"),LABELS[1]:metrics(results,LABELS[1],"pred_D1")}
-    payload={"summary":summary,"results":results}
-    if out: Path(out).write_text(json.dumps(payload,indent=2),encoding="utf-8")
-    for label,data in summary.items():
-        print(f"{label}: precision={data['precision']:.3f} recall={data['recall']:.3f} agreement={data['agreement']:.3f}")
-        print("confusion: "+json.dumps(data["confusion"],sort_keys=True))
+        text = row["ad_text"]
+        state = build_state({"turns": [{"start": 0.0, "end": 5.0, "text": text}], "duration": 5.0, "timing": "asr"},
+                            [], "The product in this line is fictional.", [], get_pack("FDA beauty"))
+        state.claims.append(Claim(id="C1", quote=text, start=0.0, end=5.0, estimated=False, origin="speech"))
+        state.claims_extracted = True
+        tools = ToolBox(state, provider)
+        verdict, _ = tools.run("judge_claim", {"claim_id": "C1", "target": "original"})
+        tools.run("check_disclosure", {})
+        results.append({**row, "pred_B1": "yes" if verdict.get("verdict") == "fail" and _risky(verdict, text) else "no",
+                        "pred_D1": "yes" if state.disclosure["disclosed"] else "no", "judge": verdict})
+    summary = {LABELS[0]: metrics(results, LABELS[0], "pred_B1"), LABELS[1]: metrics(results, LABELS[1], "pred_D1")}
+    payload = {"summary": summary, "results": results}
+    if out:
+        Path(out).write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    for label, data in summary.items():
+        print(f"{label}: precision={data['precision']:.3f} recall={data['recall']:.3f} agreement={data['agreement']:.3f} {json.dumps(data['confusion'])}")
     return payload
 
-if __name__=="__main__":
-    parser=argparse.ArgumentParser(); parser.add_argument("--csv",required=True); parser.add_argument("--limit",type=int); parser.add_argument("--out",required=True)
-    args=parser.parse_args(); run(args.csv,args.limit,args.out)
+
+RISKY = re.compile(r"\b(guarantee\w*|every|forever|cure\w*|treat\w*|heal\w*|removes?|certainty|100%)\b", re.I)
+
+
+def _risky(verdict, line):
+    """A failed line counts as B1 when a pack rule fired or the line makes a drug-like or absolute promise."""
+    return verdict.get("judgement") in ("rule", "contradicted") or bool(RISKY.search(line))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--csv", required=True)
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--out", required=True)
+    args = parser.parse_args()
+    run(args.csv, args.limit, args.out)
