@@ -80,6 +80,15 @@ def config():
     }
 
 
+@app.api_route("/api/replay", methods=["GET", "HEAD"])
+def replay():
+    """The newest recorded live run in demo/, for filming without spending API credits."""
+    runs = sorted((ROOT / "demo").glob("live-run-*.json"))
+    if not runs:
+        raise HTTPException(404, "No recorded live run")
+    return json.loads(runs[-1].read_text(encoding="utf-8"))
+
+
 @app.post("/api/reviews")
 async def start_review(
     video: UploadFile | None = File(None),

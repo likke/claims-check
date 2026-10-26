@@ -164,7 +164,7 @@ def quote_span(quote: str, matched: list[Sentence]) -> tuple[float, float, bool]
         for k, word in enumerate(sentence_words):
             words.append((word, sentence.start + k * step, sentence.start + (k + 1) * step))
     quote_words = tokens(quote)
-    whole = (matched[0].start, matched[-1].end, any(s.estimated for s in matched)) if matched else (0.0, 0.0, True)
+    whole = (round(matched[0].start, 2), round(matched[-1].end, 2), any(s.estimated for s in matched)) if matched else (0.0, 0.0, True)
     if not words or not quote_words or len(quote_words) >= len(words):
         return whole
     size = len(quote_words)

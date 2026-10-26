@@ -79,3 +79,10 @@ def test_fda_pack_through_the_api(client):
     name, result = read_sse(client, review_id)[-1]
     assert result["pack"] == "FDA beauty"
     assert result["disclosure"]["required_disclaimer"]["found"] is False
+
+
+def test_replay_serves_the_recorded_live_run(client):
+    response = client.get("/api/replay")
+    assert response.status_code == 200
+    run = response.json()
+    assert run["provider"]["name"] == "meta" and run["agent"]["planner_modes"].get("native_tools")

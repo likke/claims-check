@@ -85,8 +85,12 @@ def rewrite_floor(original: str, line: str, pack) -> list[str]:
     filler = {stem(word) for word in TAGALOG_MARKERS} | {"grabe", "guys", "uy", "really", "so", "super", "talaga"}
     topic = set(content_terms(original)) - filler
     if len(topic) >= 2 and not topic & set(content_terms(line)):
+        words = []
+        for word in tokens(original):
+            if stem(word) in topic and word not in words:
+                words.append(word)
         problems.append("The rewrite drops the creator's topic: it shares no key word with the original line ("
-                        + ", ".join(sorted(topic)[:6]) + ").")
+                        + ", ".join(words[:6]) + ").")
     if is_taglish(original) and not has_tagalog(line):
         problems.append("The creator's line is Taglish but the rewrite is English only.")
     for rule in hard_rule_hits(pack, line):

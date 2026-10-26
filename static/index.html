@@ -1,20 +1,366 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dasho Claim Check</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dasho Claim Check</title>
 <style>
-:root{font:17px/1.5 system-ui,sans-serif;color:#172027;background:#f4f7f5}*{box-sizing:border-box}body{margin:0}main{max-width:850px;margin:auto;padding:24px 18px}h1{font-size:2rem;line-height:1.15;margin:8px 0}.sub{color:#53645d;margin:0 0 22px}form,.card{background:white;border:1px solid #dce5df;border-radius:14px;padding:18px;margin:14px 0}label{display:block;font-weight:650;margin:14px 0 6px}textarea,select,input{font:inherit;width:100%;padding:11px;border:1px solid #bac9c0;border-radius:8px}button{font:inherit;font-weight:650;border:0;border-radius:8px;padding:11px 16px;background:#167653;color:white;margin:12px 8px 0 0;cursor:pointer}.secondary{background:#e4eee8;color:#173c2d}.trace{font-family:ui-monospace,monospace;font-size:14px;max-height:220px;overflow:auto;background:#172027;color:#d5f6e4;padding:12px;border-radius:8px;white-space:pre-wrap}.badge{display:inline-block;background:#e4eee8;color:#173c2d;border-radius:20px;padding:4px 10px;font-size:14px}article{border-top:1px solid #e4ebe6;padding:12px 0}.hidden{display:none}.status{font-weight:700}.covered{color:#167653}.partly{color:#9a6500}.missing,.fail{color:#ae3333}@media(max-width:430px){main{padding:18px 13px}h1{font-size:1.7rem}form,.card{padding:14px}}
-</style><main><h1>Dasho Claim Check</h1><p class="sub">Check creator videos against your source pack before they go live.</p>
-<form id="form"><label>Creator video (15–90 seconds)</label><input type="file" name="video" accept="video/*" required><label>Product pack</label><select name="pack"><option>Tech claims</option><option>FDA beauty</option></select><label>Source pack — paste product docs or URLs</label><textarea name="sources" rows="5">Ledgerly AI helps teams organize invoices and flag unusual charges for human review. It does not guarantee fraud prevention or regulatory compliance.</textarea><label>Key messages, one per line</label><textarea name="key_messages" rows="3">Organize invoices
-Flag unusual charges</textarea><button>Review video</button></form>
-<section id="results" class="hidden"><section class="card"><h2>Agent trace</h2><p id="provider" class="badge"></p><div id="trace" class="trace" aria-live="polite"></div></section><section class="card"><h2>Review</h2><p id="summary"></p><div id="disclosure"></div><h3>Key message coverage</h3><div id="coverage"></div><h3>Product claims</h3><div id="claims"></div><label for="reviewer">Named reviewer</label><input id="reviewer" placeholder="Name" required><button onclick="decide('approved')">Approve</button><button class="secondary" onclick="decide('changes requested')">Request changes</button><p id="decision"></p></section></section>
+:root{
+  --paper:#f6f5f2;--card:#fff;--line:#e2dfd8;--ink:#14161a;--muted:#62666e;
+  --accent:#0e5b54;--accent-soft:#e3efed;--fail:#a3271e;--fail-soft:#f6e6e4;--warn:#8a5a00;--warn-soft:#f6eedc;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1240px;margin:0 auto;padding:28px 16px 64px}
+header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+h1{font-size:28px;line-height:1.15;margin:0;font-weight:600;letter-spacing:-0.01em}
+h2{font-size:20px;margin:0 0 12px;font-weight:600}
+h3{font-size:17px;margin:18px 0 8px;font-weight:600}
+p{margin:0 0 10px}
+.sub{color:var(--muted);margin-top:6px;max-width:60ch}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-size:14px;color:var(--muted);max-width:100%}
+.badge b{color:var(--ink);font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;min-width:0}
+.grid-form{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}
+.full{grid-column:1/-1}
+label{display:block;font-weight:600;margin-bottom:6px}
+.hint{color:var(--muted);font-size:14px;font-weight:400}
+input[type=text],textarea,select{width:100%;font:inherit;color:var(--ink);background:#fff;border:1px solid #cfcbc2;border-radius:10px;padding:10px 12px}
+textarea{resize:vertical}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.drop{border:1.5px dashed #c9c4ba;border-radius:12px;padding:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#fbfaf8}
+.drop input{max-width:100%;font-size:15px}
+video{width:100%;max-height:300px;border-radius:10px;background:#111;margin-top:10px;display:none}
+.check{display:flex;gap:8px;align-items:center;font-weight:400;margin-top:10px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-weight:600;border-radius:10px;padding:11px 18px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff}
+button.ghost{background:#fff;color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+.layout{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start}
+.sticky{position:sticky;top:12px}
+.trace{max-height:76vh;overflow:auto;margin:0 -6px;padding:0 6px}
+.ev{border-top:1px solid var(--line);padding:10px 0;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 10px;animation:in .25s ease}
+.ev:first-child{border-top:0}
+@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.num{font:600 14px var(--mono);color:var(--muted);padding-top:2px}
+.tool{font:600 15px var(--mono);color:var(--ink);word-break:break-word}
+.time{font:13px var(--mono);color:var(--muted);padding-top:3px}
+.ev .body{grid-column:2/4;min-width:0}
+.ev .sum{word-break:break-word}
+.ev .in{font:13px/1.45 var(--mono);color:var(--muted);word-break:break-word}
+.ev.plan .sum{color:var(--accent)}
+.ev.plan .tool{color:var(--accent)}
+.ev.warn .tool,.ev.warn .sum{color:var(--warn)}
+.ev.err .sum{color:var(--fail)}
+.pill{display:inline-block;font:600 12px var(--mono);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px;border:1px solid var(--line);color:var(--muted);background:#fff}
+.pill.guard{color:var(--warn);border-color:#e4cf9f;background:var(--warn-soft)}
+.pill.mode{color:var(--accent);border-color:#bcd9d4;background:var(--accent-soft)}
+details{margin-top:4px}
+summary{cursor:pointer;color:var(--muted);font-size:14px}
+pre{white-space:pre-wrap;word-break:break-word;font:12.5px/1.45 var(--mono);background:#f8f7f4;border:1px solid var(--line);border-radius:8px;padding:8px;margin:6px 0 0;max-height:260px;overflow:auto}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-size:26px;line-height:1.1;font-weight:600}
+.stat span{color:var(--muted);font-size:14px}
+.status{display:inline-block;font-weight:600;font-size:14px;border-radius:999px;padding:2px 10px;letter-spacing:.02em}
+.s-pass,.s-fixed,.s-covered,.s-found{background:var(--accent-soft);color:var(--accent)}
+.s-fail,.s-missing{background:var(--fail-soft);color:var(--fail)}
+.s-partly,.s-pending{background:var(--warn-soft);color:var(--warn)}
+.claim{border-top:1px solid var(--line);padding:16px 0}
+.claim:first-of-type{border-top:0;padding-top:4px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.chip{font:600 13px var(--mono);border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:#fff;color:var(--ink);cursor:pointer}
+.chip.static{cursor:default;color:var(--muted);font-weight:500}
+.quote{font-size:19px;line-height:1.45;margin:4px 0 10px}
+.label{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:2px}
+.evidence{background:#f8f7f4;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.fix{background:var(--accent-soft);border:1px solid #bcd9d4;border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.fix p{margin:0;font-size:18px}
+.fix button{padding:6px 12px;font-size:14px;flex:none}
+ol.rounds{margin:6px 0 0;padding-left:22px}
+ol.rounds li{margin:6px 0;color:var(--ink)}
+ol.rounds .why{color:var(--muted);font-size:15px}
+.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;border-top:1px solid var(--line);padding:10px 0}
+.row:first-child{border-top:0}
+.decision-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.note{color:var(--muted);font-size:15px}
+.done{margin-top:12px;font-weight:600}
+.hidden{display:none!important}
+.empty{color:var(--muted)}
+.transcript p{margin:0;padding:4px 0}
+.transcript .t{font:13px var(--mono);color:var(--muted);margin-right:8px}
+.transcript .hl{background:var(--warn-soft);border-radius:4px}
+@media (max-width:980px){.layout{grid-template-columns:1fr}.sticky{position:static}.trace{max-height:60vh}}
+@media (prefers-reduced-motion:reduce){.ev{animation:none}}
+@media (max-width:640px){
+  main{padding:18px 16px 48px}
+  h1{font-size:24px}
+  .grid-form,.decision-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{padding:16px}
+  .fix{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Dasho Claim Check</h1>
+      <p class="sub">Check a creator's video before it posts: every product claim against your sources, the paid-partnership disclosure, and the brief.</p>
+    </div>
+    <span class="badge" id="provider"><span class="dot"></span><span>Loading provider…</span></span>
+  </header>
+
+  <form class="card" id="form">
+    <h2>Set up the check</h2>
+    <div class="grid-form">
+      <div class="full">
+        <label for="video">Creator video <span class="hint" id="video-hint">15 to 90 seconds</span></label>
+        <div class="drop"><input type="file" id="video" name="video" accept="video/*"></div>
+        <video id="player" controls playsinline></video>
+      </div>
+      <div>
+        <label for="product">Product name</label>
+        <input type="text" id="product" name="product" autocomplete="off">
+      </div>
+      <div>
+        <label for="pack">Rule pack</label>
+        <select id="pack" name="pack"><option>Tech claims</option><option>FDA beauty</option></select>
+        <label class="check hidden" id="supplement-row"><input type="checkbox" name="supplement" id="supplement"> Product is a food supplement</label>
+      </div>
+      <div class="full">
+        <label for="sources">Source pack <span class="hint">product docs, one URL per line for pages to read</span></label>
+        <textarea id="sources" name="sources" rows="5"></textarea>
+      </div>
+      <div class="full">
+        <label for="messages">Key messages from the brief <span class="hint">one per line</span></label>
+        <textarea id="messages" name="key_messages" rows="3"></textarea>
+      </div>
+      <div class="full actions">
+        <button type="submit" id="run">Run the check</button>
+        <button type="button" class="ghost hidden" id="replay">Replay the recorded live run</button>
+        <span class="note" id="form-note"></span>
+      </div>
+    </div>
+  </form>
+
+  <section id="results" class="hidden">
+    <div class="layout">
+      <section class="card sticky">
+        <h2>Agent trace</h2>
+        <p class="note" id="trace-note">Each step appears as Muse Spark decides it.</p>
+        <div class="trace" id="trace" aria-live="polite"></div>
+      </section>
+      <section>
+        <div class="stats" id="stats"></div>
+        <section class="card"><h2>Product claims</h2><div id="claims"><p class="empty">Waiting for the agent…</p></div></section>
+        <section class="card"><h2>Paid-partnership disclosure</h2><div id="disclosure"><p class="empty">Not checked yet.</p></div></section>
+        <section class="card"><h2>Key messages</h2><div id="coverage"><p class="empty">Not checked yet.</p></div></section>
+        <section class="card"><h2>Transcript</h2><div class="transcript" id="transcript"><p class="empty">Not ready yet.</p></div></section>
+        <section class="card" id="decision-card">
+          <h2>Decision</h2>
+          <p class="note">The agent never approves. A named reviewer decides.</p>
+          <div class="decision-grid">
+            <div><label for="reviewer">Reviewer name</label><input type="text" id="reviewer" autocomplete="name"></div>
+            <div><label for="note">Note to the creator <span class="hint">optional</span></label><input type="text" id="note"></div>
+          </div>
+          <p class="note" id="decision-warning"></p>
+          <div class="actions">
+            <button type="button" id="approve" disabled>Approve</button>
+            <button type="button" class="ghost" id="changes" disabled>Request changes</button>
+          </div>
+          <p class="done" id="decision"></p>
+        </section>
+      </section>
+    </div>
+  </section>
+</main>
 <script>
-let reviewId,eventSource;const form=document.querySelector('#form');
-form.onsubmit=async e=>{e.preventDefault();const out=document.querySelector('#results'),trace=document.querySelector('#trace');out.classList.remove('hidden');trace.textContent='Reviewing…';const r=await fetch('/api/review',{method:'POST',body:new FormData(form)});const x=await r.json();reviewId=x.id;
- document.querySelector('#provider').textContent=x.provider==='meta'?'Meta cloud · Muse Spark':x.provider==='local'?'Muse Spark Open local':'Offline demo provider';
- trace.textContent='';if(eventSource)eventSource.close();eventSource=new EventSource(`/api/review/${reviewId}/events`);eventSource.onmessage=event=>{const s=JSON.parse(event.data);trace.textContent+=`${s.step}. ${s.tool}: ${JSON.stringify(s.output)}\n`;trace.scrollTop=trace.scrollHeight};eventSource.onerror=()=>eventSource.close();
- const d=x.disclosure;document.querySelector('#summary').textContent=`Disclosure ${d.disclosed?'found':'missing'}${d.timestamp===null?'':` · ${d.timestamp}s`} · ${x.coverage.messages.filter(m=>m.status==='missing').length} key message(s) missing`;
- document.querySelector('#disclosure').innerHTML=`<p><strong>Paid partnership disclosure:</strong> <span class="status ${d.disclosed?'covered':'missing'}">${d.disclosed?'Found':'Missing'}</span> · ${escapeHtml(d.how)}${d.timestamp===null?'':` at ${d.timestamp}s`}</p>`;
- document.querySelector('#coverage').innerHTML=x.coverage.messages.map(m=>`<article><strong class="status ${m.status}">${escapeHtml(m.status.toUpperCase())}</strong><p>${escapeHtml(m.message)}</p>${m.quote?`<p>Quote: “${escapeHtml(m.quote)}”</p>`:''}</article>`).join('')||'<p>No key messages provided.</p>';
- document.querySelector('#claims').innerHTML=x.claims.map(c=>`<article><strong>${c.start??c.timestamp}s · <span class="status ${c.verdict}">${escapeHtml(c.verdict.toUpperCase())}</span></strong><p>Creator: “${escapeHtml(c.quote)}”</p><p>Evidence: ${escapeHtml(c.evidence)}</p>${c.suggested_line?`<p>Suggested line: ${escapeHtml(c.suggested_line)}</p>`:''}<p>Rounds: ${c.rounds.length}</p></article>`).join('')||'<p>No high-risk factual claims detected.</p>'};
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function decide(status){const reviewer=document.querySelector('#reviewer').value.trim();if(!reviewer){document.querySelector('#reviewer').focus();return}const r=await fetch(`/api/review/${reviewId}/decision`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status,reviewer})});document.querySelector('#decision').textContent=`${(await r.json()).status} recorded locally.`}
-</script></main></html>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clock = t => { if (t === null || t === undefined || isNaN(t)) return ''; const m = Math.floor(t / 60), s = (t - m * 60).toFixed(1); return `${m}:${s.padStart(4, '0')}`; };
+const LABEL = {pass:'Pass', fixed:'Fixed', fail:'Fail', pending:'Pending', covered:'Covered', partly:'Partly', missing:'Missing'};
+let config = null, reviewId = null, source = null, result = null, step = 0;
+
+async function init(){
+  config = await (await fetch('/api/config')).json();
+  const p = config.provider;
+  $('#provider').innerHTML = `<span class="dot"></span><span><b>${p.name === 'meta' ? 'Meta Model API' : p.name === 'open' ? 'Muse Spark Open' : 'Offline fixture'}</b> · ${esc(p.label.replace(/^[^·]*·\s*/, ''))}</span>`;
+  $('#product').value = config.example.product;
+  $('#sources').value = config.example.sources;
+  $('#messages').value = config.example.key_messages;
+  if (!config.needs_video) {
+    $('#video-hint').textContent = 'optional offline: the fixture uses a scripted Ledgerly AI video';
+    $('#form-note').textContent = 'Ledgerly AI is a fictional product.';
+  }
+  const replay = await fetch('/api/replay', {method: 'HEAD'});
+  if (replay.ok) $('#replay').classList.remove('hidden');
+  const auto = new URLSearchParams(location.search).get('auto');
+  if (auto === 'run') $('#form').requestSubmit();
+  if (auto === 'replay' && replay.ok) $('#replay').click();
+}
+
+$('#video').addEventListener('change', e => {
+  const file = e.target.files[0];
+  const player = $('#player');
+  if (file) { player.src = URL.createObjectURL(file); player.style.display = 'block'; }
+});
+$('#pack').addEventListener('change', e => $('#supplement-row').classList.toggle('hidden', e.target.value !== 'FDA beauty'));
+
+function reset(){
+  $('#results').classList.remove('hidden');
+  $('#trace').innerHTML = ''; step = 0; result = null;
+  $('#claims').innerHTML = '<p class="empty">Waiting for the agent…</p>';
+  $('#disclosure').innerHTML = '<p class="empty">Not checked yet.</p>';
+  $('#coverage').innerHTML = '<p class="empty">Not checked yet.</p>';
+  $('#transcript').innerHTML = '<p class="empty">Not ready yet.</p>';
+  $('#stats').innerHTML = '';
+  $('#decision').textContent = ''; $('#decision-warning').textContent = '';
+  $('#approve').disabled = $('#changes').disabled = true;
+}
+
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const form = new FormData($('#form'));
+  if (config.needs_video && !$('#video').files.length) { $('#form-note').textContent = 'Add the creator video first.'; return; }
+  if (!$('#video').files.length) form.delete('video');
+  $('#run').disabled = true; $('#form-note').textContent = 'Running…';
+  reset();
+  $('#trace-note').textContent = 'Each step appears as the agent decides it.';
+  const response = await fetch('/api/reviews', {method: 'POST', body: form});
+  const body = await response.json();
+  if (!response.ok) { $('#form-note').textContent = body.detail || 'The check could not start.'; $('#run').disabled = false; return; }
+  reviewId = body.id;
+  $('#results').scrollIntoView({behavior: 'smooth', block: 'start'});
+  if (source) source.close();
+  source = new EventSource(`/api/reviews/${reviewId}/events`);
+  source.addEventListener('step', ev => addEvent(JSON.parse(ev.data)));
+  source.addEventListener('result', ev => { source.close(); finish(JSON.parse(ev.data)); });
+  source.addEventListener('failed', ev => { source.close(); $('#form-note').textContent = JSON.parse(ev.data).error; $('#run').disabled = false; });
+});
+
+$('#replay').addEventListener('click', async () => {
+  const run = await (await fetch('/api/replay')).json();
+  reset(); reviewId = null;
+  $('#trace-note').textContent = `Replay of a recorded live run (${run.created_at.replace('T', ' ').slice(0, 16)} UTC, ${run.provider.label}). Timing is the real timing, played 3 times faster.`;
+  $('#results').scrollIntoView({behavior: 'smooth', block: 'start'});
+  let last = 0;
+  for (const event of run.trace) {
+    await new Promise(r => setTimeout(r, Math.min(2500, Math.max(120, (event.t - last) * 1000 / 3))));
+    last = event.t; addEvent(event);
+  }
+  finish(run);
+});
+
+function addEvent(e){
+  const el = document.createElement('div');
+  let num = '', tool = '', cls = 'ev', pills = '', sum = esc(e.summary || ''), extra = '';
+  if (e.kind === 'action') {
+    if (e.by === 'agent') { step += 1; num = `#${e.step ?? step}`; } else { num = 'code'; pills += '<span class="pill guard">completed by guard</span>'; }
+    tool = esc(e.tool); if (e.error) cls += ' err';
+    if (e.input_summary) extra += `<div class="in">${esc(e.input_summary)}</div>`;
+    if (e.observation) extra += `<details><summary>Observation</summary><pre>${esc(JSON.stringify(e.observation, null, 2))}</pre></details>`;
+  } else if (e.kind === 'plan') {
+    num = 'plan'; cls += ' plan'; tool = e.mode === 'fixture_planner' ? 'Fixture planner decides' : 'Muse Spark decides';
+    pills += `<span class="pill mode">${e.mode === 'native_tools' ? 'native tool call' : e.mode === 'json_planner' ? 'JSON planner' : 'fixture policy'}</span>`;
+    sum = esc(e.reasoning || '') + (e.actions && e.actions.length ? `<div class="in">→ ${e.actions.map(a => esc(a.tool) + (a.args && a.args.claim_id ? ' ' + esc(a.args.claim_id) : '')).join(', ')}</div>` : '');
+  } else if (e.kind === 'cap_reached' || e.kind === 'planner_fallback' || e.kind === 'planner_stalled' || e.kind === 'planner_error') {
+    num = '!'; cls += ' warn'; tool = e.kind.replace('_', ' ');
+    if (e.reason) extra += `<div class="in">${esc(e.reason)}</div>`;
+  } else if (e.kind === 'guard') {
+    num = 'code'; tool = 'Guard check';
+  } else {
+    num = '·'; tool = e.kind === 'transcribed' ? 'Muse Voice Transcribe' : e.kind === 'media' ? 'ffmpeg' : e.kind;
+  }
+  el.className = cls;
+  el.innerHTML = `<div class="num">${num}</div><div class="tool">${tool}${pills}</div><div class="time">${e.t !== undefined ? Number(e.t).toFixed(1) + 's' : ''}</div><div class="body"><div class="sum">${sum}</div>${extra}</div>`;
+  $('#trace').appendChild(el);
+  const box = $('#trace'); box.scrollTop = box.scrollHeight;
+}
+
+function seek(t){ const p = $('#player'); if (p.src) { p.currentTime = t; p.play(); } highlight(t); }
+function highlight(t){
+  document.querySelectorAll('#transcript p').forEach(p => p.classList.toggle('hl', +p.dataset.start <= t && t < +p.dataset.end));
+}
+
+function finish(r){
+  result = r;
+  $('#run').disabled = false; $('#form-note').textContent = '';
+  const counts = {pass: 0, fixed: 0, fail: 0};
+  r.claims.forEach(c => counts[c.status] = (counts[c.status] || 0) + 1);
+  const d = r.disclosure || {};
+  const missing = (r.coverage?.messages || []).filter(m => m.status !== 'covered').length;
+  $('#stats').innerHTML = [
+    [r.claims.length, 'claims checked'],
+    [counts.fixed, 'fixed with a sourced line'],
+    [counts.fail, 'still failing'],
+    [d.disclosed ? 'Yes' : 'No', 'disclosure found'],
+  ].map(([n, l]) => `<div class="stat"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join('');
+
+  $('#claims').innerHTML = r.claims.length ? r.claims.map(c => {
+    const ev = c.evidence;
+    const rounds = c.rounds.map(x => {
+      const head = x.round === 0 ? 'Creator\'s line' : `Rewrite ${x.round}`;
+      const verdict = x.judgement === 'rejected_by_code' ? 'rejected by code' : x.verdict === 'pass' ? 'pass' : x.verdict === 'pending' ? 'not judged' : `fail (${(x.judgement || '').replace('_', ' ')})`;
+      const cite = x.chunk_id ? ` · cites ${esc(x.chunk_id)}` : '';
+      return `<li><b>${head}:</b> “${esc(x.line)}” <span class="status s-${x.verdict === 'pass' ? 'pass' : x.verdict === 'pending' ? 'pending' : 'fail'}">${esc(verdict)}</span>${cite}<div class="why">${esc(x.reason || '')}</div></li>`;
+    }).join('');
+    return `<article class="claim">
+      <div class="meta">
+        <button type="button" class="chip" data-t="${c.start}" title="Jump to this moment">${clock(c.start)}${c.end > c.start ? '–' + clock(c.end) : ''}</button>
+        <span class="chip static">${c.origin === 'on_screen' ? 'on screen' : 'spoken'}${c.estimated ? ' · time estimated' : ''}</span>
+        <span class="status s-${c.status}">${LABEL[c.status] || c.status}</span>
+        <span class="chip static">${esc(c.id)} · ${c.rounds.length} round${c.rounds.length === 1 ? '' : 's'}</span>
+      </div>
+      <p class="quote">“${esc(c.quote)}”</p>
+      ${c.suggested_line ? `<div class="fix"><div><div class="label">Suggested line</div><p>${esc(c.suggested_line)}</p></div><button type="button" class="ghost copy" data-line="${esc(c.suggested_line)}">Copy</button></div>` : ''}
+      ${ev ? `<div class="evidence"><div class="label">Evidence · ${esc(ev.chunk_id)} · ${esc(ev.origin)}</div>“${esc(ev.quote)}”</div>` : ''}
+      <details ${c.rounds.length > 1 ? 'open' : ''}><summary>Rounds</summary><ol class="rounds" start="0">${rounds}</ol></details>
+    </article>`;
+  }).join('') : '<p class="empty">No product claims found.</p>';
+
+  const spoken = d.spoken || {}, screen = d.on_screen || {};
+  let disclosure = `<div class="row"><span class="status s-${spoken.found ? 'found' : 'missing'}">${spoken.found ? 'Spoken' : 'Not spoken'}</span>${spoken.found ? `<button type="button" class="chip" data-t="${spoken.time}">${clock(spoken.time)}</button> “${esc(spoken.quote)}”` : ''}</div>
+    <div class="row"><span class="status s-${screen.found ? 'found' : 'missing'}">${screen.found ? 'On screen' : 'Not on screen'}</span>${screen.found ? `<button type="button" class="chip" data-t="${screen.time}">${clock(screen.time)}</button> “${esc(screen.text)}”` : ''}</div>`;
+  if (d.required_disclaimer) {
+    const req = d.required_disclaimer;
+    disclosure += `<div class="row"><span class="status s-${req.found ? 'found' : 'missing'}">${req.found ? 'Required line found' : 'Required line missing'}</span> “${esc(req.label)}”${req.found && req.time !== null ? ` at ${clock(req.time)}` : ''}</div>`;
+  }
+  $('#disclosure').innerHTML = disclosure;
+
+  const messages = r.coverage?.messages || [];
+  $('#coverage').innerHTML = messages.length ? messages.map(m => `<div class="row"><span class="status s-${m.status}">${LABEL[m.status]}</span><b>${esc(m.message)}</b>${m.quote ? `<div class="note" style="flex-basis:100%">${m.time !== null ? `<button type="button" class="chip" data-t="${m.time}">${clock(m.time)}</button> ` : ''}“${esc(m.quote)}”</div>` : ''}</div>`).join('') : '<p class="empty">No key messages in the brief.</p>';
+
+  $('#transcript').innerHTML = (r.transcript || []).map(s => `<p data-start="${s.start}" data-end="${s.end}"><span class="t">${clock(s.start)}</span>${esc(s.text)}</p>`).join('') + `<p class="note">Timing: ${esc(r.timing)}. Frames sampled at ${(r.frames || []).map(f => clock(f.time)).join(', ')}.</p>`;
+
+  const a = r.agent;
+  $('#trace-note').textContent += ` Agent used ${a.actions} of ${a.cap} actions over ${a.plan_calls} planning calls; the guard ran ${a.guard_actions}.` + (r.provider.name === 'fixture' ? ' Offline: no model calls.' : ` ${r.usage.model_calls} model calls and ${r.usage.asr_calls} speech call.`);
+  $('#decision-warning').textContent = counts.fail ? `${counts.fail} claim${counts.fail > 1 ? 's' : ''} still fail. Approving records your name against them.` : '';
+  $('#approve').disabled = $('#changes').disabled = !reviewId;
+  if (!reviewId) $('#decision-warning').textContent = 'Decisions are off in replay mode.';
+}
+
+document.addEventListener('click', async e => {
+  const chip = e.target.closest('[data-t]');
+  if (chip) { seek(+chip.dataset.t); return; }
+  const copy = e.target.closest('.copy');
+  if (copy) { try { await navigator.clipboard.writeText(copy.dataset.line); copy.textContent = 'Copied'; } catch { copy.textContent = 'Select and copy'; } }
+});
+
+async function decide(decision){
+  const reviewer = $('#reviewer').value.trim();
+  if (!reviewer) { $('#reviewer').focus(); $('#decision').textContent = 'Add your name first.'; return; }
+  const response = await fetch(`/api/reviews/${reviewId}/decision`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({decision, reviewer, note: $('#note').value})});
+  const body = await response.json();
+  $('#decision').textContent = response.ok ? `${decision === 'approved' ? 'Approved' : 'Changes requested'} by ${body.reviewer} at ${new Date(body.decided_at).toLocaleString()}.` : (body.detail || 'Could not record the decision.');
+}
+$('#approve').addEventListener('click', () => decide('approved'));
+$('#changes').addEventListener('click', () => decide('changes_requested'));
+init();
+</script>
+</body>
+</html>
