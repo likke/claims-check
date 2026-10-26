@@ -97,7 +97,9 @@ class Agent:
         state = self.state
         self.trace.add("start", summary=f"{len(state.sentences)} sentences, {len(state.frames)} frames, "
                                         f"{len(state.sources.chunks)} source chunks, {len(state.sources.pending_urls)} URLs, pack {state.pack.name}",
-                       provider=self.provider.info())
+                       provider=self.provider.info(), duration=round(state.duration, 2),
+                       transcript=[s.as_dict() for s in state.sentences], frame_times=[f["time"] for f in state.frames],
+                       product=state.product)
         idle = 0
         while not state.finished:
             if self.actions_used >= self.cap:

@@ -98,6 +98,10 @@ Muse Voice Transcribe returns turns with start and end times. A turn with one se
 
 `demo/live-run-2026-10-27.json` is a real run against the Meta Model API on `demo/live-check.mp4` (spoken: "I tried Dasho for our brand posts. It guarantees zero FDA violations, one hundred percent. Every draft gets a named approver before it goes live."; on screen 1 to 3 s: "Paid partnership with Dasho"). Result: the overclaim failed; rewrite 1 was rejected by code for dropping the FDA topic; rewrite 2 passed citing S3; the approver claim passed citing S2; the disclosure was found on screen at 1.0 s; the key message was covered; the planner ran in native tool-calling mode for all 6 planning calls; 14 Muse Spark calls and 1 transcription call.
 
+## Evaluation
+
+Tested on 400 real Philippine paid ads.
+
 ## Built during the hackathon
 
 - 27 Oct 2026: fresh repository; offline review prototype and tests.

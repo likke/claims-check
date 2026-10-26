@@ -248,7 +248,8 @@ class ToolBox:
         label = "rewrite " + str(claim.rounds[-1]["round"]) if target == "rewrite" else "original"
         observation = {"claim_id": claim.id, "target": label, "verdict": result["verdict"], "judgement": result["judgement"],
                        "reason": result["reason"], "chunk_id": result["chunk_id"], "evidence": result["evidence"],
-                       "claim_status": claim.status, "next": claim.needs()}
+                       "evidence_origin": result.get("evidence_origin", ""), "line": line, "keeps_point": result.get("keeps_point"),
+                       "claim_status": claim.status, "suggested_line": claim.suggested_line, "next": claim.needs()}
         cite = f" · cites {result['chunk_id']}" if result["chunk_id"] else ""
         return observation, f"{claim.id} {label}: {result['verdict'].upper()} ({result['judgement']}){cite}. {result['reason']}"
 

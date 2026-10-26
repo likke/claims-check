@@ -55,6 +55,8 @@ def _worker(job: Job, provider, video: bytes | None, params: dict):
             job.push({"seq": 0, "t": 0, "kind": "media", "summary": f"{media['duration']:.1f} s video, {len(media['frames'])} frames at "
                       + ", ".join(f"{f['time']}s" for f in media["frames"])})
             wav, frames = media["wav"], media["frames"]
+            # Frame images go to the page for thumbnails; they are not kept in the review trace.
+            job.push({"seq": 0, "t": 0, "kind": "frames", "frames": [{"time": f["time"], "image": f["image"]} for f in frames]})
         else:
             wav, frames = b"", provider.frames()
         job.result = run_review(provider, wav=wav, frames=frames, emit=job.push, **params)
@@ -96,7 +98,21 @@ def replay():
         }
     clip = ROOT / "demo" / "live-check.mp4"
     run["video_url"] = "/api/replay/video" if clip.exists() else None
+    run["frame_images"] = _frame_images(clip, [f["time"] for f in run.get("frames", [])]) if clip.exists() else []
     return run
+
+
+def _frame_images(clip: Path, times: list[float]) -> list[dict]:
+    """Thumbnails for the recorded run, cut from the clip at the sampled frame times."""
+    import base64
+    import subprocess
+    images = []
+    for at in times:
+        out = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{at:.2f}", "-i", str(clip), "-frames:v", "1", "-vf", "scale=480:-2",
+                              "-q:v", "5", "-f", "image2pipe", "-vcodec", "mjpeg", "-"], capture_output=True)
+        if out.returncode == 0 and out.stdout:
+            images.append({"time": at, "image": base64.b64encode(out.stdout).decode("ascii")})
+    return images
 
 
 @app.get("/api/replay/video")

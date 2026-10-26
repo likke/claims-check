@@ -102,3 +102,14 @@ def test_new_reviews_record_their_inputs(client):
     review_id = start(client)
     result = read_sse(client, review_id)[-1][1]
     assert result["inputs"]["product"] == "Ledgerly AI" and "fixture://ledgerly-ai/pricing" in result["inputs"]["sources"]
+
+
+def test_replay_has_frame_thumbnails_and_events_carry_ui_fields(client):
+    run = client.get("/api/replay").json()
+    assert len(run["frame_images"]) == len(run["frames"]) and run["frame_images"][0]["image"]
+    review_id = start(client)
+    steps = [d for name, d in read_sse(client, review_id) if name == "step"]
+    begin = next(s for s in steps if s["kind"] == "start")
+    assert begin["duration"] == 25.0 and len(begin["transcript"]) == 6
+    judge = next(s for s in steps if s["kind"] == "action" and s["tool"] == "judge_claim")
+    assert {"line", "evidence_origin", "claim_status"} <= set(judge["observation"])
