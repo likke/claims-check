@@ -23,6 +23,12 @@ import httpx
 from .prompts import JSON_PLANNER_SUFFIX, tools_text
 
 
+# Muse Voice Transcribe's evaluated languages include Tagalog and English but
+# not Cebuano (dev.meta.ai/docs/models, checked 27 Oct 2026). The bias stays
+# Tagalog and English; other languages are flagged for a person (see tools.py).
+LANGUAGE_BIAS = ["Tagalog", "English"]
+
+
 class ProviderError(RuntimeError):
     pass
 
@@ -228,7 +234,7 @@ class MetaProvider(BaseProvider):
 
     def transcribe(self, wav, keywords):
         settings = {"model": self.asr_model, "mode": "ENDPOINTING", "audioEncoding": "WAV",
-                    "languageBias": ["Tagalog", "English"], "keywords": [k for k in keywords if k][:10]}
+                    "languageBias": LANGUAGE_BIAS, "keywords": [k for k in keywords if k][:10]}
         started = time.monotonic()
         response = _post(
             self.client, self.base_url + "/asr/transcribe", headers=self._headers(),

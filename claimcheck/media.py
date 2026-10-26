@@ -167,3 +167,23 @@ def timeline_art(path: Path, duration: float) -> dict:
     if wave.returncode == 0 and wave.stdout:
         art["wave"] = base64.b64encode(wave.stdout).decode("ascii")
     return art
+
+
+IMAGE_EDGE = 1024
+
+
+def image_frame(content: bytes, number: int, folder: Path) -> dict:
+    """One post image as a frame: EXIF orientation applied, longest edge at most 1024, JPEG."""
+    source = folder / f"image-{number}.in"
+    target = folder / f"image-{number}.jpg"
+    source.write_bytes(content)
+    info = probe(source)
+    scale = f"scale='min(iw,{IMAGE_EDGE})':-2" if info["display_width"] >= info["display_height"] else f"scale=-2:'min(ih,{IMAGE_EDGE})'"
+    run = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(source), "-frames:v", "1", "-vf", scale, "-q:v", "3", str(target)],
+                         capture_output=True)
+    if run.returncode != 0 or not target.exists():
+        raise MediaError(f"Could not read image {number}. Use JPG or PNG.")
+    size = probe(target)
+    source.unlink(missing_ok=True)
+    return {"time": float(number), "kind": "image", "image": base64.b64encode(target.read_bytes()).decode("ascii"),
+            "width": size["width"], "height": size["height"]}

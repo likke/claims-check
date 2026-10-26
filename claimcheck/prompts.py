@@ -16,16 +16,23 @@ def speech_block(sentences: list[Sentence]) -> str:
 def frames_block(frames: list[dict]) -> str:
     if not frames:
         return "No frames are attached."
+    if frames[0].get("kind") == "image":
+        return "This is an image post. The images are attached in this order: " + ", ".join(
+            f"image {int(f['time'])} (use frame_time {int(f['time'])})" for f in frames) + "."
     return "Frames are attached in this order: " + ", ".join(
         f"frame {i + 1} at {f['time']:.2f}s" for i, f in enumerate(frames)
     ) + "."
+
+
+def caption_block(caption: str) -> str:
+    return caption.strip() if caption and caption.strip() else "(no caption given)"
 
 
 def chunks_block(chunks: list[Chunk]) -> str:
     return "\n".join(f"[{c.id}] ({c.origin}) {c.text}" for c in chunks)
 
 
-def extract_claims(pack, product, sentences, frames) -> str:
+def extract_claims(pack, product, sentences, frames, caption="") -> str:
     return f"""You review a creator's sponsored video for a brand team before it posts.
 Rule pack: {pack.name}. {pack.guidance}
 Product: {product or "(not given)"}
@@ -35,11 +42,17 @@ Task: list every factual claim about the product or its results that the brand m
 Speech, one sentence per line as [index] (start-end) text:
 {speech_block(sentences)}
 
-{frames_block(frames)} Also list product claims written as on-screen text in the frames.
+{frames_block(frames)} Also list product claims written as on-screen text in the frames: text overlays, burned-in captions, product cards.
+
+Post caption (the text posted with the video or images):
+{caption_block(caption)}
+Also list product claims made in the post caption.
 
 Return JSON only:
 {{"claims":[{{"sentence":<index>,"quote":"<words copied exactly from that sentence>","kind":"capability|number|guarantee|comparison|health|process|other"}}],
- "on_screen_claims":[{{"frame_time":<seconds>,"text":"<on-screen words copied exactly>","kind":"..."}}]}}
+ "on_screen_claims":[{{"frame_time":<seconds>,"text":"<on-screen words copied exactly>","kind":"..."}}],
+ "caption_claims":[{{"quote":"<caption words copied exactly>","kind":"..."}}],
+ "language":"english|tagalog|taglish|cebuano|other (the main language of the speech and caption)"}}
 Use an empty list when there are none."""
 
 
@@ -72,7 +85,8 @@ def rewrite_line(pack, claim, reason, evidence_chunk, chunks, previous=None) -> 
     previous_part = ""
     if previous:
         previous_part = f'\nYour previous rewrite was: "{previous["line"]}"\nIt failed because: {previous.get("reason", "")}\nFix that problem this time.\n'
-    medium = "spoken line" if claim.origin == "speech" else "short on-screen text"
+    medium = {"speech": "spoken line", "caption": "post caption sentence"}.get(claim.origin, "short on-screen text")
+    where = "post caption" if claim.start is None else f"{claim.origin}, {claim.start:.1f}s"
     evidence = f"[{evidence_chunk.id}] {evidence_chunk.text}" if evidence_chunk else "no chunk states it"
     return f"""You fix one line in a creator's sponsored video so the brand can approve it. Write in the creator's own voice.
 Rules:
@@ -84,7 +98,7 @@ Rules:
 - One {medium}, similar length, natural to say out loud.
 Rule pack: {pack.name}. {pack.guidance}
 
-Creator's line ({claim.origin}, {claim.start:.1f}s): "{claim.quote}"
+Creator's line ({where}): "{claim.quote}"
 Lines around it: "{claim.context}"
 Why it failed: {reason} Evidence: {evidence}
 {previous_part}
@@ -94,26 +108,30 @@ Source chunks:
 Return JSON only: {{"line":"<the new line>","chunk_ids":["<ids of chunks that support it>"],"what_changed":"<one short sentence>"}}"""
 
 
-def check_disclosure(sentences, frames, disclaimer_label=None) -> str:
+def check_disclosure(sentences, frames, disclaimer_label=None, caption="") -> str:
     disclaimer = ""
     disclaimer_json = ""
     if disclaimer_label:
         disclaimer = f'\nAlso look for this required line, spoken or on screen: "{disclaimer_label}" (Tagalog: "Mahalagang paalala: ... hindi gamot at hindi dapat gamiting panggamot").'
         disclaimer_json = ',"disclaimer":{"found":true|false,"where":"spoken|on_screen|none","quote":"<exact words or empty>"}'
-    return f"""Check whether this sponsored creator video discloses the paid partnership. A disclosure can be spoken in English, Tagalog or Taglish (for example "paid partnership", "sponsored", "bayad na partnership", "in partnership with", "#ad") or written on screen.
+    return f"""Check whether this sponsored creator video discloses the paid partnership. A disclosure can be spoken in English, Tagalog or Taglish (for example "paid partnership", "sponsored", "bayad na partnership", "may bayad", "in partnership with", "#ad", "#sponsored"), written on screen, or written in the post caption.
 
 Speech, one sentence per line as [index] (start-end) text:
 {speech_block(sentences)}
 
 {frames_block(frames)} Read the on-screen text in every frame.{disclaimer}
 
+Post caption:
+{caption_block(caption)}
+
 Return JSON only:
 {{"spoken":{{"found":true|false,"sentence":<index or null>,"quote":"<exact words or empty>"}},
  "on_screen":{{"found":true|false,"frame_time":<seconds or null>,"text":"<exact on-screen words or empty>","box":[<left>,<top>,<width>,<height>] as fractions of the frame (0 to 1) around the disclosure text, or null}},
- "frame_text":[{{"frame_time":<seconds>,"text":"<all readable text, or empty>"}}]{disclaimer_json}}}"""
+ "frame_text":[{{"frame_time":<seconds>,"text":"<all readable text, or empty>"}}],
+ "caption":{{"found":true|false,"quote":"<exact caption words or empty>"}}{disclaimer_json}}}"""
 
 
-def check_coverage(sentences, messages, frame_text) -> str:
+def check_coverage(sentences, messages, frame_text, caption="") -> str:
     numbered = "\n".join(f"{i + 1}. {m}" for i, m in enumerate(messages))
     screen = "\n".join(f"{f['frame_time']}s: {f['text']}" for f in frame_text if f.get("text")) or "(not read yet)"
     return f"""A brand brief lists key messages the creator must get across. For each message decide: "covered" (clearly said), "partly" (touched on but incomplete) or "missing".
@@ -123,6 +141,9 @@ Speech, one sentence per line as [index] (start-end) text:
 
 On-screen text read from frames:
 {screen}
+
+Post caption:
+{caption_block(caption)}
 
 Key messages:
 {numbered}

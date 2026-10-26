@@ -55,7 +55,7 @@ CLAIM_VERB = re.compile(
     r"\b(reads?|connect\w*|flags?|guarantee\w*|goes to|works?|cures?|treats?|heals?|prevents?|removes?|checks?|gets|catch\w*|approve\w*|zero|100)\b",
     re.I,
 )
-DISCLOSURE = re.compile(r"(paid partnership|sponsored|bayad na partnership|partnership with|#ad\b)", re.I)
+DISCLOSURE = re.compile(r"(paid partnership|sponsored|bayad na partnership|may bayad|partnership with|#ad\b)", re.I)
 NEGATION = re.compile(r"\b(does not|doesn't|do not|never|not|no)\b", re.I)
 
 
@@ -125,7 +125,9 @@ class FixtureProvider(BaseProvider):
                   for s in ctx["sentences"] if CLAIM_VERB.search(s["text"]) and not DISCLOSURE.search(s["text"])]
         screen = [{"frame_time": f["time"], "text": f["text"], "kind": "guarantee"}
                   for f in ctx["frames"] if f.get("text") and CLAIM_VERB.search(f["text"]) and not DISCLOSURE.search(f["text"])]
-        return {"claims": claims, "on_screen_claims": screen}
+        caption = [{"quote": part.strip(), "kind": "other"} for part in re.split(r"(?<=[.!?])\s+|\n+", ctx.get("caption") or "")
+                   if part.strip() and CLAIM_VERB.search(part) and not DISCLOSURE.search(part)]
+        return {"claims": claims, "on_screen_claims": screen, "caption_claims": caption}
 
     def _judge_claim(self, ctx):
         return judge(ctx["line"], ctx["chunks"], ctx["target"], ctx["original"])
@@ -150,6 +152,8 @@ class FixtureProvider(BaseProvider):
             "spoken": {"found": bool(spoken), "sentence": spoken["index"] if spoken else None, "quote": spoken["text"] if spoken else ""},
             "on_screen": {"found": bool(screen), "frame_time": screen["time"] if screen else None, "text": screen["text"] if screen else ""},
             "frame_text": [{"frame_time": f["time"], "text": f.get("text", "")} for f in ctx["frames"]],
+            "caption": {"found": bool(DISCLOSURE.search(ctx.get("caption") or "")),
+                        "quote": (DISCLOSURE.search(ctx.get("caption") or "") or [""])[0] if DISCLOSURE.search(ctx.get("caption") or "") else ""},
             "disclaimer": {"found": False, "where": "none", "quote": ""},
         }
 

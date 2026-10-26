@@ -14,8 +14,8 @@ MAX_REWRITES = 2
 class Claim:
     id: str
     quote: str
-    start: float
-    end: float
+    start: float | None  # None for a claim from the post caption
+    end: float | None
     estimated: bool
     origin: str  # "speech" or "on_screen"
     kind: str = "other"
@@ -24,6 +24,7 @@ class Claim:
     rounds: list[dict] = field(default_factory=list)
     searched: list[str] = field(default_factory=list)
     status: str = "pending"  # pending, pass, fail, fixed
+    needs_human_review: bool = False  # the language is not one the speech model is evaluated for
     suggested_line: str | None = None
 
     def rewrites(self) -> list[dict]:
@@ -60,9 +61,10 @@ class Claim:
 
     def as_dict(self) -> dict:
         return {
-            "id": self.id, "quote": self.quote, "start": round(self.start, 2), "end": round(self.end, 2),
+            "id": self.id, "quote": self.quote, "start": None if self.start is None else round(self.start, 2),
+            "end": None if self.end is None else round(self.end, 2),
             "estimated": self.estimated, "origin": self.origin, "kind": self.kind, "status": self.status,
-            "suggested_line": self.suggested_line, "rounds": self.rounds,
+            "suggested_line": self.suggested_line, "rounds": self.rounds, "needs_human_review": self.needs_human_review,
             "evidence": _final_evidence(self),
         }
 
@@ -87,6 +89,9 @@ class ReviewState:
     product: str = ""
     supplement: bool = False
     sources_text: str = ""
+    caption: str = ""
+    post_kind: str = "video"  # "video" or "images"
+    language: dict | None = None
     claims: list[Claim] = field(default_factory=list)
     claims_extracted: bool = False
     disclosure: dict | None = None
@@ -128,6 +133,8 @@ class ReviewState:
             + (f"; URLs not read yet: {', '.join(pending)}" if pending else "; no unread URLs")
         )
         lines.append(f"Speech: {len(self.sentences)} sentences, {self.duration:.1f} s, timing {self.timing}; {len(self.frames)} frames sampled")
+        if self.caption.strip():
+            lines.append(f"Post caption: {len(self.caption.split())} words")
         lines.append(f"Key messages: {len(self.key_messages)}; pack: {self.pack.name}" + ("; product is a food supplement" if self.supplement else ""))
         if not self.claims_extracted:
             lines.append("Claims: not extracted yet")
@@ -135,7 +142,8 @@ class ReviewState:
             lines.append("Claims: extracted, none found")
         for claim in self.claims:
             latest = claim.rounds[-1] if claim.rounds else None
-            detail = f"{claim.id} [{claim.origin} {claim.start:.1f}s] \"{claim.quote}\" status={claim.status}"
+            place = "caption" if claim.start is None else f"image {int(claim.start)}" if self.post_kind == "images" else f"{claim.origin} {claim.start:.1f}s"
+            detail = f"{claim.id} [{place}] \"{claim.quote}\" status={claim.status}"
             detail += f" rewrites={len(claim.rewrites())}/{MAX_REWRITES}"
             if latest and latest["verdict"] == "fail":
                 detail += f" last_failure=\"{latest.get('reason', '')}\""

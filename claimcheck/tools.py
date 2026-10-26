@@ -17,7 +17,7 @@ from .state import MAX_REWRITES, Claim, ReviewState
 from .text import TAGALOG_MARKERS, containment, content_terms, has_tagalog, is_taglish, locate, normalise, quote_in, quote_span, stem, tokens
 
 DISCLOSURE = re.compile(
-    r"(paid partnership|sponsored|bayad na partnership|may bayad|in partnership with|partnership with|#ad\b|\bad:|binayaran)",
+    r"(paid partnership|sponsored|bayad na partnership|may bayad|in partnership with|partnership with|#ad\b|\bad:|binayaran|#bayad)",
     re.I,
 )
 PLEASANTRY = re.compile(
@@ -45,6 +45,35 @@ TOOL_SPECS = [
      "parameters": {"type": "object", "properties": {"summary": {"type": "string"}}, "required": ["summary"]}},
 ]
 TOOL_NAMES = [t["name"] for t in TOOL_SPECS]
+
+
+# Function words that are Cebuano (Bisaya) and not Tagalog.
+CEBUANO_MARKERS = {"nga", "ug", "kaayo", "jud", "gyud", "dili", "unsa", "karon", "lagi", "bitaw", "ganahan", "nindot", "imong",
+                   "akong", "naa", "wala'y", "kini", "kana", "niini", "pud", "pod", "bai", "bay", "gani", "diay"}
+TAGALOG_ONLY = {"ng", "mga", "hindi", "talaga", "kasi", "yung", "naman", "lang", "ito", "iyan", "ako", "sobrang", "grabe", "po"}
+VERIFIED_LANGUAGES = {"english", "tagalog", "taglish"}
+
+
+def detect_language(state, model_language: str) -> dict:
+    """Is the clip in a language the speech model is evaluated for (Tagalog, English, Taglish)?
+
+    Code counts Cebuano-only and Tagalog-only function words; the model's own
+    reading is the second signal. Either one saying Cebuano or another
+    language means the claims need a person.
+    """
+    words = tokens(state.transcript + " " + state.caption)
+    cebuano = {w for w in words if w in CEBUANO_MARKERS}
+    tagalog = {w for w in words if w in TAGALOG_ONLY}
+    model_language = model_language.strip().lower()
+    code_says = "cebuano" if len(cebuano) >= 2 and len(cebuano) > len(tagalog) else ""
+    detected = code_says or model_language or ("taglish" if tagalog else "english")
+    verified = not code_says and (not model_language or model_language in VERIFIED_LANGUAGES)
+    how = []
+    if code_says:
+        how.append("Cebuano words: " + ", ".join(sorted(cebuano)[:5]))
+    if model_language:
+        how.append(f"model reads {model_language}")
+    return {"detected": detected, "verified": verified, "how": "; ".join(how) or "default"}
 
 
 class ToolError(Exception):
@@ -164,10 +193,11 @@ class ToolBox:
         state = self.state
         if state.claims_extracted:
             raise ToolError(f"claims were already extracted ({len(state.claims)} claims)")
-        prompt = prompts.extract_claims(state.pack, state.product, state.sentences, state.frames)
+        prompt = prompts.extract_claims(state.pack, state.product, state.sentences, state.frames, state.caption)
         data = self.provider.complete_json(
             "extract_claims", prompt, images=_images(state),
-            context={"sentences": [s.as_dict() for s in state.sentences], "frames": _frames_for_context(state), "product": state.product},
+            context={"sentences": [s.as_dict() for s in state.sentences], "frames": _frames_for_context(state), "product": state.product,
+                     "caption": state.caption},
         )
         rejected = []
         seen = set()
@@ -207,9 +237,25 @@ class ToolBox:
                 id=f"C{len(state.claims) + 1}", quote=text, start=frame["time"], end=frame["time"], estimated=False,
                 origin="on_screen", kind=str(item.get("kind", "other")), context="On-screen text",
             ))
+        for item in data.get("caption_claims") or []:
+            text = str(item.get("quote", "")).strip()
+            if not text or not quote_in(text, state.caption):
+                rejected.append({"quote": text, "why": "quote not found in the post caption"})
+                continue
+            if normalise(text) in seen:
+                continue
+            seen.add(normalise(text))
+            state.claims.append(Claim(
+                id=f"C{len(state.claims) + 1}", quote=text, start=None, end=None, estimated=False,
+                origin="caption", kind=str(item.get("kind", "other")), context="Post caption: " + state.caption[:300],
+            ))
+        state.language = detect_language(state, str(data.get("language", "")))
+        if not state.language["verified"]:
+            for claim in state.claims:
+                claim.needs_human_review = True
         state.claims_extracted = True
-        observation = {"claims": [{"id": c.id, "quote": c.quote, "origin": c.origin, "start": round(c.start, 2),
-                                   "estimated": c.estimated} for c in state.claims], "rejected": rejected}
+        observation = {"language": state.language, "claims": [{"id": c.id, "quote": c.quote, "origin": c.origin, "start": None if c.start is None else round(c.start, 2),
+                                   "estimated": c.estimated, "needs_human_review": c.needs_human_review} for c in state.claims], "rejected": rejected}
         summary = f"{len(state.claims)} claims: " + "; ".join(f"{c.id} \"{c.quote}\"" for c in state.claims)
         if rejected:
             summary += f" ({len(rejected)} model quotes rejected: not in transcript or frames)"
@@ -352,10 +398,11 @@ class ToolBox:
             raise ToolError("disclosure was already checked")
         disclaimers = [d for d in state.pack.disclaimers if d.applies_to != "supplement" or state.supplement]
         label = disclaimers[0].label if disclaimers else None
-        prompt = prompts.check_disclosure(state.sentences, state.frames, label)
+        prompt = prompts.check_disclosure(state.sentences, state.frames, label, state.caption)
         data = self.provider.complete_json(
             "check_disclosure", prompt, images=_images(state),
-            context={"sentences": [s.as_dict() for s in state.sentences], "frames": _frames_for_context(state), "disclaimer": label},
+            context={"sentences": [s.as_dict() for s in state.sentences], "frames": _frames_for_context(state), "disclaimer": label,
+                     "caption": state.caption},
         )
         notes = []
         # Frame text read by the model, pinned to the frames we actually sampled.
@@ -398,8 +445,17 @@ class ToolBox:
                 if DISCLOSURE.search(item["text"]):
                     on_screen = {"found": True, "text": item["text"], "time": item["frame_time"], "how": "phrase match in frame text"}
                     break
-        result = {"disclosed": spoken["found"] or on_screen["found"], "spoken": spoken, "on_screen": on_screen,
-                  "frame_text": frame_text, "notes": notes, "required_disclaimer": None}
+        # Caption disclosure: the model's quote must be in the caption, or a known phrase must match.
+        caption = {"found": False, "quote": "", "how": "not found" if state.caption.strip() else "no caption given"}
+        model_caption = data.get("caption") or {}
+        if model_caption.get("found") and quote_in(str(model_caption.get("quote", "")), state.caption):
+            caption = {"found": True, "quote": str(model_caption["quote"]), "how": "model, quote verified in caption"}
+        elif state.caption.strip():
+            match = DISCLOSURE.search(state.caption)
+            if match:
+                caption = {"found": True, "quote": match.group(0), "how": "phrase match in caption"}
+        result = {"disclosed": spoken["found"] or on_screen["found"] or caption["found"], "spoken": spoken, "on_screen": on_screen,
+                  "caption": caption, "frame_text": frame_text, "notes": notes, "required_disclaimer": None}
         if disclaimers:
             result["required_disclaimer"] = self._disclaimer(disclaimers[0], data.get("disclaimer") or {}, frame_text)
         state.disclosure = result
@@ -408,6 +464,8 @@ class ToolBox:
             parts.append(f"spoken at {spoken['time']}s (\"{spoken['quote']}\")")
         if on_screen["found"]:
             parts.append(f"on screen at {on_screen['time']}s (\"{on_screen['text']}\")")
+        if caption["found"]:
+            parts.append(f"in the caption (\"{caption['quote']}\")")
         summary = "Disclosure " + ("found: " + "; ".join(parts) if parts else "MISSING")
         if result["required_disclaimer"]:
             summary += f". Required line \"{result['required_disclaimer']['label']}\": " + ("found" if result["required_disclaimer"]["found"] else "MISSING")
@@ -421,6 +479,9 @@ class ToolBox:
         for item in frame_text:
             if any(p.search(item["text"]) for p in disclaimer.patterns):
                 return {"label": disclaimer.label, "found": True, "where": "on_screen", "time": item["frame_time"], "quote": item["text"]}
+        if any(p.search(state.caption) for p in disclaimer.patterns):
+            match = next(p.search(state.caption) for p in disclaimer.patterns if p.search(state.caption))
+            return {"label": disclaimer.label, "found": True, "where": "caption", "time": None, "quote": match.group(0)}
         quote = str(model.get("quote", ""))
         if model.get("found") and quote and (quote_in(quote, state.transcript) or any(quote_in(quote, f["text"]) for f in frame_text)):
             return {"label": disclaimer.label, "found": True, "where": str(model.get("where", "")), "time": None, "quote": quote}
@@ -434,7 +495,7 @@ class ToolBox:
             state.coverage = {"messages": []}
             return {"messages": []}, "No key messages in the brief"
         frame_text = [{"frame_time": f["time"], "text": f.get("text", "")} for f in state.frames]
-        prompt = prompts.check_coverage(state.sentences, state.key_messages, frame_text)
+        prompt = prompts.check_coverage(state.sentences, state.key_messages, frame_text, state.caption)
         data = self.provider.complete_json(
             "check_coverage", prompt,
             context={"sentences": [s.as_dict() for s in state.sentences], "messages": state.key_messages, "frame_text": frame_text},
@@ -455,6 +516,11 @@ class ToolBox:
                 matched, _ = locate(quote, state.sentences) if quote else ([], 0)
                 if matched:
                     time = quote_span(quote, matched)[0]
+                elif quote and quote_in(quote, state.caption):
+                    note = "said in the post caption"
+                elif quote and any(quote_in(quote, f.get("text", "")) for f in state.frames):
+                    frame = next(f for f in state.frames if quote_in(quote, f.get("text", "")))
+                    time, note = frame["time"], "shown on screen"
                 else:
                     note = "quote not found in transcript, so the status was lowered"
                     status = "partly" if status == "covered" and quote else "missing"

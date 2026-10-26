@@ -50,6 +50,14 @@ label{display:block;font-weight:600;margin-bottom:4px}
 .lbox.on{opacity:1}
 .lbox span{position:absolute;left:-2px;bottom:100%;margin-bottom:4px;background:var(--blue);color:var(--white);font-size:14px;padding:1px 8px;border-radius:2px;white-space:nowrap}
 .vcol{width:100%;margin:0 auto}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.gallery figure{margin:0;padding:4px;border:2px solid transparent;border-radius:4px;cursor:pointer}
+.gallery figure.on{border-color:var(--blue)}
+.gallery img{display:block;width:100%;border-radius:2px}
+.gallery figcaption{font-size:14px;color:var(--muted);margin-top:4px}
+body.layout-images .m-ruler,body.layout-images #stage{display:none}
+.origin{font-size:14px;color:var(--muted)}
+.unverified{font-size:14px;color:var(--red);font-weight:600}
 body.layout-vertical .grid{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
 body.layout-square .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--arn,1.7778))}
@@ -151,9 +159,11 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
     <div class="rule"></div>
     <form id="form" class="setup-grid">
       <div class="full"><label for="video">Creator video <span class="small muted" id="video-hint">15 to 90 seconds</span></label><input type="file" id="video" name="video" accept="video/mp4,video/quicktime,video/x-m4v,video/webm,.mp4,.mov,.m4v,.webm"></div>
+      <div class="full"><label for="images">Or an image post <span class="small muted">one image, or up to 10 for a carousel (JPG or PNG)</span></label><input type="file" id="images" name="images" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple></div>
       <div><label for="product">Product</label><input type="text" id="product" name="product" autocomplete="off"></div>
       <div><label for="pack">Rule pack</label><select id="pack" name="pack"><option>Tech claims</option><option>FDA beauty</option></select></div>
       <div class="full"><label for="sources">Source pack <span class="small muted">docs; one URL per line</span></label><textarea id="sources" name="sources" rows="3"></textarea></div>
+      <div class="full"><label for="caption">Post caption <span class="small muted">optional; the text posted with it, hashtags included</span></label><textarea id="caption" name="caption" rows="2"></textarea></div>
       <div class="full"><label for="messages">Key messages <span class="small muted">one per line</span></label><textarea id="messages" name="key_messages" rows="2"></textarea></div>
       <div class="full"><button type="submit" class="btn" id="run">Review this video</button> <span class="small muted" id="form-note"></span></div>
     </form>
@@ -175,6 +185,7 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
         </div>
       </div>
       </div>
+      <div class="m-video gallery hidden" id="gallery"></div>
       <section class="log m-log">
         <h2>Event log</h2>
         <div class="logrow head"><span>Time</span><span>Event</span><span class="detail">Detail</span></div>
@@ -204,6 +215,9 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tc = t => { if (t === null || t === undefined || isNaN(t)) return '—'; const s = Math.round(t); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 const params = new URLSearchParams(location.search);
+// where a note sits: a timecode for video, "Image N" for an image post, nothing for the caption
+const place = t => t === null || t === undefined ? '—' : document.body.classList.contains('layout-images') ? `Image ${Math.round(t)}` : tc(t);
+const ORIGIN = {speech: 'From speech', on_screen: 'From on-screen text', caption: 'From the post caption'};
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = ms => new Promise(r => setTimeout(r, REDUCED ? 0 : ms));
 
@@ -245,9 +259,10 @@ function status(){
 
 $('#form').addEventListener('submit', async e => {
   e.preventDefault();
-  const form = new FormData($('#form')), file = $('#video').files[0];
-  if (config.needs_video && !file) { $('#form-note').textContent = 'Add the creator video first.'; return; }
+  const form = new FormData($('#form')), file = $('#video').files[0], pictures = $('#images').files.length;
+  if (config.needs_video && !file && !pictures) { $('#form-note').textContent = 'Add the creator video or the post images first.'; return; }
   if (!file) form.delete('video');
+  if (!pictures) form.delete('images');
   $('#run').disabled = true;
   const response = await fetch('/api/reviews', {method: 'POST', body: form});
   const body = await response.json();
@@ -332,6 +347,14 @@ function scrubTo(t){
   };
   scrubbing = requestAnimationFrame(step);
 }
+function showGallery(images){
+  const g = $('#gallery'); g.classList.remove('hidden');
+  g.innerHTML = images.map(i => `<figure id="img-${Math.round(i.number)}"><img alt="Image ${Math.round(i.number)} of the post" src="data:image/jpeg;base64,${i.image}"><figcaption>Image ${Math.round(i.number)}</figcaption></figure>`).join('');
+}
+function showImage(n){
+  document.querySelectorAll('.gallery figure').forEach(f => f.classList.toggle('on', f.id === `img-${Math.round(n)}`));
+  const f = document.getElementById(`img-${Math.round(n)}`); if (f) f.scrollIntoView({block: 'nearest', behavior: REDUCED ? 'auto' : 'smooth'});
+}
 function applyMedia(m, url){
   if (!m) return;
   document.body.classList.remove('layout-vertical', 'layout-square', 'layout-landscape');
@@ -365,7 +388,7 @@ $('#player').addEventListener('timeupdate', () => setHead($('#player').currentTi
 function log(time, event, detail, guard){
   const row = document.createElement('div');
   row.className = 'logrow new';
-  row.innerHTML = `<span class="tc">${time === null || time === undefined ? '—' : tc(time)}</span><span>${esc(event)}${guard ? ' <span class="guard">by guard</span>' : ''}</span><span class="detail">${esc(detail)}</span>`;
+  row.innerHTML = `<span class="tc">${place(time)}</span><span>${esc(event)}${guard ? ' <span class="guard">by guard</span>' : ''}</span><span class="detail">${esc(detail)}</span>`;
   const rule = document.createElement('div'); rule.className = 'rule';
   $('#log').appendChild(row); $('#log').appendChild(rule);
 }
@@ -374,10 +397,16 @@ function log(time, event, detail, guard){
 function apply(e){
   if (e.t) { S.lastT = +e.t; status(); }
   if (e.kind === 'art') { showArt(e); return; }
-  if (e.kind === 'media_info') { applyMedia(e, e.video_url); log(null, 'Clip read', e.summary); return; }
+  if (e.kind === 'media_info') { applyMedia(e, e.video_url); log(null, e.layout === 'layout-images' ? 'Post read' : 'Clip read', e.summary); return; }
+  if (e.kind === 'post_images') { showGallery(e.images); return; }
   if (e.kind === 'warning') { log(null, 'Clip trimmed', e.summary); return; }
   if (e.kind === 'frames' || e.kind === 'media') return;
-  if (e.kind === 'transcribed') { /^No audio/.test(e.summary) ? log(null, 'No audio track', e.summary.replace(/^No audio track:\s*/, '')) : log(null, 'Speech transcribed', e.summary.replace(/^Speech transcribed:\s*/, '')); return; }
+  if (e.kind === 'transcribed') {
+    if (/^No audio/.test(e.summary)) log(null, 'No audio track', e.summary.replace(/^No audio track:\s*/, ''));
+    else if (/^Image post/.test(e.summary)) log(null, 'No speech', e.summary.replace(/^[^:]*:\s*no speech\.\s*/, ''));
+    else log(null, 'Speech transcribed', e.summary.replace(/^Speech transcribed:\s*/, ''));
+    return;
+  }
   if (e.kind === 'start') { S.duration = e.duration || S.duration; drawRuler(); return; }
   if (e.kind === 'plan') {
     const tools = (e.actions || []).map(a => a.tool);
@@ -394,8 +423,9 @@ function onAction(e){
   if (o.error) { log(null, `${e.tool} refused`, o.error, guard); return; }
   switch (e.tool) {
     case 'extract_claims':
-      (o.claims || []).forEach(c => S.claims.set(c.id, {id: c.id, quote: c.quote, origin: c.origin, start: c.start, rounds: [], status: 'pending'}));
-      log(null, 'Claims found', (o.claims || []).map(c => `${c.id} at ${tc(c.start)}`).join(', ') || 'none', guard);
+      (o.claims || []).forEach(c => S.claims.set(c.id, {id: c.id, quote: c.quote, origin: c.origin, start: c.start, rounds: [], status: 'pending', review: !!c.needs_human_review}));
+      log(null, 'Claims found', (o.claims || []).map(c => `${c.id} ${c.origin === 'caption' ? 'in the caption' : 'at ' + place(c.start)}`).join(', ') || 'none', guard);
+      if (o.language && !o.language.verified) log(null, 'Language not verified', `${o.language.detected}: every claim goes to a person`, guard);
       break;
     case 'judge_claim': {
       const c = S.claims.get(o.claim_id); if (!c) break;
@@ -424,7 +454,8 @@ function onAction(e){
       const scr = o.on_screen || {}, sp = o.spoken || {};
       if (scr.found) { log(scr.time, 'Label found on screen', `“${scr.text}”`, guard); addNote({kind: 'disclosure', time: scr.time, text: scr.text, how: 'on screen', scr}); scrubTo(scr.time + 0.1); showLabelBox(scr); }
       else if (sp.found) { log(sp.time, 'Disclosure spoken', `“${sp.quote}”`, guard); addNote({kind: 'disclosure', time: sp.time, text: sp.quote, how: 'spoken'}); }
-      else { log(null, 'No disclosure found', 'Not on screen and not spoken', guard); addNote({kind: 'nodisclosure', time: null}); }
+      else if (o.caption && o.caption.found) { log(null, 'Disclosure in caption', `“${o.caption.quote}”`, guard); addNote({kind: 'disclosure', time: null, text: o.caption.quote, how: 'in the post caption'}); }
+      else { log(null, 'No disclosure found', 'Not on screen, not spoken, not in the caption', guard); addNote({kind: 'nodisclosure', time: null}); }
       if (o.required_disclaimer) log(o.required_disclaimer.time, o.required_disclaimer.found ? 'Required line found' : 'Required line missing', o.required_disclaimer.label, guard);
       break;
     }
@@ -468,26 +499,28 @@ function renderNote(note, fresh){
   }
   el.innerHTML = html;
   el.querySelectorAll('[data-decide]').forEach(b => b.addEventListener('click', () => { S.decisions[note.n] = b.dataset.decide; renderNote(note); updateApprove(); }));
-  el.querySelector('.tc-btn') && el.querySelector('.tc-btn').addEventListener('click', () => scrubTo(note.time));
+  el.querySelector('.tc-btn') && el.querySelector('.tc-btn').addEventListener('click', () => document.body.classList.contains('layout-images') ? showImage(note.time) : scrubTo(note.time));
 }
 function noteHtml(note){
-  const head = `<span class="n">${note.n}</span><span class="tc">${note.time === null || note.time === undefined ? '—' : `<button type="button" class="link tc-btn">${tc(note.time)}</button>`}</span>`;
+  const head = `<span class="n">${note.n}</span><span class="tc">${note.time === null || note.time === undefined ? '—' : `<button type="button" class="link tc-btn">${place(note.time)}</button>`}</span>`;
+  const c = note.claim;
+  const origin = c ? `<p class="origin">${ORIGIN[c.origin] || ''}${c.origin === 'on_screen' && document.body.classList.contains('layout-images') ? `, image ${Math.round(c.start)}` : ''}</p>${c.review ? '<p class="unverified">Language not verified: a person must check this claim.</p>' : ''}` : '';
   let body = '';
   if (note.kind === 'disclosure') {
-    body = `<h3>Disclosure label</h3><p class="quote">“${esc(note.text)}”</p><p class="ok-line">Found ${esc(note.how)} at ${tc(note.time)}.</p>`;
+    body = `<h3>Disclosure label</h3><p class="quote">“${esc(note.text)}”</p><p class="ok-line">Found ${esc(note.how)}${note.time === null || note.time === undefined ? '' : ' at ' + place(note.time)}.</p>`;
   } else if (note.kind === 'nodisclosure') {
-    body = `<h3>Disclosure label</h3><p class="issue">No paid-partnership label on screen or in speech.</p>`;
+    body = `<h3>Disclosure label</h3><p class="issue">No paid-partnership label on screen, in speech or in the caption.</p>`;
   } else if (note.kind === 'message') {
     const m = note.message;
-    body = `<h3>Key message</h3><p class="quote">“${esc(m.message)}”</p><p class="${m.status === 'covered' ? 'ok-line' : 'issue'}">${m.status === 'covered' ? `Covered at ${tc(m.time)}.` : m.status === 'partly' ? 'Partly covered.' : 'Not said in the video.'}</p>`;
+    body = `<h3>Key message</h3><p class="quote">“${esc(m.message)}”</p><p class="${m.status === 'covered' ? 'ok-line' : 'issue'}">${m.status === 'covered' ? `Covered at ${tc(m.time)}.` : m.status === 'partly' ? 'Partly covered.' : (document.body.classList.contains('layout-images') ? 'Not in the post.' : 'Not said in the video.')}</p>`;
   } else if (note.kind === 'verified') {
     const r = note.claim.rounds[0];
-    body = `<h3>Checked against source</h3><p class="quote">“${esc(note.claim.quote)}”</p><p class="ok-line">Checked against source ${esc(r.chunk_id || '')}.</p>${sourceLine(r)}`;
+    body = `<h3>Checked against source</h3>${origin}<p class="quote">“${esc(note.claim.quote)}”</p><p class="ok-line">Checked against source ${esc(r.chunk_id || '')}.</p>${sourceLine(r)}`;
   } else {
     const c = note.claim, first = c.rounds[0] || {}, revs = c.rounds.filter(r => r.round > 0);
     const passed = revs.find(r => r.verdict === 'pass');
     const title = first.judgement === 'contradicted' ? 'Contradicted by source' : first.judgement === 'rule' ? 'Breaks a pack rule' : 'Not supported by source';
-    const history = [`<div class="rev"><div class="head">Original, in the video</div><p class="quote struck">“${esc(c.quote)}”</p></div>`]
+    const history = [`<div class="rev"><div class="head">Original, ${c.origin === 'caption' ? 'in the caption' : c.origin === 'on_screen' ? 'on screen' : 'in the video'}</div><p class="quote struck">“${esc(c.quote)}”</p></div>`]
       .concat(revs.map(r => r.verdict === 'pass'
         ? `<div class="rev ${note.swapped === r.round ? 'swap' : ''}"><div class="head">Revision ${r.round}</div><p class="quote"><span class="suggested">“${esc(r.line)}”</span><span class="suggested-tag">Suggested</span></p></div>`
         : r.verdict === 'pending'
@@ -497,7 +530,7 @@ function noteHtml(note){
     const buttons = S.done || passed || revs.length >= 2
       ? `<div class="decide"><button type="button" class="btn olive ${decision === 'accept' ? 'on' : ''}" data-decide="accept">Accept</button><button type="button" class="btn plain ${decision === 'reject' ? 'on' : ''}" data-decide="reject">Reject</button>${decision ? `<span class="decided">${decision === 'accept' ? (passed ? 'Suggested line accepted.' : 'Flag accepted: the line must change.') : 'Note rejected by the reviewer.'}</span>` : ''}</div>`
       : '';
-    body = `<h3>${title}</h3><p class="issue">${esc(first.reason || '')}</p><div class="revs">${history}</div>${passed ? sourceLine(passed) : sourceLine(first)}${buttons}`;
+    body = `<h3>${title}</h3>${origin}<p class="issue">${esc(first.reason || '')}</p><div class="revs">${history}</div>${passed ? sourceLine(passed) : sourceLine(first)}${buttons}`;
   }
   return head + `<div class="body">${body}</div>`;
 }
@@ -537,7 +570,7 @@ function finish(r){
   if (r.duration && !S.duration) { S.duration = r.duration; drawRuler(); }
   r.claims.forEach(rc => {
     const c = S.claims.get(rc.id); if (!c) return;
-    c.status = rc.status; c.rounds = rc.rounds.map(x => ({...x, origin: x.evidence_origin || (S.sources[x.chunk_id] || {}).origin || ''}));
+    c.status = rc.status; c.review = !!rc.needs_human_review; c.rounds = rc.rounds.map(x => ({...x, origin: x.evidence_origin || (S.sources[x.chunk_id] || {}).origin || ''}));
   });
   S.lastT = r.trace && r.trace.length ? r.trace[r.trace.length - 1].t : S.lastT;
   status();

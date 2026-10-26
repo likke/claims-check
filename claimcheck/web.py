@@ -10,13 +10,14 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
 from . import fixture
 from .agent import run_review
-from .media import FORMATS, MAX_CHECK_SECONDS, MediaError, extract_media, make_proxy, needs_proxy, probe, timeline_art
+from .media import FORMATS, MAX_CHECK_SECONDS, MediaError, extract_media, image_frame, make_proxy, needs_proxy, probe, timeline_art
 from .packs import get_pack
+from . import demo
 from .providers import get_provider
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,6 +37,8 @@ class Job:
         self.decision: dict | None = None
         self.lock = threading.Lock()
         self.video_path: Path | None = None
+        self.folder: Path | None = None
+        self.original: Path | None = None
 
     def push(self, event: dict):
         with self.lock:
@@ -54,6 +57,7 @@ def _worker(job: Job, provider, video: bytes | None, suffix: str, params: dict):
             folder = Path(tempfile.mkdtemp(prefix=f"claimcheck-{job.id}-"))
             original = folder / f"original{suffix}"
             original.write_bytes(video)
+            job.folder, job.original = folder, original
             info = probe(original)
             proxy = make_proxy(original, folder / "proxy.mp4", info) if needs_proxy(info) else None
             job.video_path = proxy or original
@@ -80,6 +84,7 @@ def _worker(job: Job, provider, video: bytes | None, suffix: str, params: dict):
         job.error = f"{type(error).__name__}: {error}"
     finally:
         job.done = True
+        demo.cleanup(job)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -96,13 +101,14 @@ def classic():
 
 
 @app.get("/api/config")
-def config():
+def config(request: Request):
     provider = get_provider()
     return {
         "provider": provider.info(),
         "needs_video": provider.needs_media,
         "packs": ["Tech claims", "FDA beauty"],
         "example": {"product": fixture.PRODUCT, "sources": fixture.SOURCE_PACK, "key_messages": "\n".join(fixture.KEY_MESSAGES)},
+        "demo": demo.public_limits(request),
     }
 
 
@@ -190,34 +196,84 @@ def replay_video():
     return FileResponse(clip, media_type=media)
 
 
+IMAGE_FORMATS = {".jpg", ".jpeg", ".png"}
+MAX_IMAGES = 10
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+
+
 @app.post("/api/reviews")
 async def start_review(
+    request: Request,
     video: UploadFile | None = File(None),
+    images: list[UploadFile] | None = File(None),
     sources: str = Form(""),
     key_messages: str = Form(""),
     pack: str = Form("Tech claims"),
     product: str = Form(""),
     supplement: str = Form(""),
+    caption: str = Form(""),
 ):
     provider = get_provider()
     data = await video.read() if video is not None else b""
     suffix = Path(video.filename or "").suffix.lower() if video is not None else ""
+    pictures = []
+    for upload in images or []:
+        content = await upload.read()
+        if not content:
+            continue
+        if Path(upload.filename or "").suffix.lower() not in IMAGE_FORMATS:
+            raise HTTPException(415, "Images must be JPG or PNG.")
+        if len(content) > MAX_IMAGE_BYTES:
+            raise HTTPException(413, "Each image must be under 10 MB.")
+        pictures.append(content)
+    if data and pictures:
+        raise HTTPException(400, "Upload a video or images, not both.")
+    if len(pictures) > MAX_IMAGES:
+        raise HTTPException(400, f"Upload at most {MAX_IMAGES} images.")
     if data and suffix not in FORMATS:
         raise HTTPException(415, "Upload an MP4, MOV, M4V or WebM video.")
-    if provider.needs_media and not data:
-        raise HTTPException(400, "Upload a video (15 to 90 seconds).")
+    if provider.needs_media and not data and not pictures:
+        raise HTTPException(400, "Upload a video (15 to 90 seconds) or the post images.")
     if len(data) > MAX_UPLOAD:
         raise HTTPException(413, "The video is larger than 80 MB.")
     if not sources.strip():
         raise HTTPException(400, "Add a source pack: product docs or URLs.")
+    if len(caption) > 4000:
+        raise HTTPException(400, "Keep the caption under 4,000 characters.")
+    demo.check_upload(request, data, suffix, sum(len(p) for p in pictures))
     job = Job(provider.info())
     JOBS[job.id] = job
     params = {
         "sources": sources, "key_messages": key_messages.splitlines(), "pack": get_pack(pack),
         "product": product.strip(), "supplement": supplement.lower() in ("1", "true", "on", "yes"),
+        "caption": caption.strip(),
     }
-    threading.Thread(target=_worker, args=(job, provider, data, suffix, params), daemon=True).start()
+    if pictures:
+        threading.Thread(target=_image_worker, args=(job, provider, pictures, params), daemon=True).start()
+    else:
+        threading.Thread(target=_worker, args=(job, provider, data, suffix, params), daemon=True).start()
     return {"id": job.id, "provider": provider.info()}
+
+
+def _image_worker(job: Job, provider, pictures: list[bytes], params: dict):
+    """An image or carousel post: each image is a numbered frame (image 1, 2, 3); there is no timeline."""
+    folder = Path(tempfile.mkdtemp(prefix=f"claimcheck-{job.id}-"))
+    try:
+        frames = []
+        for number, content in enumerate(pictures, start=1):
+            frames.append(image_frame(content, number, folder))
+        job.folder = folder
+        job.push({"seq": 0, "t": 0, "kind": "media_info", "orientation": "images", "layout": "layout-images", "images": len(frames),
+                  "summary": f"Image post with {len(frames)} image{'s' if len(frames) != 1 else ''}"})
+        job.push({"seq": 0, "t": 0, "kind": "post_images", "images": [{"number": f["time"], "image": f["image"], "width": f["width"],
+                                                                       "height": f["height"]} for f in frames]})
+        job.result = run_review(provider, frames=frames, emit=job.push, post_kind="images",
+                                media={"orientation": "images", "images": len(frames)}, **params)
+    except Exception as error:
+        job.error = f"{type(error).__name__}: {error}"
+    finally:
+        job.done = True
+        demo.cleanup(job)
 
 
 def _job(review_id: str) -> Job:
@@ -285,9 +341,10 @@ def decide(review_id: str, payload: dict):
 
 
 @app.post("/api/ask")
-def ask(payload: dict):
+def ask(payload: dict, request: Request):
     """Answer a question about a finished review from its result JSON, with the configured model."""
     job = _job(str(payload.get("review_id", "")))
+    demo.check_ask(request)
     if not job.done or job.result is None:
         raise HTTPException(409, "The review is still running.")
     question = str(payload.get("question", "")).strip()

@@ -1,14 +1,18 @@
 # Dasho Claim Check
 
-A brand team checks a creator's 15 to 90 second video **before it posts**. An agent built on Meta's Muse models:
+A brand team checks a creator's 15 to 90 second video, or an image or carousel post, **before it posts**. An agent built on Meta's Muse models:
 
-- checks every factual product claim (spoken or written on screen) against the brand's **source pack** (pasted product docs or URLs), and cites the exact source chunk;
-- checks the paid partnership is **disclosed**, out loud in English, Tagalog or Taglish, or on screen;
+- checks every factual product claim (spoken, written on screen, or in the post caption) against the brand's **source pack** (pasted product docs or URLs), and cites the exact source chunk;
+- checks the paid partnership is **disclosed**: out loud in English, Tagalog or Taglish, on screen, or in the post caption (#ad, #sponsored, "may bayad");
 - checks the brief's **key messages** are covered;
 - with the optional **FDA beauty** pack, fails cure/treat claims and flags a missing "No approved therapeutic claims" line for food supplements;
 - proposes a **corrected line in the creator's own voice** for each failed claim (Taglish stays Taglish), then re-checks it, up to two rounds.
 
 A named human approves or requests changes. The agent never approves.
+
+**Languages.** Tagalog/English (Taglish) supported; Cebuano/Bisaya is not in Muse Voice Transcribe's evaluated languages, so Bisaya clips are transcribed on a best-effort basis and every Bisaya claim is flagged for human review. The app detects the language (Cebuano-only function words, plus Muse Spark's own reading); when it is not Tagalog or English, each claim is marked `needs_human_review` and the note says "Language not verified".
+
+**Inputs.** Video: MP4, MOV, M4V or WebM, vertical 9:16, square or landscape; the layout follows the clip's displayed shape (rotation metadata applied). A clip the browser may not play (for example iPhone HEVC .mov) gets an H.264 copy for playback while the agent works on the original. A clip with no audio skips transcription; a clip over 90 seconds is checked for its first 90 seconds. Images: one JPG or PNG, or up to 10 for a carousel; notes pin to image 1, 2, 3. Post caption: optional, checked for claims and disclosure.
 
 **Who it is for:** brand and agency teams in the Philippines who pay creators to talk about their products. The lead pack is "Tech claims", for AI and software companies hiring Filipino business creators, where overclaims such as "guarantees zero errors" are common.
 
@@ -30,7 +34,22 @@ Open http://127.0.0.1:8000.
 
 Optional settings: `MODEL_BASE_URL` (default `https://api.meta.ai/v1`), `MODEL_NAME` (default `muse-spark-1.3`), `ASR_MODEL` (default `muse-voice-transcribe-1.0`), `PLANNER_REASONING` (default `low`), `TASK_REASONING`, `FIXTURE_STEP_DELAY` (seconds between offline steps, default 0.35).
 
-The page also has **Replay the recorded live run**, which plays back `demo/live-run-2026-10-27.json` at three times its real pace without calling any API. `?auto=run` and `?auto=replay` start either one on load.
+`/` is the review screen (timecode-pinned notes and an event log); `/classic` keeps the earlier chat-style screen. Both have **Replay recorded run**, which plays back the run named in `demo/replay.json` at three times its real pace without calling any API. `?auto=run` and `?auto=replay` start either one on load. To demo a new clip, record a live run with `demo/live_check.py --video <clip> --update-replay`.
+
+### Hosting the demo
+
+Set `DEMO_MODE=1` before hosting it for others:
+
+| Setting | Default | Effect |
+|---|---|---|
+| `DEMO_DAILY_LIMIT` | 3 | live checks per IP address per UTC day; the replay is always free |
+| `DEMO_ASK_LIMIT` | 10 | questions per IP address per day |
+| `DEMO_MAX_MB` | 25 | upload size cap |
+| `DEMO_MAX_SECONDS` | 60 | clip length cap |
+| `DEMO_KEEP_SECONDS` | 600 | the original upload is deleted when the check ends; the playback copy this many seconds later |
+| `DEMO_TRUST_PROXY` | off | set to 1 behind a proxy to read the client address from `X-Forwarded-For` |
+
+The API key stays on the server; no endpoint returns it (tested).
 
 Tests: `python -m pytest -q` (no network; all model calls are mocked).
 
@@ -111,6 +130,9 @@ Tested on 400 real Philippine paid ads.
 - 27 Oct 2026: word-offset timing inside long transcription turns, found during the live check.
 - 27 Oct 2026: review UI with SSE trace, claim cards, rounds, decision and replay; Muse Spark Open provider.
 - 27 Oct 2026: live check against the Meta Model API, saved in `demo/`.
+- 27 Oct 2026: review screen with timecode ruler, note pins, frame strip, waveform, event log and tracked-change revisions; a real-browser test that no element has a border on one edge only.
+- 27 Oct 2026: vertical, square and landscape layouts from the displayed clip size; H.264 playback copies for HEVC and WebM; no-audio and over-90-second clips.
+- 27 Oct 2026: post caption (claims and disclosure), image and carousel posts, language check with human-review flags, and `DEMO_MODE` limits.
 
 A same-day prototype (26 Oct, before kickoff) existed in a separate private repo; no code from it is used here.
 

@@ -49,7 +49,7 @@ def _short(value, limit: int = 160) -> str:
 
 
 def build_state(turns: dict, frames: list[dict], sources_text: str, key_messages: list[str], pack: Pack,
-                product: str = "", supplement: bool = False) -> ReviewState:
+                product: str = "", supplement: bool = False, caption: str = "", post_kind: str = "video") -> ReviewState:
     sentences = sentences_from_turns(turns.get("turns", []))
     duration = turns.get("duration") or (sentences[-1].end if sentences else 0.0)
     timing = turns.get("timing", "asr")
@@ -60,7 +60,7 @@ def build_state(turns: dict, frames: list[dict], sources_text: str, key_messages
     return ReviewState(
         sentences=sentences, duration=float(duration or 0.0), timing=timing, frames=frames,
         sources=SourceIndex.from_pack(sources_text, list(pack.rules)), key_messages=[m.strip() for m in key_messages if m.strip()],
-        pack=pack, product=product, supplement=supplement, sources_text=sources_text,
+        pack=pack, product=product, supplement=supplement, sources_text=sources_text, caption=caption or "", post_kind=post_kind,
     )
 
 
@@ -218,6 +218,7 @@ class Agent:
             "transcript": [s.as_dict() for s in state.sentences],
             "frames": [{"time": f["time"], "text": f.get("text", "")} for f in state.frames],
             "claims": [c.as_dict() for c in state.claims],
+            "language": state.language,
             "disclosure": state.disclosure,
             "coverage": state.coverage,
             "sources": [c.as_dict() for c in state.sources.chunks],
@@ -235,7 +236,8 @@ class Agent:
 
 def run_review(provider, *, wav: bytes = b"", frames: list[dict] | None = None, sources: str, key_messages: list[str],
                pack: Pack, product: str = "", supplement: bool = False, emit=None, cap: int = ACTION_CAP, fetcher=fetch_url,
-               no_audio: bool = False, duration: float | None = None, media: dict | None = None) -> dict:
+               no_audio: bool = False, duration: float | None = None, media: dict | None = None, caption: str = "",
+               post_kind: str = "video") -> dict:
     """Transcribe, build the state, run the agent and the guard. Returns the review.
 
     ``no_audio`` skips transcription (the clip has no audio track); the agent
@@ -243,9 +245,13 @@ def run_review(provider, *, wav: bytes = b"", frames: list[dict] | None = None, 
     """
     trace = Trace(emit)
     calls_before = len(provider.calls)
-    if no_audio:
+    if post_kind == "images":
+        transcription = {"turns": [], "duration": float(len(frames or [])), "timing": "image post"}
+        trace.add("transcribed", summary=f"Image post with {len(frames or [])} image{'s' if len(frames or []) != 1 else ''}: no speech. Claims come from the images and the caption.",
+                  model_calls=0, text="")
+    elif no_audio:
         transcription = {"turns": [], "duration": duration, "timing": "no audio"}
-        trace.add("transcribed", summary="No audio track: transcription skipped. Claims come from on-screen text only.",
+        trace.add("transcribed", summary="No audio track: transcription skipped. Claims come from on-screen text and the caption only.",
                   model_calls=0, text="")
     else:
         transcription = provider.transcribe(wav, [product] if product else [])
@@ -254,9 +260,12 @@ def run_review(provider, *, wav: bytes = b"", frames: list[dict] | None = None, 
                   model_calls=len(provider.calls) - calls_before, text=" ".join(t.get("text", "") for t in turns))
     if duration and not transcription.get("duration"):
         transcription["duration"] = duration
-    state = build_state(transcription, frames or [], sources, key_messages, pack, product, supplement)
+    state = build_state(transcription, frames or [], sources, key_messages, pack, product, supplement, caption, post_kind)
     agent = Agent(state, provider, cap=cap, fetcher=fetcher, trace=trace)
     result = agent.run()
     if media:
         result["media"] = media
+    result["caption"] = caption or ""
+    result["post_kind"] = post_kind
+    result["inputs"]["caption"] = caption or ""
     return result
