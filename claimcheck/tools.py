@@ -326,10 +326,10 @@ class ToolBox:
         if verdict_word == "supported":
             if chunk is None or chunk.id.startswith("R"):
                 checks.append("judge said supported but cited no product source chunk; downgraded")
-                verdict_word, reason = "not_supported", "No source chunk was cited for this line, so it is treated as unsupported."
+                verdict_word, reason = "not_supported", "No product source was cited for this line, so it is treated as unsupported."
             elif not verified:
                 checks.append(f"cited words were not found in {chunk.id}; downgraded")
-                verdict_word, reason = "not_supported", f"The quoted evidence does not appear in {chunk.id}, so the claim is treated as unsupported."
+                verdict_word, reason = "not_supported", "The quoted evidence is not in the cited product source, so the claim is treated as unsupported."
         result = {
             "verdict": "pass" if verdict_word == "supported" else "fail",
             "judgement": verdict_word,

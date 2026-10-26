@@ -85,7 +85,7 @@ def judge(line: str, chunks: list[dict], target: str, original: str) -> dict:
     elif score >= 0.3:
         out.update(verdict="supported", reason="The source states this.")
     else:
-        out.update(verdict="not_supported", reason="No source chunk states this.")
+        out.update(verdict="not_supported", reason="No product source states this.")
     if target == "rewrite":
         out["keeps_point"] = len(tokens(line)) >= 3
         out["keeps_point_reason"] = "The line still describes the same product feature."

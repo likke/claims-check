@@ -217,6 +217,23 @@ const tc = t => { if (t === null || t === undefined || isNaN(t)) return '—'; c
 const params = new URLSearchParams(location.search);
 // where a note sits: a timecode for video, "Image N" for an image post, nothing for the caption
 const place = t => t === null || t === undefined ? '—' : document.body.classList.contains('layout-images') ? `Image ${Math.round(t)}` : tc(t);
+const clock = t => { const s = Math.max(0, Math.round(t || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+// Model reasons can mention source ids ("S3") or "chunks"; reviewers see "the product sources".
+function plain(text){
+  return String(text || '')
+    .replace(/^No (?:source )?chunks? (?:states?|says?|mentions?) (?:a |an |the )?guarantee of (.+?)\.?$/i, 'The product sources never promise $1.')
+    .replace(/^No (?:source )?chunks? (states?|says?|mentions?)\b/i, (m, verb) => 'The product sources never ' + verb.toLowerCase().replace(/s$/, ''))
+    .replace(/\b(?:the )?(?:source )?chunks? [SR]\d+\b/gi, 'the product sources')
+    .replace(/\b(?:in |from )?[SR]\d+\b/g, m => /^(in|from) /i.test(m) ? m.split(' ')[0] + ' the product sources' : 'the product sources')
+    .replace(/\b(?:source )?chunks?\b/gi, 'product sources');
+}
+const STEP_WORDS = {extract_claims: 'find claims', judge_claim: 'check claim', rewrite_line: 'rewrite a line', check_disclosure: 'check label',
+                    check_coverage: 'check key message', fetch_source: 'read a source page', search_source: 'search the sources', finish: 'finish'};
+function sourceName(origin){
+  if (!origin || origin === 'pasted') return 'product sources';
+  if (/^Rule pack/i.test(origin)) return 'rule pack';
+  try { return new URL(origin).hostname || 'product sources'; } catch { return 'product sources'; }
+}
 const ORIGIN = {speech: 'From speech', on_screen: 'From on-screen text', caption: 'From the post caption'};
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = ms => new Promise(r => setTimeout(r, REDUCED ? 0 : ms));
@@ -237,7 +254,8 @@ async function init(){
   if (params.get('auto') === 'replay' && replay.ok) replayRun();
 }
 function setProvider(p, recorded){
-  const kind = recorded ? 'Recorded run' : p.name === 'meta' ? 'Meta Model API' : p.name === 'open' ? 'Muse Spark Open' : 'Offline fixture';
+  if (!recorded && p.name === 'fixture') { $('#provider').textContent = 'Offline demo, no AI model: Ledgerly AI is a made-up product'; return; }
+  const kind = recorded ? 'Recorded run' : p.name === 'meta' ? 'Meta Model API' : 'Muse Spark Open';
   $('#provider').textContent = `${kind}: ${p.label.replace(/^[^·]*·\s*/, '')}`;
 }
 $('#replay').addEventListener('click', () => replayRun());
@@ -250,11 +268,11 @@ function begin(videoUrl, replay){
   $('#approve').disabled = true; $('#approve-note').textContent = 'Decide each claim note first.';
   const p = $('#player');
   if (videoUrl) { p.src = videoUrl; p.classList.remove('hidden'); $('#novideo').classList.add('hidden'); p.muted = params.has('auto') || p.muted; }
-  else { p.classList.add('hidden'); p.removeAttribute('src'); $('#novideo').classList.remove('hidden'); $('#novideo').textContent = 'Offline fixture: no video file. Ledgerly AI is a fictional product.'; }
+  else { p.classList.add('hidden'); p.removeAttribute('src'); $('#novideo').classList.remove('hidden'); $('#novideo').textContent = 'Offline demo: no video file. Ledgerly AI is a made-up product.'; }
   status();
 }
 function status(){
-  $('#status').textContent = S.done ? `Review finished in ${Math.round(S.lastT)} s. ${S.replay ? 'Recorded run, replayed.' : ''}` : `Reviewing. ${Math.round(S.lastT)} s so far.`;
+  $('#status').textContent = S.done ? `Reviewed in ${clock(S.lastT)}` : `Reviewing… ${clock(S.lastT)}`;
 }
 
 $('#form').addEventListener('submit', async e => {
@@ -388,7 +406,8 @@ $('#player').addEventListener('timeupdate', () => setHead($('#player').currentTi
 function log(time, event, detail, guard){
   const row = document.createElement('div');
   row.className = 'logrow new';
-  row.innerHTML = `<span class="tc">${place(time)}</span><span>${esc(event)}${guard ? ' <span class="guard">by guard</span>' : ''}</span><span class="detail">${esc(detail)}</span>`;
+  const when = time === null || time === undefined ? `+${clock(S.lastT)}` : place(time);
+  row.innerHTML = `<span class="tc">${when}</span><span>${esc(event)}${guard ? ' <span class="guard">(finished by the code check)</span>' : ''}</span><span class="detail">${esc(detail)}</span>`;
   const rule = document.createElement('div'); rule.className = 'rule';
   $('#log').appendChild(row); $('#log').appendChild(rule);
 }
@@ -397,30 +416,41 @@ function log(time, event, detail, guard){
 function apply(e){
   if (e.t) { S.lastT = +e.t; status(); }
   if (e.kind === 'art') { showArt(e); return; }
-  if (e.kind === 'media_info') { applyMedia(e, e.video_url); log(null, e.layout === 'layout-images' ? 'Post read' : 'Clip read', e.summary); return; }
+  if (e.kind === 'media_info') {
+    applyMedia(e, e.video_url);
+    if (e.layout === 'layout-images') log(null, 'Post read', `${e.images} image${e.images === 1 ? '' : 's'}`);
+    else log(null, 'Video read', `${e.orientation.charAt(0).toUpperCase() + e.orientation.slice(1)}, ${e.display_width}×${e.display_height}${e.proxy ? ', converted so the browser can play it' : ''}${e.has_audio ? '' : ', no sound'}`);
+    return;
+  }
   if (e.kind === 'post_images') { showGallery(e.images); return; }
   if (e.kind === 'warning') { log(null, 'Clip trimmed', e.summary); return; }
   if (e.kind === 'frames' || e.kind === 'media') return;
   if (e.kind === 'transcribed') {
     if (/^No audio/.test(e.summary)) log(null, 'No audio track', e.summary.replace(/^No audio track:\s*/, ''));
     else if (/^Image post/.test(e.summary)) log(null, 'No speech', e.summary.replace(/^[^:]*:\s*no speech\.\s*/, ''));
-    else log(null, 'Speech transcribed', e.summary.replace(/^Speech transcribed:\s*/, ''));
+    else S.heard = e.text || '';  // logged with the clip length when the start event arrives
     return;
   }
-  if (e.kind === 'start') { S.duration = e.duration || S.duration; drawRuler(); return; }
+  if (e.kind === 'start') {
+    S.duration = e.duration || S.duration; drawRuler();
+    if (S.heard !== undefined) { const words = S.heard.split(/\s+/); log(null, `Speech transcribed (${Math.round(S.duration)} s)`, `“${words.slice(0, 9).join(' ')}${words.length > 9 ? '…' : ''}”`); S.heard = undefined; }
+    return;
+  }
   if (e.kind === 'plan') {
     const tools = (e.actions || []).map(a => a.tool);
-    const list = [...new Set(tools)].map(t => t + (tools.filter(x => x === t).length > 1 ? ' ×' + tools.filter(x => x === t).length : '')).join(', ');
-    log(null, 'Planned', `${list}${e.mode === 'native_tools' ? ' (Muse Spark tool call)' : e.mode === 'json_planner' ? ' (Muse Spark JSON plan)' : ' (fixed policy)'}`);
+    const list = [...new Set(tools)].map(t => { const n = tools.filter(x => x === t).length; return n > 1 ? `${STEP_WORDS[t] || t} ×${n}` : (STEP_WORDS[t] || t); }).join(', ');
+    log(null, e.mode === 'fixture_planner' ? 'Offline plan chose:' : 'Muse Spark chose:', list || 'nothing');
     return;
   }
-  if (['cap_reached', 'planner_fallback', 'planner_stalled', 'planner_error'].includes(e.kind)) { log(null, e.kind.replace(/_/g, ' '), e.summary); return; }
+  const NOTICE = {cap_reached: ['Step limit reached', 'The code check finishes the open work.'], planner_fallback: ['Planning switched', 'Muse Spark now plans in plain text.'],
+                  planner_stalled: ['Planner stopped', 'The code check finishes the open work.'], planner_error: ['Planner failed', 'The code check finishes the open work.']};
+  if (NOTICE[e.kind]) { log(null, NOTICE[e.kind][0], NOTICE[e.kind][1]); return; }
   if (e.kind === 'action') onAction(e);
 }
 
 function onAction(e){
   const o = e.observation || {}, guard = e.by === 'guard';
-  if (o.error) { log(null, `${e.tool} refused`, o.error, guard); return; }
+  if (o.error) { log(null, 'Step refused', plain(o.error), guard); return; }
   switch (e.tool) {
     case 'extract_claims':
       (o.claims || []).forEach(c => S.claims.set(c.id, {id: c.id, quote: c.quote, origin: c.origin, start: c.start, rounds: [], status: 'pending', review: !!c.needs_human_review}));
@@ -432,13 +462,13 @@ function onAction(e){
       const judged = {verdict: o.verdict, judgement: o.judgement, reason: o.reason, chunk_id: o.chunk_id, evidence: o.evidence, origin: o.evidence_origin || (S.sources[o.chunk_id] || {}).origin || ''};
       if (String(o.target).startsWith('rewrite')) {
         const r = c.rounds[c.rounds.length - 1]; Object.assign(r, judged);
-        if (o.verdict === 'pass') { c.status = 'fixed'; log(c.start, `Revision ${r.round} checked`, `Matches ${o.chunk_id}`, guard); revisionPassed(c, r); }
-        else { log(c.start, `Revision ${r.round} rejected`, o.reason, guard); renderNote(noteFor(c)); }
+        if (o.verdict === 'pass') { c.status = 'fixed'; log(c.start, `Revision ${r.round} checked`, 'Matches the product sources', guard); revisionPassed(c, r); }
+        else { log(c.start, `Revision ${r.round} rejected`, plain(o.reason), guard); renderNote(noteFor(c)); }
       } else {
         c.rounds.push({round: 0, line: o.line || c.quote, ...judged});
         c.status = o.verdict === 'pass' ? 'pass' : 'fail';
-        if (c.status === 'pass') { log(c.start, 'Source matched', `${c.id} matches ${o.chunk_id}`, guard); addNote({kind: 'verified', time: c.start, claim: c}); }
-        else { log(c.start, 'Note added', o.reason, guard); addNote({kind: 'claim', time: c.start, claim: c}); }
+        if (c.status === 'pass') { log(c.start, 'Claim matches the sources', `${c.id}: “${c.quote}”`, guard); addNote({kind: 'verified', time: c.start, claim: c}); }
+        else { log(c.start, 'Note added', plain(o.reason), guard); addNote({kind: 'claim', time: c.start, claim: c}); }
       }
       break;
     }
@@ -465,8 +495,8 @@ function onAction(e){
         addNote({kind: 'message', time: m.time, message: m});
       });
       break;
-    case 'fetch_source': log(null, 'Source read', o.url, guard); break;
-    case 'search_source': log(null, 'Source searched', (o.hits || []).map(h => h.id).join(', '), guard); break;
+    case 'fetch_source': log(null, 'Source page read', String(o.url || '').replace(/^fixture:\/\//, '').replace(/^https?:\/\//, ''), guard); break;
+    case 'search_source': log(null, 'Sources searched', `${(o.hits || []).length} matching passages`, guard); break;
     case 'finish': log(null, 'Review finished', o.summary || '', guard); break;
   }
 }
@@ -486,7 +516,7 @@ function addNote(note){
 }
 function sourceLine(r){
   if (!r || !r.chunk_id) return '';
-  return `<p class="source"><b>Source</b> ${esc(r.chunk_id)}${r.origin ? ', ' + esc(r.origin) : ''}: “${esc(r.evidence)}”</p>`;
+  return `<p class="source"><b>Source:</b> “${esc(r.evidence)}” (${esc(sourceName(r.origin))})</p>`;
 }
 function renderNote(note, fresh){
   if (!note) return;
@@ -515,7 +545,7 @@ function noteHtml(note){
     body = `<h3>Key message</h3><p class="quote">“${esc(m.message)}”</p><p class="${m.status === 'covered' ? 'ok-line' : 'issue'}">${m.status === 'covered' ? `Covered at ${tc(m.time)}.` : m.status === 'partly' ? 'Partly covered.' : (document.body.classList.contains('layout-images') ? 'Not in the post.' : 'Not said in the video.')}</p>`;
   } else if (note.kind === 'verified') {
     const r = note.claim.rounds[0];
-    body = `<h3>Checked against source</h3>${origin}<p class="quote">“${esc(note.claim.quote)}”</p><p class="ok-line">Checked against source ${esc(r.chunk_id || '')}.</p>${sourceLine(r)}`;
+    body = `<h3>Checked against source</h3>${origin}<p class="quote">“${esc(note.claim.quote)}”</p><p class="ok-line">Matches the product sources.</p>${sourceLine(r)}`;
   } else {
     const c = note.claim, first = c.rounds[0] || {}, revs = c.rounds.filter(r => r.round > 0);
     const passed = revs.find(r => r.verdict === 'pass');
@@ -525,12 +555,12 @@ function noteHtml(note){
         ? `<div class="rev ${note.swapped === r.round ? 'swap' : ''}"><div class="head">Revision ${r.round}</div><p class="quote"><span class="suggested">“${esc(r.line)}”</span><span class="suggested-tag">Suggested</span></p></div>`
         : r.verdict === 'pending'
           ? `<div class="rev"><div class="head">Revision ${r.round}, checking against sources</div><p class="quote">“${esc(r.line)}”</p></div>`
-          : `<div class="rev"><div class="head">Revision ${r.round}</div><p class="quote struck turn">“${esc(r.line)}”</p><p class="why">Rejected on check: ${esc(shortReason(c, r.reason))}</p></div>`)).join('');
+          : `<div class="rev"><div class="head">Revision ${r.round}</div><p class="quote struck turn">“${esc(r.line)}”</p><p class="why">Rejected on check: ${esc(plain(shortReason(c, r.reason)))}</p></div>`)).join('');
     const decision = S.decisions[note.n];
     const buttons = S.done || passed || revs.length >= 2
       ? `<div class="decide"><button type="button" class="btn olive ${decision === 'accept' ? 'on' : ''}" data-decide="accept">Accept</button><button type="button" class="btn plain ${decision === 'reject' ? 'on' : ''}" data-decide="reject">Reject</button>${decision ? `<span class="decided">${decision === 'accept' ? (passed ? 'Suggested line accepted.' : 'Flag accepted: the line must change.') : 'Note rejected by the reviewer.'}</span>` : ''}</div>`
       : '';
-    body = `<h3>${title}</h3>${origin}<p class="issue">${esc(first.reason || '')}</p><div class="revs">${history}</div>${passed ? sourceLine(passed) : sourceLine(first)}${buttons}`;
+    body = `<h3>${title}</h3>${origin}<p class="issue">${esc(plain(first.reason || ''))}</p><div class="revs">${history}</div>${passed ? sourceLine(passed) : sourceLine(first)}${buttons}`;
   }
   return head + `<div class="body">${body}</div>`;
 }

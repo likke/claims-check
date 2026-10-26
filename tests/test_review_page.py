@@ -94,7 +94,7 @@ def test_computed_styles_have_no_edge_bars_in_a_real_browser(tmp_path):
                 call("Emulation.setDeviceMetricsOverride", width=width, height=height, deviceScaleFactor=1, mobile=width < 500)
                 call("Page.navigate", url=f"http://127.0.0.1:{port}/review?auto=run")
                 for _ in range(150):
-                    if js("document.querySelectorAll('.note').length > 3 && /finished/.test(document.querySelector('#status').textContent)"):
+                    if js("document.querySelectorAll('.note').length > 3 && /Reviewed in/.test(document.querySelector('#status').textContent)"):
                         break
                     time.sleep(0.1)
                 report = js("""(() => {
@@ -112,6 +112,12 @@ def test_computed_styles_have_no_edge_bars_in_a_real_browser(tmp_path):
                           scroll: document.documentElement.scrollWidth, width: document.documentElement.clientWidth};
                 })()""")
                 assert report["notes"] >= 4, report
+                visible = js("document.body.innerText")
+                jargon = re.findall(r"\b(chunks?|turns?|asr|tokens?|schema|fixture|heuristic)\b", visible, re.I)
+                assert jargon == [], f"jargon on screen: {jargon}"
+                assert js("plain('No chunk states a guarantee of zero FDA violations.')") == "The product sources never promise zero FDA violations."
+                assert js("plain('The line matches S3.')") == "The line matches the product sources."
+                assert re.search(r"Reviewed in \d+:\d\d", visible)
                 assert report["bad"] == [], report["bad"][:5]
                 assert report["body"] == "17px"
                 assert report["scroll"] <= report["width"], f"horizontal scroll at {width}px"

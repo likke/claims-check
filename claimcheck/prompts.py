@@ -78,7 +78,7 @@ Verdicts:
 Cite the product source chunk (S...) that supports or limits the line. Cite a rule chunk (R...) only when no product chunk is relevant.
 {"For a rewrite, keeps_point is true only when the new line still makes the creator's product point: the same subject and benefit as the original (for example, still about FDA or claim risk if the original was), still a real product statement, not a deletion, not a generic line about something else, and not a pleasantry." if target == "rewrite" else ""}
 Return JSON only:
-{{"verdict":"supported|contradicted|not_supported","chunk_id":"<id of the chunk you rely on>","evidence_quote":"<words copied exactly from that chunk>","reason":"<one plain sentence>"{keeps}}}"""
+{{"verdict":"supported|contradicted|not_supported","chunk_id":"<id of the chunk you rely on>","evidence_quote":"<words copied exactly from that chunk>","reason":"<one plain sentence for a brand reviewer: say 'the product sources', never 'chunk' or a source id>"{keeps}}}"""
 
 
 def rewrite_line(pack, claim, reason, evidence_chunk, chunks, previous=None) -> str:
