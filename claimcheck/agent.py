@@ -69,12 +69,39 @@ def run_review(video, sources, messages, pack, provider=None, emit=None):
             claim["suggested_line"] = revised
         claim["verdict"] = claim["rounds"][-1].get("verdict", "fail")
         claim["evidence"] = claim["rounds"][-1].get("evidence", "")
-    disclosed = provider.check_disclosure(transcript, frames)
+    disclosure_result = provider.check_disclosure(transcript, frames)
+    disclosed = _disclosure_details(disclosure_result, transcript, frames)
     log("check_disclosure", {}, disclosed)
-    coverage = provider.check_coverage(transcript, messages)
+    coverage = _coverage_details(provider.check_coverage(transcript, messages), messages)
     log("check_coverage", {}, coverage)
     log("finish", {}, {"claim_count": len(claims)})
-    return {"id": str(uuid.uuid4()), "transcript": transcript, "claims": claims, "disclosure": disclosed, "coverage": coverage, "trace": trace, "frames": public_frames}
+    provider_label = "meta" if provider.__class__.__name__ == "MetaProvider" else "local" if provider.__class__.__name__ == "OpenAICompatibleProvider" else "fixture"
+    return {"id": str(uuid.uuid4()), "transcript": transcript, "claims": claims, "disclosure": disclosed, "coverage": coverage, "trace": trace, "frames": public_frames, "provider": provider_label}
+
+
+def _disclosure_details(result, transcript, frames):
+    """Return a consistent disclosure finding, including its source and time."""
+    if isinstance(result, dict):
+        return {"disclosed": bool(result.get("disclosed")), "how": result.get("how", "speech or on-screen text"), "timestamp": result.get("timestamp")}
+    if not result:
+        return {"disclosed": False, "how": "not found", "timestamp": None}
+    import re
+    speech = re.search(r"paid partnership|sponsored|pakikipagtulungan bayad|bayad na partnership", transcript, re.I)
+    if speech:
+        return {"disclosed": True, "how": "spoken", "timestamp": None}
+    for frame in frames:
+        if re.search(r"paid partnership|sponsored|\bad\b", frame.get("text", ""), re.I):
+            return {"disclosed": True, "how": "on screen", "timestamp": frame.get("time")}
+    return {"disclosed": True, "how": "speech or on-screen text", "timestamp": None}
+
+
+def _coverage_details(result, messages):
+    """Map provider coverage output to a status and supporting quote per message."""
+    if isinstance(result, dict) and "messages" in result:
+        return result
+    covered = result.get("covered", []) if isinstance(result, dict) else []
+    missing = result.get("missing", []) if isinstance(result, dict) else messages.splitlines()
+    return {"messages": [{"message": item, "status": "covered" if item in covered else "missing", "quote": item if item in covered else ""} for item in messages.splitlines() if item.strip()]}
 
 
 def _keeps_product_claim(original, revised):

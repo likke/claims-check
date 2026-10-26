@@ -14,16 +14,17 @@ Open http://127.0.0.1:8000. With `MODEL_API_KEY` unset, the app uses an offline 
 
 ## Architecture
 
-FastAPI exposes upload/review, trace polling, and SSE trace endpoints; `static/index.html` is the single page. Live media extraction produces mono 16 kHz audio and up to six evenly spaced frames, then cleans its temporary directory. The bounded agent runner logs tool actions and returns source evidence, disclosure, and coverage checks. The fixture provider supports offline demos.
+FastAPI exposes upload/review, trace polling, SSE trace events, and a named reviewer decision endpoint; `static/index.html` is the single page. Live media extraction produces mono 16 kHz audio and three to six evenly spaced frames, then cleans its temporary directory. The bounded agent runner logs tool actions and returns source evidence, timestamped disclosure findings, and per-message coverage status with transcript quotes. The fixture provider supports offline demos.
 
 ## Meta models
 
-Live mode uses Muse Voice Transcribe for Tagalog/English biased transcription, Muse Spark for plan/act/observe and claim decisions, rewrites, disclosure and coverage, and Muse Spark vision for sampled frames. It tries native function tools and falls back to JSON planning if the endpoint rejects tools. The offline fixture remains available when `MODEL_API_KEY` is unset.
+Live mode uses Muse Voice Transcribe for Tagalog/English transcription, Muse Spark for plan/act/observe, claim decisions, rewrites, disclosure and coverage, and Muse Spark vision for sampled frames. It tries native function tools and falls back to JSON planning if the endpoint rejects tools. The offline fixture remains available when `MODEL_API_KEY` is unset; an OpenAI-compatible local endpoint can be selected with `MODEL_BASE_URL` and `MODEL_NAME`.
 
 ## Built during the hackathon
 
 - 26 Oct 2026 — Created the fresh app structure, offline provider, review workflow, and tests.
 - 27 Oct 2026 — Wired Meta Muse Voice Transcribe and Muse Spark, ffmpeg media extraction, trace events, and a fictional labeled eval harness.
+- 27 Oct 2026 — Added spoken and on-screen disclosure details, per-message coverage quotes, provider badges, live SSE trace rendering, and claim review cards with reviewer decisions.
 
 A same-day prototype (26 Oct, before kickoff) existed in a separate private repo; no code from it is used here.
 

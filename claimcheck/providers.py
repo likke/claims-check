@@ -150,10 +150,10 @@ class MetaProvider(FixtureProvider):
         return str(result.get("line", ""))
 
     def check_disclosure(self, transcript, frames):
-        return bool(self._json_call("Return JSON {disclosed:boolean}. Is paid disclosure present in the speech or these video frames? Speech: " + transcript, frames).get("disclosed"))
+        return self._json_call("Return JSON {disclosed:boolean,how:string,timestamp:number|null}. Check spoken English or Tagalog speech and on-screen disclosure text. Set how to spoken or on screen and timestamp to the matching speech/frame time when available. Speech: " + transcript, frames)
 
     def check_coverage(self, transcript, key_messages):
-        return self._json_call(f"Return JSON covered and missing arrays. Speech: {transcript}\nRequired messages: {key_messages}")
+        return self._json_call(f"For each required message, return JSON {{messages:[{{message,status,quote}}]}}. Status must be covered, partly, or missing. Quote an exact transcript excerpt supporting covered or partly; quote must be empty for missing. Speech: {transcript}\nRequired messages: {key_messages}")
 
 
 class OpenAICompatibleProvider(FixtureProvider):
