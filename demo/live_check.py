@@ -34,6 +34,11 @@ def main():
     parser.add_argument("--video", default=str(ROOT / "demo" / "live-check.mp4"))
     parser.add_argument("--out", required=True)
     parser.add_argument("--budget", type=int, default=int(os.getenv("LIVE_CALL_BUDGET", "26")))
+    parser.add_argument("--product", default="Dasho")
+    parser.add_argument("--pack", default="Tech claims")
+    parser.add_argument("--sources-file", help="text file with the source pack (default: the built-in Dasho pack)")
+    parser.add_argument("--key-message", action="append", help="repeat for each key message")
+    parser.add_argument("--update-replay", action="store_true", help="point demo/replay.json at this run and video")
     args = parser.parse_args()
 
     provider = MetaProvider()
@@ -55,12 +60,17 @@ def main():
 
     media = extract_media(Path(args.video).read_bytes())
     print(f"video {media['duration']} s, frames at {[f['time'] for f in media['frames']]}")
-    result = run_review(provider, wav=media["wav"], frames=media["frames"], sources=SOURCES, key_messages=KEY_MESSAGES,
-                        pack=get_pack("Tech claims"), product="Dasho", emit=show)
+    sources = Path(args.sources_file).read_text(encoding="utf-8") if args.sources_file else SOURCES
+    result = run_review(provider, wav=media["wav"], frames=media["frames"], sources=sources, key_messages=args.key_message or KEY_MESSAGES,
+                        pack=get_pack(args.pack), product=args.product, emit=show)
     text = json.dumps(result, indent=2, ensure_ascii=False)
     if provider.api_key in text:
         raise SystemExit("refusing to save: the API key appears in the result")
     Path(args.out).write_text(text, encoding="utf-8")
+    if args.update_replay:
+        relative = lambda path: str(Path(path).resolve().relative_to(ROOT)) if Path(path).resolve().is_relative_to(ROOT) else str(Path(path).resolve())
+        (ROOT / "demo" / "replay.json").write_text(json.dumps({"run": relative(args.out), "clip": relative(args.video)}, indent=2) + "\n")
+        print("demo/replay.json now points at this run and clip")
     print(f"\nsaved {args.out}; usage {result['usage']}; agent {result['agent']}")
     for claim in result["claims"]:
         print(f"{claim['id']} {claim['status']:<6} \"{claim['quote']}\" -> {claim['suggested_line']}  evidence={claim['evidence']}")

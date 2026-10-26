@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import threading
 import uuid
 from datetime import datetime, timezone
@@ -82,13 +83,33 @@ def config():
     }
 
 
+def replay_config() -> dict:
+    """Which recorded run and clip the replay uses.
+
+    Read from demo/replay.json ({"run": "...", "clip": "..."}, paths relative
+    to the repo), overridable with REPLAY_RUN and REPLAY_CLIP. To demo a new
+    clip: run demo/live_check.py --video new.mp4 --update-replay. No code change.
+    """
+    config = {}
+    path = Path(os.getenv("REPLAY_CONFIG", ROOT / "demo" / "replay.json"))
+    if path.exists():
+        config = json.loads(path.read_text(encoding="utf-8"))
+    run = os.getenv("REPLAY_RUN") or config.get("run")
+    clip = os.getenv("REPLAY_CLIP") or config.get("clip")
+    if not run:
+        runs = sorted((ROOT / "demo").glob("live-run-*.json"))
+        run = str(runs[-1]) if runs else None
+    resolve = lambda value: (Path(value) if Path(value).is_absolute() else ROOT / value) if value else None
+    return {"run": resolve(run), "clip": resolve(clip)}
+
+
 @app.api_route("/api/replay", methods=["GET", "HEAD"])
 def replay():
-    """The newest recorded live run in demo/, for filming without spending API credits."""
-    runs = sorted((ROOT / "demo").glob("live-run-*.json"))
-    if not runs:
+    """The configured recorded run, for filming without spending API credits."""
+    paths = replay_config()
+    if not paths["run"] or not paths["run"].exists():
         raise HTTPException(404, "No recorded live run")
-    run = json.loads(runs[-1].read_text(encoding="utf-8"))
+    run = json.loads(paths["run"].read_text(encoding="utf-8"))
     if "inputs" not in run:  # runs recorded before inputs were saved: rebuild them from the run itself
         run["inputs"] = {
             "product": run.get("product", ""), "pack": run.get("pack", "Tech claims"), "supplement": run.get("supplement", False),
@@ -96,9 +117,11 @@ def replay():
                        + "".join("\n" + url for url in run.get("fetched_urls", {})),
             "key_messages": [m["message"] for m in (run.get("coverage") or {}).get("messages", [])],
         }
-    clip = ROOT / "demo" / "live-check.mp4"
-    run["video_url"] = "/api/replay/video" if clip.exists() else None
-    run["frame_images"] = _frame_images(clip, [f["time"] for f in run.get("frames", [])]) if clip.exists() else []
+    clip = paths["clip"]
+    has_clip = bool(clip and clip.exists())
+    run["video_url"] = "/api/replay/video" if has_clip else None
+    run["video_name"] = clip.name if has_clip else None
+    run["frame_images"] = _frame_images(clip, [f["time"] for f in run.get("frames", [])]) if has_clip else []
     return run
 
 
@@ -117,10 +140,11 @@ def _frame_images(clip: Path, times: list[float]) -> list[dict]:
 
 @app.get("/api/replay/video")
 def replay_video():
-    clip = ROOT / "demo" / "live-check.mp4"
-    if not clip.exists():
+    clip = replay_config()["clip"]
+    if not clip or not clip.exists():
         raise HTTPException(404, "No recorded clip")
-    return FileResponse(clip, media_type="video/mp4")
+    media = {".mov": "video/quicktime", ".webm": "video/webm"}.get(clip.suffix.lower(), "video/mp4")
+    return FileResponse(clip, media_type=media)
 
 
 @app.post("/api/reviews")

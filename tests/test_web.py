@@ -4,7 +4,11 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
+from pathlib import Path
+
 from claimcheck.web import app
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture()
@@ -113,3 +117,18 @@ def test_replay_has_frame_thumbnails_and_events_carry_ui_fields(client):
     assert begin["duration"] == 25.0 and len(begin["transcript"]) == 6
     judge = next(s for s in steps if s["kind"] == "action" and s["tool"] == "judge_claim")
     assert {"line", "evidence_origin", "claim_status"} <= set(judge["observation"])
+
+
+def test_replay_run_and_clip_come_from_config(client, tmp_path, monkeypatch):
+    import shutil
+    run = json.loads((ROOT_DIR / "demo" / "live-run-2026-10-27.json").read_text())
+    run["product"] = "New Clip Product"
+    (tmp_path / "run.json").write_text(json.dumps(run))
+    shutil.copy(ROOT_DIR / "demo" / "live-check.mp4", tmp_path / "creator-take-2.mp4")
+    (tmp_path / "replay.json").write_text(json.dumps({"run": str(tmp_path / "run.json"), "clip": str(tmp_path / "creator-take-2.mp4")}))
+    monkeypatch.setenv("REPLAY_CONFIG", str(tmp_path / "replay.json"))
+    served = client.get("/api/replay").json()
+    assert served["product"] == "New Clip Product" and served["video_name"] == "creator-take-2.mp4"
+    assert client.get("/api/replay/video").status_code == 200
+    monkeypatch.setenv("REPLAY_CLIP", str(tmp_path / "missing.mp4"))
+    assert client.get("/api/replay").json()["video_url"] is None
