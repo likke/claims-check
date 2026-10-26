@@ -47,6 +47,8 @@ def test_json_retry(monkeypatch):
 class LiveMock(app.FixtureProvider):
     def __init__(self): self.calls=[]
     def transcribe(self, video): return "We guarantee a cure."
+    def extract_claims(self, transcription):
+        return [{"quote": "We guarantee a cure.", "start": 2.25, "end": 3.4, "estimated": False, "rounds": []}]
     def frames(self, video): return [{"time":1,"text":"","image":"encoded"}]
     def plan(self, context, history): return {"tool":"search_source","input":{},"mode":"json"}
     def judge_claim(self, claim, evidence):
@@ -71,6 +73,22 @@ def test_round_two_reason_and_frame_disclosure():
     assert ("rewrite","round 1 failed",1) in provider.calls
     assert result["claims"][0]["rounds"][1]["verdict"]=="pass"
     assert ("disclosure_frames",provider.frames(b"x")) in provider.calls
+    assert result["claims"][0]["start"] == 2.25
+    assert result["claims"][0]["end"] == 3.4
+    assert result["claims"][0]["estimated"] is False
+
+def test_meta_claim_extraction_uses_model_and_estimates_text_timing(monkeypatch):
+    provider = app.MetaProvider.__new__(app.MetaProvider)
+    provider.model = "muse-spark"
+    prompts = []
+    def json_call(prompt):
+        prompts.append(prompt)
+        return {"claims": [{"quote": "Claim.", "start": 0, "end": 2, "estimated": True}]}
+    monkeypatch.setattr(provider, "_json_call", json_call)
+    claims = provider.extract_claims({"text": "Claim.", "segments": [], "duration": 2})
+    assert claims[0]["estimated"] is True
+    assert claims[0]["start"] == 0 and claims[0]["end"] == 2
+    assert '"start": 0.0' in prompts[0]
 
 def test_trace_sse_and_polling():
     result=app.run_review(b"x","source","", "Tech claims",LiveMock()); app.REVIEWS[result["id"]]=result

@@ -16,6 +16,10 @@ class FixtureProvider:
     def transcribe(self, video: bytes) -> str:
         return "Ledgerly AI guarantees zero FDA violations. Sulit ito!"
 
+    def extract_claims(self, transcription):
+        text = transcription.get("text", "") if isinstance(transcription, dict) else transcription
+        return [{"quote": match.group().strip(), "start": round(match.start() / 12, 1), "end": round((match.start() + len(match.group())) / 12, 1), "estimated": True, "rounds": []} for match in re.finditer(r"[^.!?]+[.!?]?", text) if re.search(r"\b(guarantee|guarantees|cure|treat|prevents|eliminates|100%|zero)\b", match.group(), re.I)]
+
     def frames(self, video: bytes) -> list[dict[str, Any]]:
         return [{"time": 1.2, "text": "Paid partnership", "claims": []}]
 
@@ -54,8 +58,27 @@ class MetaProvider(FixtureProvider):
 
     def transcribe(self, video):
         audio, self._frames = extract_media(video)
-        result = self._request("/audio/transcriptions", {"model": self.asr_model, "file": base64.b64encode(audio).decode(), "language": "tl,en", "prompt": "Tagalog and English (Taglish) speech"})
-        return result.get("text", result.get("transcript", ""))
+        result = self._request("/audio/transcriptions", {"model": self.asr_model, "file": base64.b64encode(audio).decode(), "language": "tl,en", "prompt": "Tagalog and English (Taglish) speech", "response_format": "verbose_json", "timestamp_granularities": ["segment"]})
+        return {"text": result.get("text", result.get("transcript", "")), "segments": result.get("segments", []), "duration": result.get("duration")}
+
+    def extract_claims(self, transcription):
+        segments = transcription.get("segments", [])
+        text = transcription.get("text", "")
+        if not segments and text:
+            duration = transcription.get("duration") or max(1, len(text.split()) / 2.5)
+            sentences = [part.strip() for part in re.findall(r"[^.!?]+[.!?]?", text) if part.strip()]
+            total = max(1, sum(len(part.split()) for part in sentences))
+            cursor = 0.0
+            segments = []
+            for sentence in sentences:
+                span = duration * len(sentence.split()) / total
+                segments.append({"text": sentence, "start": cursor, "end": cursor + span, "estimated": True})
+                cursor += span
+        prompt = ("Extract every factual product or performance claim from these timestamped speech segments. "
+                  "Return JSON only as {claims:[{quote,start,end,estimated}]}. Preserve exact quote and seconds. "
+                  "Use segment timestamps; estimated is true only when timing was estimated. Segments: " + json.dumps(segments))
+        claims = self._json_call(prompt).get("claims", [])
+        return [{"quote": item["quote"], "start": float(item["start"]), "end": float(item["end"]), "estimated": bool(item.get("estimated", False)), "rounds": []} for item in claims]
 
     def frames(self, video):
         return [{"time": frame["time"], "image": base64.b64encode(frame["image"]).decode()} for frame in getattr(self, "_frames", [])]

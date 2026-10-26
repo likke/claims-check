@@ -1,5 +1,4 @@
 """Plan, act, and observe review workflow."""
-import re
 import uuid
 
 from .packs import pack_guidance
@@ -8,7 +7,9 @@ from .tools import search_source
 
 
 def extract_claims(transcript):
-    return [{"quote": match.group().strip(), "timestamp": round(match.start() / 12, 1), "rounds": []} for match in re.finditer(r"[^.!?]+[.!?]?", transcript) if re.search(r"\b(guarantee|guarantees|cure|treat|prevents|eliminates|100%|zero)\b", match.group(), re.I)]
+    """Fixture-compatible claim extraction; live providers use their model."""
+    from .providers import FixtureProvider
+    return FixtureProvider().extract_claims(transcript)
 
 
 def run_review(video, sources, messages, pack, provider=None, emit=None):
@@ -25,7 +26,8 @@ def run_review(video, sources, messages, pack, provider=None, emit=None):
         if emit:
             emit(event)
 
-    transcript = provider.transcribe(video)
+    transcription = provider.transcribe(video)
+    transcript = transcription.get("text", "") if isinstance(transcription, dict) else transcription
     log("transcribe", {"video_bytes": len(video)}, transcript)
     frames = provider.frames(video)
     public_frames = [{key: value for key, value in frame.items() if key != "image"} for frame in frames]
@@ -33,7 +35,7 @@ def run_review(video, sources, messages, pack, provider=None, emit=None):
     guidance = pack_guidance(pack)
     if pack.lower() == "fda beauty":
         log("FDA_rule_pack", {"pack": pack}, guidance)
-    claims = extract_claims(transcript)
+    claims = provider.extract_claims(transcription)
     log("extract_claims", {}, claims)
     for claim in claims:
         evidence = search_source(claim["quote"], sources + "\n" + guidance)
