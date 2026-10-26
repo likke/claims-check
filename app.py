@@ -1,8 +1,5 @@
 """Dasho Claim Check: source-grounded review of creator video claims."""
-import json
-import os
-import re
-import uuid
+import json, os, re, shutil, subprocess, tempfile, uuid
 from pathlib import Path
 from typing import Any
 
@@ -12,162 +9,166 @@ from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).parent
 FIXTURE_SOURCE = "Ledgerly AI helps teams organize invoices and flag unusual charges for human review. It does not guarantee fraud prevention or regulatory compliance."
+TOOLS = ["search_source", "fetch_source", "judge_claim", "rewrite_line", "check_disclosure", "check_coverage", "finish"]
 
+def extract_media(video: bytes) -> tuple[bytes, list[dict[str, Any]]]:
+    """Extract mono 16 kHz audio and up to six evenly spaced one-second frames."""
+    with tempfile.TemporaryDirectory(prefix="claim-check-") as tmp:
+        source = Path(tmp) / "upload.bin"
+        audio_path = Path(tmp) / "audio.wav"
+        source.write_bytes(video)
+        subprocess.run(["ffmpeg", "-v", "error", "-i", str(source), "-vn", "-ac", "1", "-ar", "16000", str(audio_path)], check=True, capture_output=True)
+        duration_text = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(source)], check=True, capture_output=True, text=True).stdout.strip()
+        duration = max(1, int(float(duration_text) + .5))
+        count = min(6, max(3, duration))
+        times = sorted(set(round(i * max(0, duration - 1) / max(1, count - 1), 2) for i in range(count)))
+        frames = []
+        for i, at in enumerate(times):
+            frame = Path(tmp) / f"frame-{i}.jpg"
+            subprocess.run(["ffmpeg", "-v", "error", "-ss", str(at), "-i", str(source), "-frames:v", "1", "-q:v", "3", str(frame)], check=True, capture_output=True)
+            frames.append({"time": at, "image": frame.read_bytes()})
+        return audio_path.read_bytes(), frames
 
 class FixtureProvider:
-    """Offline demonstration provider; fictional content only."""
-    def transcribe(self, video: bytes) -> str:
-        return "Ledgerly AI guarantees zero FDA violations. Sulit ito!"
+    def transcribe(self, video: bytes) -> str: return "Ledgerly AI guarantees zero FDA violations. Sulit ito!"
+    def frames(self, video: bytes) -> list[dict[str, Any]]: return [{"time": 1.2, "text": "Paid partnership", "claims": []}]
+    def plan(self, context, history): return {"tool": "search_source", "input": {"query": "capabilities"}, "mode": "fixture"}
+    def json_plan(self, prompt): return {"tool": "finish", "input": {}, "mode": "json"}
+    def judge_claim(self, claim, evidence): return judge_claim(claim, evidence)
+    def rewrite_line(self, claim, reason, evidence, round_number=1): return rewrite_line(claim, reason, evidence)
+    def check_disclosure(self, transcript, frames): return check_disclosure(transcript, frames)
+    def check_coverage(self, transcript, key_messages): return check_coverage(transcript, key_messages)
 
-    def frames(self, video: bytes) -> list[dict[str, Any]]:
-        return [{"time": 1.2, "text": "Paid partnership", "claims": []}]
-
-    def plan(self, context: dict[str, Any], history: list[dict[str, Any]]) -> dict[str, Any]:
-        return {"tool": "search_source", "input": {"query": "Ledgerly AI capabilities"}}
-
-    def json_plan(self, prompt: str) -> dict[str, Any]:
-        return {"tool": "finish", "input": {}}
-
-
-class OpenAICompatibleProvider(FixtureProvider):
-    """OpenAI-compatible provider hook for Muse Spark Open/local endpoints."""
+class MetaProvider(FixtureProvider):
+    """Meta.ai v1 provider for Muse Voice Transcribe and Muse Spark."""
     def __init__(self):
-        self.base_url = os.getenv("MODEL_BASE_URL", "http://localhost:11434/v1").rstrip("/")
-        self.model = os.getenv("MODEL_NAME", "muse-spark-open")
-        self.api_key = os.getenv("MODEL_API_KEY", "")
+        self.base_url = os.getenv("MODEL_BASE_URL", "https://api.meta.ai/v1").rstrip("/")
+        self.api_key = os.environ["MODEL_API_KEY"]
+        self.asr_model = os.getenv("ASR_MODEL", "muse-voice-transcribe")
+        self.model = os.getenv("MODEL_NAME", "muse-spark")
+        self.mode = "tools"
 
-    def _chat(self, messages: list[dict[str, str]], tools: list[dict] | None = None) -> dict:
-        import urllib.request
-        payload: dict[str, Any] = {"model": self.model, "messages": messages, "temperature": 0}
-        if tools:
-            payload["tools"] = tools
-        request = urllib.request.Request(self.base_url + "/chat/completions", data=json.dumps(payload).encode(),
-            headers={"Content-Type": "application/json", **({"Authorization": f"Bearer {self.api_key}"} if self.api_key else {})})
-        with urllib.request.urlopen(request, timeout=90) as response:
-            return json.loads(response.read())
+    def _request(self, path, payload):
+        import urllib.error, urllib.request
+        req = urllib.request.Request(self.base_url + path, data=json.dumps(payload).encode(), headers={"Content-Type":"application/json", "Authorization":f"Bearer {self.api_key}"})
+        with urllib.request.urlopen(req, timeout=120) as res: return json.loads(res.read())
 
-    def plan(self, context: dict[str, Any], history: list[dict[str, Any]]) -> dict[str, Any]:
-        return self.json_plan(json.dumps({"context": context, "history": history}))
+    def transcribe(self, video):
+        audio, raw_frames = extract_media(video)
+        import base64
+        result = self._request("/audio/transcriptions", {"model":self.asr_model, "file":base64.b64encode(audio).decode(), "language":"tl,en", "prompt":"Tagalog and English (Taglish) speech"})
+        self._frames = raw_frames
+        return result.get("text", result.get("transcript", ""))
 
-    def json_plan(self, prompt: str) -> dict[str, Any]:
-        result = self._chat([{"role": "system", "content": "Return one JSON object with tool and input fields."}, {"role": "user", "content": prompt}])
-        content = result["choices"][0]["message"]["content"]
+    def frames(self, video):
+        import base64
+        return [{"time":f["time"], "image":base64.b64encode(f["image"]).decode()} for f in getattr(self, "_frames", [])]
+
+    def _spark(self, instruction, images=None):
+        content = [{"type":"input_text", "text":instruction}]
+        for image in images or []: content.append({"type":"input_image", "image_url":"data:image/jpeg;base64,"+image["image"]})
+        result = self._request("/responses", {"model":self.model, "input":content})
+        return result
+
+    @staticmethod
+    def _output(result):
+        if "output_text" in result: return result["output_text"]
+        for item in result.get("output", []):
+            for c in item.get("content", []):
+                if c.get("type") in ("output_text", "text"): return c.get("text", "")
+        return ""
+
+    def _json_call(self, prompt, images=None):
+        raw = self._output(self._spark(prompt, images))
+        for attempt in range(2):
+            try:
+                match = re.search(r"\{.*\}", raw, re.S)
+                return json.loads(match.group() if match else raw)
+            except (TypeError, json.JSONDecodeError):
+                if attempt: raise
+                raw = self._output(self._spark("Return valid JSON only. Previous response was invalid.\n" + prompt, images))
+
+    def plan(self, context, history):
+        schema = [{"type":"function", "name":name, "description":f"Run {name}", "parameters":{"type":"object", "properties":{"query":{"type":"string"},"claim":{"type":"string"}}, "additionalProperties":True}} for name in TOOLS]
         try:
-            return json.loads(content)
-        except (TypeError, json.JSONDecodeError):
-            retry = self._chat([{"role": "system", "content": "Return valid JSON only: {\"tool\": string, \"input\": object}."}, {"role": "user", "content": prompt + "\nYour previous response was invalid. Retry."}])
-            return json.loads(retry["choices"][0]["message"]["content"])
+            result = self._request("/responses", {"model":self.model, "input":[{"type":"input_text","text":json.dumps({"context":context,"history":history})}], "tools":schema})
+            for item in result.get("output", []):
+                if item.get("type") == "function_call":
+                    self.mode="tools"
+                    return {"tool":item.get("name"), "input":json.loads(item.get("arguments", "{}")), "mode":"tools"}
+            raise ValueError("No tool call in response")
+        except Exception as error:
+            # Any HTTP 4xx or incompatible tool response uses the JSON planner.
+            self.mode="json"
+            plan=self._json_call("Choose one tool from " + json.dumps(TOOLS) + ". Return {tool,input}. Context/history: " + json.dumps({"context":context,"history":history}))
+            plan["mode"]="json"
+            return plan
 
+    def json_plan(self, prompt): return self._json_call(prompt)
+    def judge_claim(self, claim, evidence):
+        prompt=f"Judge whether this advertising claim is supported by sources. Return JSON verdict (pass/fail), evidence, reason. Claim: {claim}\nSources: {evidence}"
+        return self._json_call(prompt)
+    def rewrite_line(self, claim, reason, evidence, round_number=1):
+        return self._output(self._spark(f"Rewrite this line to be true according to sources. Preserve the creator's point and voice; never delete the claim. Round {round_number}. Failure reason: {reason}\nLine: {claim}\nSources: {evidence}"))
+    def check_disclosure(self, transcript, frames):
+        return bool(self._json_call("Return JSON {disclosed:boolean}. Is paid disclosure present in the speech or these video frames? Speech: " + transcript, frames).get("disclosed"))
+    def check_coverage(self, transcript, key_messages):
+        return self._json_call(f"Return JSON covered and missing arrays. Speech: {transcript}\nRequired messages: {key_messages}")
 
-def get_provider():
-    return OpenAICompatibleProvider() if os.getenv("MODEL_API_KEY") else FixtureProvider()
+def get_provider(): return MetaProvider() if os.getenv("MODEL_API_KEY") else FixtureProvider()
+def extract_claims(transcript):
+    return [{"quote":m.group().strip(),"timestamp":round(m.start()/12,1),"rounds":[]} for m in re.finditer(r"[^.!?]+[.!?]?", transcript) if re.search(r"\b(guarantee|guarantees|cure|treat|prevents|eliminates|100%|zero)\b",m.group(),re.I)]
+def search_source(query, sources): return [line.strip() for line in sources.splitlines() if any(w.lower() in line.lower() for w in re.findall(r"\w+",query) if len(w)>3)] or [sources.strip()]
+def judge_claim(claim,evidence):
+    supported=bool(evidence) and not re.search(r"guarantee|zero FDA|cure|treat",claim,re.I)
+    return {"verdict":"pass" if supported else "fail","evidence":evidence[0] if evidence else "No supporting source found.","reason":"The wording is supported by the source." if supported else "The source describes assistance and human review, not a guarantee or therapeutic outcome."}
+def rewrite_line(claim,reason,evidence): return "Ledgerly AI helps flag possible issues early, so your team can review them before posting. Sulit ito!"
+def check_disclosure(transcript,frames): return bool(re.search(r"paid partnership|sponsored|ad\b|pakikipagtulungan bayad|bayad na partnership",transcript,re.I) or any(re.search(r"paid partnership|sponsored|\bad\b",f.get("text",""),re.I) for f in frames))
+def check_coverage(transcript,key_messages):
+    messages=[x.strip() for x in key_messages.splitlines() if x.strip()]
+    covered=[m for m in messages if any(w.lower() in transcript.lower() for w in re.findall(r"\w+",m) if len(w)>4)]
+    return {"covered":covered,"missing":[m for m in messages if m not in covered]}
 
-
-def extract_claims(transcript: str) -> list[dict[str, Any]]:
-    claims = []
-    for match in re.finditer(r"[^.!?]+[.!?]?", transcript):
-        text = match.group().strip()
-        if re.search(r"\b(guarantee|guarantees|cure|treat|prevents|eliminates|100%|zero)\b", text, re.I):
-            claims.append({"quote": text, "timestamp": round(match.start() / 12, 1), "rounds": []})
-    return claims
-
-
-def search_source(query: str, sources: str) -> list[str]:
-    return [line.strip() for line in sources.splitlines() if any(w.lower() in line.lower() for w in re.findall(r"\w+", query) if len(w) > 3)] or [sources.strip()]
-
-
-def judge_claim(claim: str, evidence: list[str]) -> dict[str, Any]:
-    supported = bool(evidence) and not re.search(r"guarantee|zero FDA|cure|treat", claim, re.I)
-    return {"verdict": "pass" if supported else "fail", "evidence": evidence[0] if supported else (evidence[0] if evidence else "No supporting source found."),
-            "reason": "The wording is supported by the source." if supported else "The source describes assistance and human review, not a guarantee or therapeutic outcome."}
-
-
-def rewrite_line(claim: str, reason: str, evidence: list[str]) -> str:
-    # Preserve the creator's enthusiastic point while correcting the unsupported promise.
-    return "Ledgerly AI helps flag possible issues early, so your team can review them before posting. Sulit ito!"
-
-
-def check_disclosure(transcript: str, frames: list[dict[str, Any]]) -> bool:
-    return bool(re.search(r"paid partnership|sponsored|ad\b|pakikipagtulungan bayad|bayad na partnership", transcript, re.I) or
-                any(re.search(r"paid partnership|sponsored|\bad\b", f.get("text", ""), re.I) for f in frames))
-
-
-def check_coverage(transcript: str, key_messages: str) -> dict[str, Any]:
-    messages = [x.strip() for x in key_messages.splitlines() if x.strip()]
-    return {"covered": [m for m in messages if any(word.lower() in transcript.lower() for word in re.findall(r"\w+", m) if len(word) > 4)],
-            "missing": [m for m in messages if not any(word.lower() in transcript.lower() for word in re.findall(r"\w+", m) if len(word) > 4)]}
-
-
-def run_review(video: bytes, sources: str, messages: str, pack: str, provider=None, emit=None) -> dict[str, Any]:
-    provider = provider or get_provider()
-    trace = []
-    def log(tool, inputs, output):
-        if len(trace) >= 12:
-            return
-        step = {"step": len(trace) + 1, "tool": tool, "input": inputs, "output": output}
-        trace.append(step)
-        if emit: emit(step)
-    transcript = provider.transcribe(video)
-    log("transcribe", {"video_bytes": len(video)}, transcript)
-    frames = provider.frames(video)
-    log("vision_frames", {"sampled_frames": len(frames)}, frames)
-    context = {"transcript": transcript, "sources": sources, "pack": pack}
-    claims = extract_claims(transcript)
-    log("extract_claims", {}, claims)
-    history = []
-    # The declared agent tools are dispatched through a bounded plan-act-observe loop.
-    tools = {"search_source", "fetch_source", "judge_claim", "rewrite_line", "check_disclosure", "check_coverage", "finish"}
+def run_review(video,sources,messages,pack,provider=None,emit=None):
+    provider=provider or get_provider(); trace=[]
+    def log(tool,inputs,output,mode=None):
+        if len(trace)<12:
+            step={"step":len(trace)+1,"tool":tool,"input":inputs,"output":output}
+            if mode: step["mode"]=mode
+            trace.append(step)
+            if emit: emit(step)
+    transcript=provider.transcribe(video); log("transcribe",{"video_bytes":len(video)},transcript)
+    frames=provider.frames(video); log("vision_frames",{"sampled_frames":len(frames)},[{k:v for k,v in f.items() if k!="image"} for f in frames])
+    claims=extract_claims(transcript); log("extract_claims",{},claims)
     for claim in claims:
-        evidence = search_source(claim["quote"], sources)
-        log("search_source", {"query": claim["quote"]}, evidence)
-        verdict = judge_claim(claim["quote"], evidence)
-        log("judge_claim", {"claim": claim["quote"]}, verdict)
-        claim["rounds"].append(verdict)
-        current = claim["quote"]
-        if verdict["verdict"] == "fail":
-            revised = rewrite_line(current, verdict["reason"], evidence)
-            log("rewrite_line", {"claim": current, "failure_reason": verdict["reason"]}, revised)
-            retry = judge_claim(revised, evidence)
-            log("judge_claim", {"claim": revised, "round": 2, "failure_reason": verdict["reason"]}, retry)
-            claim["rounds"].append(retry)
-            claim["suggested_line"] = revised
-        claim["verdict"] = claim["rounds"][-1]["verdict"]
-        claim["evidence"] = claim["rounds"][-1]["evidence"]
-        history.append(claim)
-    disclosed = check_disclosure(transcript, frames)
-    log("check_disclosure", {}, disclosed)
-    coverage = check_coverage(transcript, messages)
-    log("check_coverage", {}, coverage)
-    if pack == "FDA beauty":
-        fda = {"therapeutic_claims": [c["quote"] for c in claims if re.search(r"\b(cure|treat)\w*\b", c["quote"], re.I)],
-               "missing_disclaimer": not re.search(r"\b(these statements|not evaluated by the FDA|not intended to diagnose)\b", transcript, re.I)}
-        log("FDA_rule_pack", {}, fda)
-    log("finish", {}, {"claim_count": len(claims)})
-    return {"id": str(uuid.uuid4()), "transcript": transcript, "claims": claims, "disclosure": disclosed, "coverage": coverage, "trace": trace, "frames": frames}
+        evidence=search_source(claim["quote"],sources); log("search_source",{"query":claim["quote"]},evidence)
+        verdict=provider.judge_claim(claim["quote"],evidence); log("judge_claim",{"claim":claim["quote"]},verdict); claim["rounds"].append(verdict)
+        if verdict.get("verdict")=="fail":
+            revised=provider.rewrite_line(claim["quote"],verdict.get("reason",""),evidence,1); log("rewrite_line",{"claim":claim["quote"],"failure_reason":verdict.get("reason")},revised)
+            retry=provider.judge_claim(revised,evidence); log("judge_claim",{"claim":revised,"round":2,"failure_reason":verdict.get("reason")},retry); claim["rounds"].append(retry); claim["suggested_line"]=revised
+        claim["verdict"]=claim["rounds"][-1].get("verdict","fail"); claim["evidence"]=claim["rounds"][-1].get("evidence","")
+    disclosed=provider.check_disclosure(transcript,frames); log("check_disclosure",{},disclosed)
+    coverage=provider.check_coverage(transcript,messages); log("check_coverage",{},coverage)
+    log("finish",{}, {"claim_count":len(claims)})
+    return {"id":str(uuid.uuid4()),"transcript":transcript,"claims":claims,"disclosure":disclosed,"coverage":coverage,"trace":trace,"frames":[{k:v for k,v in f.items() if k!="image"} for f in frames]}
 
-
-app = FastAPI(title="Dasho Claim Check")
-app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
-REVIEWS: dict[str, dict[str, Any]] = {}
-
-@app.get("/", response_class=HTMLResponse)
-def home():
-    return (ROOT / "static" / "index.html").read_text()
-
+app=FastAPI(title="Dasho Claim Check"); app.mount("/static",StaticFiles(directory=ROOT/"static"),name="static"); REVIEWS={}
+@app.get("/",response_class=HTMLResponse)
+def home(): return (ROOT/"static"/"index.html").read_text()
 @app.post("/api/review")
-async def review(video: UploadFile = File(...), sources: str = Form(FIXTURE_SOURCE), key_messages: str = Form("Organize invoices\nFlag unusual charges"), pack: str = Form("Tech claims")):
-    result = run_review(await video.read(), sources, key_messages, pack)
-    REVIEWS[result["id"]] = result
-    return result
-
+async def review(video:UploadFile=File(...),sources:str=Form(FIXTURE_SOURCE),key_messages:str=Form("Organize invoices\nFlag unusual charges"),pack:str=Form("Tech claims")):
+    result=run_review(await video.read(),sources,key_messages,pack); REVIEWS[result["id"]]=result; return result
 @app.get("/api/review/{review_id}/trace")
-def trace(review_id: str):
-    result = REVIEWS.get(review_id)
-    if not result: return {"error": "Review not found"}
-    return {"trace": result["trace"]}
-
+def trace(review_id):
+    result=REVIEWS.get(review_id)
+    if not result:return {"error":"Review not found"}
+    return {"trace":result["trace"]}
+@app.get("/api/review/{review_id}/events")
+async def events(review_id):
+    async def stream():
+        for item in REVIEWS.get(review_id,{}).get("trace",[]): yield "data: "+json.dumps(item)+"\n\n"
+    return StreamingResponse(stream(),media_type="text/event-stream")
 @app.post("/api/review/{review_id}/decision")
-async def decision(review_id: str, payload: dict):
-    if review_id not in REVIEWS: return {"error": "Review not found"}
-    REVIEWS[review_id]["decision"] = {"status": payload.get("status"), "reviewer": payload.get("reviewer", "")}
-    return REVIEWS[review_id]["decision"]
+async def decision(review_id,payload:dict):
+    if review_id not in REVIEWS:return {"error":"Review not found"}
+    REVIEWS[review_id]["decision"]={"status":payload.get("status"),"reviewer":payload.get("reviewer","")}; return REVIEWS[review_id]["decision"]

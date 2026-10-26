@@ -10,19 +10,20 @@ pip install -r requirements.txt
 uvicorn app:app --reload
 ```
 
-Open http://127.0.0.1:8000. With `MODEL_API_KEY` unset, the app uses an offline fictional Ledgerly AI fixture. Set `MODEL_API_KEY`, `MODEL_BASE_URL`, and `MODEL_NAME` to select an OpenAI-compatible Muse Spark Open endpoint. Do not upload confidential media to a hosted endpoint without approval.
+Open http://127.0.0.1:8000. With `MODEL_API_KEY` unset, the app uses an offline fictional Ledgerly AI fixture. Set `MODEL_API_KEY` to use the Meta API (`https://api.meta.ai/v1`); optional `MODEL_BASE_URL`, `MODEL_NAME`, and `ASR_MODEL` override endpoint/model selection. Video uploads require `ffmpeg` and `ffprobe` on PATH.
 
 ## Architecture
 
-FastAPI exposes the upload/review and local decision endpoints; `static/index.html` is the single page. The provider interface supplies speech, sampled-frame observations, and agent planning. A bounded plan/act/observe runner logs tool actions and returns source evidence, disclosure, and coverage checks. The fixture provider supports offline demos. `ffmpeg` is an expected media extraction integration point; current fixture mode does not decode uploaded media.
+FastAPI exposes upload/review, trace polling, and SSE trace endpoints; `static/index.html` is the single page. Live media extraction produces mono 16 kHz audio and up to six evenly spaced frames, then cleans its temporary directory. The bounded agent runner logs tool actions and returns source evidence, disclosure, and coverage checks. The fixture provider supports offline demos.
 
 ## Meta models
 
-The intended cloud integration uses Muse Voice Transcribe for Taglish speech, Muse Spark for the traceable agent, and Muse Spark vision for three to six sampled frames. The OpenAI-compatible provider switch is provided for local/open-weight deployments. This fresh repo currently runs the deterministic fixture unless configured; live Meta API calls require endpoint-specific credentials and request wiring.
+Live mode uses Muse Voice Transcribe for Tagalog/English biased transcription, Muse Spark for plan/act/observe and claim decisions, rewrites, disclosure and coverage, and Muse Spark vision for sampled frames. It tries native function tools and falls back to JSON planning if the endpoint rejects tools. The offline fixture remains available when `MODEL_API_KEY` is unset.
 
 ## Built during the hackathon
 
 - 26 Oct 2026 — Created the fresh app structure, offline provider, review workflow, and tests.
+- 27 Oct 2026 — Wired Meta Muse Voice Transcribe and Muse Spark, ffmpeg media extraction, trace events, and a fictional labeled eval harness.
 
 A same-day prototype (26 Oct, before kickoff) existed in a separate private repo; no code from it is used here.
 
