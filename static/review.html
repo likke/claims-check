@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preload" as="image" href="/static/mascot/popcorn.webp">
-<script>for (const frame of ['hide-1-jump','hide-2-duck','hide-3-shell','hide-4-peek','prop-magnifier','prop-redcard','prop-facepalm','prop-clipboard','confused','party','cool','popcorn']) { const img = new Image(); img.src = `/static/mascot/${frame}.webp`; }</script>
+<script>for (const frame of ['hide-1-jump','hide-2-duck','hide-3-shell','hide-4-peek','prop-magnifier','prop-redcard','prop-facepalm','prop-clipboard','confused','party','stamp-1-windup','stamp-2-slam','popcorn']) { const img = new Image(); img.src = `/static/mascot/${frame}.webp`; }</script>
 <title>Dasho Claim Check · Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,6 +138,17 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 .source b{color:var(--ink);font-weight:600}
 .decide{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
 .decided{font-size:14px;color:var(--muted)}
+.note{position:relative}
+.stamp-imprint{position:absolute;right:8px;top:8px;z-index:2;color:#a51e16;font:600 22px/1 system-ui,sans-serif;letter-spacing:2px;transform:rotate(-8deg);filter:url(#ink-edge);pointer-events:none}
+.stamp-imprint.pop{animation:stamp-land .34s cubic-bezier(.2,1.4,.5,1) both}
+@keyframes stamp-land{from{opacity:0;transform:rotate(-8deg) scale(1.45)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+.page.stamp-shake{animation:page-shake .22s ease-out}
+@keyframes page-shake{25%{transform:translateX(-3px)}55%{transform:translateX(3px)}80%{transform:translateX(-1px)}}
+.approve{position:relative}
+.approval-imprint{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);color:#a51e16;border:3px solid #a51e16;padding:6px 14px;font:600 32px/1 system-ui,sans-serif;letter-spacing:3px;filter:url(#ink-edge);pointer-events:none;white-space:nowrap}
+.approval-imprint.pop{animation:stamp-land .34s cubic-bezier(.2,1.4,.5,1) both}
+.stamp-redcard{animation:mascot-pop .35s ease-out}
+@media(prefers-reduced-motion:reduce){.stamp-imprint.pop,.approval-imprint.pop,.page.stamp-shake{animation:none}}
 
 /* approve */
 .approve{margin-top:32px;display:grid;grid-template-columns:auto minmax(0,320px) auto minmax(0,1fr);gap:14px;align-items:center}
@@ -237,13 +248,16 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
   </div>
 
   <div class="rule" style="margin-top:32px"></div>
-  <section class="approve" id="approve-bar">
+  <section class="approve" id="approve-bar" aria-label="Human review decision">
     <h3>Approve the post</h3>
     <input type="text" id="reviewer" placeholder="Your name" aria-label="Your name" autocomplete="name">
     <button type="button" class="btn" id="approve" disabled>Approve the post</button>
+    <button type="button" class="btn plain" id="request-changes" disabled>Request changes</button>
     <span class="small muted" id="approve-note">Decide each claim note first.</span>
+    <span id="approval-imprint" class="approval-imprint hidden" aria-label="Approved by human reviewer">APPROVED</span>
   </section>
 </div>
+<svg aria-hidden="true" width="0" height="0" style="position:absolute"><filter id="ink-edge"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter></svg>
 <script src="/static/reactions.js"></script>
 <script src="/static/mascot.js"></script>
 <script>
@@ -300,6 +314,26 @@ function chime(state){
     osc.connect(gain).connect(audioContext.destination); osc.start(now + offset); osc.stop(now + offset + .13);
   }
 }
+function stampSound(slam = false){
+  if (!soundAllowed || soundMuted || !window.AudioContext) return;
+  audioContext ||= new AudioContext();
+  const now = audioContext.currentTime, osc = audioContext.createOscillator(), gain = audioContext.createGain();
+  osc.type = slam ? 'triangle' : 'sine';
+  osc.frequency.setValueAtTime(slam ? 115 : 780, now);
+  osc.frequency.exponentialRampToValueAtTime(slam ? 48 : 460, now + (slam ? .12 : .16));
+  gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(slam ? .18 : .04, now + .012);
+  gain.gain.exponentialRampToValueAtTime(.0001, now + (slam ? .16 : .18));
+  osc.connect(gain).connect(audioContext.destination); osc.start(now); osc.stop(now + .2);
+}
+function screenShake(){
+  if (REDUCED) return;
+  const page = $('.page'); page.classList.remove('stamp-shake'); void page.offsetWidth; page.classList.add('stamp-shake');
+  setTimeout(() => page.classList.remove('stamp-shake'), 260);
+}
+function showStampImprint(el){
+  el.classList.remove('hidden','pop'); void el.offsetWidth; el.classList.add('pop');
+  if (!REDUCED) screenShake();
+}
 $('#mute').addEventListener('click', () => {
   soundMuted = !soundMuted;
   $('#mute').textContent = soundMuted ? 'Sound off' : 'Sound on';
@@ -330,7 +364,7 @@ function begin(videoUrl, replay){
   $('#reaction-bubble').textContent = ''; $('#mascot').className = 'mascot watching'; $('#mascot').src = '/static/mascot/popcorn.webp';
   $('#setup').classList.add('hidden'); $('#new-check').classList.remove('hidden');
   $('#notes').innerHTML = ''; $('#log').innerHTML = ''; $('#ticks').innerHTML = '';
-  $('#approve').disabled = true; $('#approve-note').textContent = 'Decide each claim note first.';
+  $('#approve').disabled = true; $('#request-changes').disabled = true; $('#approval-imprint').classList.add('hidden'); $('#approve-note').textContent = 'Decide each claim note first.';
   const p = $('#player');
   if (videoUrl) { p.src = videoUrl; p.classList.remove('hidden'); $('#novideo').classList.add('hidden'); p.muted = params.has('auto') || p.muted; }
   else { p.classList.add('hidden'); p.removeAttribute('src'); $('#novideo').classList.remove('hidden'); $('#novideo').textContent = 'Offline demo: no video file. Ledgerly AI is a made-up product.'; }
@@ -493,7 +527,17 @@ function updateReaction(time, imageMode = false){
   const mascot = $('#mascot');
   mascot.className = `mascot ${state === 'severe' ? 'shocked severe' : state} ${look}`;
   const setFrame = frame => { mascot.src = `/static/mascot/${frame}.webp`; };
-  if (state === 'severe' && !REDUCED) {
+  const stampNote = note && (note.kind === 'disclosure' || (note.claim && ['pass','fixed'].includes(note.claim.status)));
+  if (stampNote && !REDUCED) {
+    const key = `${note.n}:${note.kind}:${note.claim?.status || ''}`;
+    if (mascot.dataset.sequence !== key) {
+      mascot.dataset.sequence = key;
+      setFrame('stamp-1-windup'); stampSound(false);
+      setTimeout(() => { if (S.activeNote === note.n) { setFrame('stamp-2-slam'); stampSound(true); screenShake(); } }, 300);
+    }
+  } else if (stampNote && REDUCED) {
+    mascot.dataset.sequence = ''; setFrame('stamp-2-slam');
+  } else if (state === 'severe' && !REDUCED) {
     if (mascot.dataset.sequence !== String(note.n)) {
       mascot.dataset.sequence = String(note.n);
       setFrame('hide-1-jump');
@@ -695,7 +739,9 @@ function noteHtml(note){
       : '';
     body = `<h3>${title}</h3>${origin}<p class="issue">${esc(plain(first.reason || ''))}</p><div class="revs">${history}</div>${passed ? sourceLine(passed) : sourceLine(first)}${buttons}`;
   }
-  return head + `<div class="body">${body}</div>`;
+  const passed = note.claim && ['pass','fixed'].includes(note.claim.status);
+  const imprint = passed ? `<span class="stamp-imprint">PASSED</span>` : '';
+  return head + `<div class="body">${body}</div>${imprint}`;
 }
 function shortReason(c, reason){
   const r = String(reason || '');
@@ -724,6 +770,7 @@ function updateApprove(){
   const open = claimNotes().filter(n => !S.decisions[n.n]).length;
   const ready = S.done && open === 0 && !S.replay;
   $('#approve').disabled = !ready;
+  $('#request-changes').disabled = !ready;
   $('#approve-note').textContent = S.replay ? (open ? `Decide ${open} claim note${open > 1 ? 's' : ''} first. Approval is off in a replay.` : 'Approval is off in a replay.')
     : !S.done ? 'The review is still running.' : open ? `Decide ${open} claim note${open > 1 ? 's' : ''} first.` : 'Ready for your approval.';
 }
@@ -749,6 +796,19 @@ $('#approve').addEventListener('click', async () => {
   const response = await fetch(`/api/reviews/${reviewId}/decision`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({decision: 'approved', reviewer})});
   const body = await response.json();
   $('#approve-note').textContent = response.ok ? `Approved by ${body.reviewer}.` : (body.detail || 'Could not record the approval.');
+  if (response.ok) {
+    $('#mascot').src = '/static/mascot/stamp-2-slam.webp'; $('#mascot').className = 'mascot'; stampSound(true);
+    const imprint = MascotStates.humanApprovalImprint({kind:'human_decision', status:body.status});
+    if (imprint) { $('#approval-imprint').textContent = imprint; showStampImprint($('#approval-imprint')); }
+  }
+});
+$('#request-changes').addEventListener('click', async () => {
+  const reviewer = $('#reviewer').value.trim();
+  if (!reviewer) { $('#reviewer').focus(); $('#approve-note').textContent = 'Add your name first.'; return; }
+  const response = await fetch(`/api/reviews/${reviewId}/decision`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision:'changes_requested',reviewer})});
+  const body = await response.json();
+  $('#approve-note').textContent = response.ok ? `Changes requested by ${body.reviewer}.` : (body.detail || 'Could not record the decision.');
+  if (response.ok) { $('#mascot').src = '/static/mascot/prop-redcard.webp'; $('#mascot').className = 'mascot stamp-redcard'; }
 });
 init();
 </script>

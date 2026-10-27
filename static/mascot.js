@@ -2,7 +2,7 @@
 (function (root) {
   const frameForState = (state, severe = false) => severe ? 'hide-1-jump' : ({
     watching: 'popcorn', cur: 'prop-magnifier', worried: 'prop-clipboard',
-    shocked: 'prop-redcard', unsure: 'confused', happy: 'cool', done: 'party'
+    shocked: 'prop-redcard', unsure: 'confused', happy: 'stamp-1-windup', passed: 'stamp-1-windup', done: 'party'
   }[state] || 'popcorn');
 
   function isSevere(note, notes, pack) {
@@ -17,5 +17,9 @@
     return fdaRule || cureTreat || clustered;
   }
 
-  root.MascotStates = {frameForState, isSevere};
+  function humanApprovalImprint(event) {
+    return event?.kind === 'human_decision' && event.status === 'approved' ? 'APPROVED' : '';
+  }
+
+  root.MascotStates = {frameForState, isSevere, humanApprovalImprint};
 })(window);

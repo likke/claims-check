@@ -39,6 +39,7 @@ Optional settings: `MODEL_BASE_URL` (default `https://api.meta.ai/v1`), `MODEL_N
 The review screen includes an animated orange chick in an eggshell. Its bubbles follow the playhead (including pause and seek), and image posts react as each image is selected. Browser-generated sounds are available after the first click and can be muted.
 
 Mascot art generated with ChatGPT image generation on 27 Oct 2026, during the hackathon.
+Stamp frames generated with ChatGPT image generation on 27 Oct 2026.
 
 ### Hosting the demo
 
