@@ -12,6 +12,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import fixture
 from .agent import run_review
@@ -24,6 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MAX_UPLOAD = 80 * 1024 * 1024
 
 app = FastAPI(title="Dasho Claim Check")
+app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 
 
 class Job:

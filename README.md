@@ -36,7 +36,9 @@ Optional settings: `MODEL_BASE_URL` (default `https://api.meta.ai/v1`), `MODEL_N
 
 `/` is the review screen (timecode-pinned notes and an event log); `/classic` keeps the earlier chat-style screen. Both have **Replay recorded run**, which plays back the run named in `demo/replay.json` at three times its real pace without calling any API. `?auto=run` and `?auto=replay` start either one on load. To demo a new clip, record a live run with `demo/live_check.py --video <clip> --update-replay`.
 
-The review screen includes an original inline SVG companion that reacts beside the video. Its bubbles follow the playhead (including pause and seek), and image posts react as each image is selected. Gentle browser-generated chimes are available after the first click and can be muted.
+The review screen includes an animated orange chick in an eggshell. Its bubbles follow the playhead (including pause and seek), and image posts react as each image is selected. Browser-generated sounds are available after the first click and can be muted.
+
+Mascot art generated with ChatGPT image generation on 27 Oct 2026, during the hackathon.
 
 ### Hosting the demo
 
