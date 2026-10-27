@@ -6,4 +6,4 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 /* One Sisiw per screen: the checking screen uses the main reactive mascot beside the video */
-.checking-mascot{display:none}
+#checking-screen .checking-mascot{display:none!important}
