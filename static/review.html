@@ -65,6 +65,7 @@ body.layout-square .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--arn,1.7778))}
 .novideo{aspect-ratio:var(--ar,16/9);display:flex;align-items:center;justify-content:center;color:#d8d3c8;padding:24px;text-align:center}
 .watch-layout{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:16px;align-items:center}
+.mascot-name{margin:6px 0 0;font-weight:600;font-size:17px}
 .mascot-wrap{position:relative;width:160px;max-width:100%;justify-self:center;text-align:center}
 .mascot{display:block;width:160px;height:160px;object-fit:contain;transform-origin:50% 90%}
 .mascot.watching{animation:mascot-bob 2.4s ease-in-out infinite}
@@ -215,9 +216,9 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
       <div class="vcol">
       <div class="m-video">
         <div class="watch-layout"><div class="video" id="stage"><video id="player" playsinline preload="auto" controls class="hidden"></video><div class="novideo" id="novideo">No video yet.</div><div class="lbox" id="lbox"><span id="lbox-tag"></span></div></div>
-          <aside class="mascot-wrap" aria-label="Friendly review companion"><button type="button" class="bubble" id="reaction-bubble" aria-label="Open this review note"></button>
-            <img class="mascot watching" id="mascot" src="/static/mascot/popcorn.webp" alt="Orange chick watching from an eggshell">
-            <button type="button" class="mute" id="mute" aria-pressed="false">Sound on</button><p class="mascot-caption">Watching with you</p>
+          <aside class="mascot-wrap" aria-label="Sisiw the Judge"><button type="button" class="bubble" id="reaction-bubble" aria-label="Open this review note"></button>
+            <img class="mascot watching" id="mascot" src="/static/mascot/popcorn.webp" alt="Sisiw the Judge, an orange chick in an eggshell">
+            <button type="button" class="mute" id="mute" aria-pressed="false">Sound on</button><p class="mascot-name">Sisiw the Judge</p><p class="mascot-caption" title="Sisiw (see-SHE-oo): Tagalog for chick, and slang for easy">see-SHE-oo · Tagalog for chick</p>
           </aside>
         </div>
       </div>

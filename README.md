@@ -1,5 +1,7 @@
 # Dasho Claim Check
 
+Meet **Sisiw the Judge** (see-SHE-oo; Tagalog for chick, and slang for "easy"). Sisiw watches the clip with you, reacts at every flagged second, and stamps PASSED on claims that hold up. A named person still makes the final call.
+
 A brand team checks a creator's 15 to 90 second video, or an image or carousel post, **before it posts**. An agent built on Meta's Muse models:
 
 - checks every factual product claim (spoken, written on screen, or in the post caption) against the brand's **source pack** (pasted product docs or URLs), and cites the exact source chunk;
