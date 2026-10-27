@@ -111,3 +111,17 @@
 
 /* Status labels are sentence case, not eyebrows */
 #run-label{text-transform:none;letter-spacing:0}
+
+/* Checking screen spacing (measured 28 Oct): Sisiw's prop frames are up to 181px wide, so the right column needs 56px clearance from the video; below 1180px the layout stacks. */
+@media (min-width:1180px){
+  #checking-screen .checking-layout{grid-template-columns:640px minmax(0,1fr);column-gap:56px}
+}
+@media (max-width:1179px){
+  #checking-screen .checking-layout{grid-template-columns:minmax(0,1fr)!important;row-gap:24px}
+  #checking-screen .checking-layout>.flow-video{grid-column:1;grid-row:1;width:100%;max-width:640px;height:auto;aspect-ratio:16/9}
+  #checking-screen .checking-layout>.mascot-wrap{grid-column:1;grid-row:2;display:grid;grid-template-columns:144px minmax(0,1fr);align-items:center;column-gap:12px;justify-items:center}
+  #checking-screen .checking-layout>.mascot-wrap .mascot{width:120px;height:120px}
+  #checking-screen #live-steps{grid-column:1;grid-row:3}
+  #checking-screen #event-details{grid-column:1;grid-row:4}
+  #checking-screen .lbox{display:none}
+}
