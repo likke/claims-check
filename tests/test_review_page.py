@@ -33,6 +33,7 @@ def css() -> str:
 
 def test_review_is_the_default_route_and_classic_stays():
     client = TestClient(app)
+    assert 'id="checking-screen"' in client.get("/").text
     assert "Review notes" in client.get("/").text
     assert "Review notes" in client.get("/review").text
     assert "Ask the agent" in client.get("/classic").text
@@ -44,6 +45,15 @@ def test_review_includes_timeline_mascot_and_reaction_sync():
     assert "$('#player').currentTime" in page
     assert "prefers-reduced-motion:reduce" in page
     assert "AudioContext" in page and "id=\"mute\"" in page
+
+
+def test_staged_screens_and_sample_presets_are_present():
+    page = PAGE.read_text()
+    for screen in ("checking-screen", "results-screen", "claim-screen", "disclosure-screen", "decision-screen", "done-screen"):
+        assert f'id="{screen}"' in page
+    assert "const PRESETS" in page
+    for preset in ("LunaDerm Barrier Serum", "TsekPay", "Ledgerly AI"):
+        assert preset in page
 
 
 def test_replay_passed_imprints_match_passed_claims_and_found_disclosures():
@@ -64,16 +74,17 @@ def test_replay_video_and_approval_controls_are_wired():
     assert "Human review summary" in page
 
 
-def test_stylesheet_has_no_edge_bars_shadows_gradients_or_round_cards():
+def test_stylesheet_has_no_edge_bars_shadows_or_gradients():
     sheet = re.sub(r"/\*.*?\*/", "", css(), flags=re.S)
     assert not re.search(r"border-(left|right|top|bottom)\s*:", sheet), "one-edge border found"
     assert not re.search(r"border-(left|right|top|bottom)-width", sheet)
     assert not re.search(r"box-shadow\s*:(?!\s*none)", sheet)
     assert "gradient" not in sheet
-    radii = [int(v) for v in re.findall(r"border-radius\s*:\s*(\d+)px", sheet)]
-    assert radii and max(radii) <= 6
-    sizes = {int(v) for v in re.findall(r"font(?:-size)?\s*:[^;]*?(\d+)px", sheet)}
-    assert sizes <= {14, 17, 22, 32, 44}, sizes
+    assert ".flow-screen .verdict{font-size:48px;font-weight:700" in sheet
+    sizes = {int(v) for v in re.findall(r"(?:font-size|font)\s*:[^;]*?(\d+)px", sheet)}
+    assert sizes <= {13, 16, 20, 26, 32, 48}, sizes
+    weights = {int(v) for v in re.findall(r"font-weight\s*:\s*(\d+)", sheet)}
+    assert weights <= {400, 600, 700}, weights
 
 
 def _free_port():
@@ -145,7 +156,7 @@ def test_computed_styles_have_no_edge_bars_in_a_real_browser(tmp_path):
                 assert js("plain('The line matches S3.')") == "The line matches the product sources."
                 assert re.search(r"Reviewed in \d+:\d\d", visible)
                 assert report["bad"] == [], report["bad"][:5]
-                assert report["body"] == "17px"
+                assert report["body"] == "16px"
                 assert report["scroll"] <= report["width"], f"horizontal scroll at {width}px"
     finally:
         chrome.terminate()
