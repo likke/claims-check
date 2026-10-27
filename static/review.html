@@ -220,7 +220,7 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
         <div class="watch-layout"><div class="video" id="stage"><video id="player" playsinline preload="auto" controls class="hidden"></video><button type="button" class="watch-video hidden" id="watch-video">Watch with Sisiw</button><div class="novideo" id="novideo">No video yet.</div><div class="lbox" id="lbox"><span id="lbox-tag"></span></div></div>
           <aside class="mascot-wrap" aria-label="Sisiw the Judge"><button type="button" class="bubble" id="reaction-bubble" aria-label="Open this review note"></button>
             <img class="mascot watching" id="mascot" src="/static/mascot/popcorn.webp" alt="Sisiw the Judge, an orange chick in an eggshell">
-            <button type="button" class="mute" id="mute" aria-pressed="false">Sound on</button><p class="mascot-name">Sisiw the Judge</p><p class="mascot-caption" title="Sisiw (see-SHE-oo): Tagalog for chick, and slang for easy">see-SHE-oo · Tagalog for chick</p>
+            <button type="button" class="mute" id="mute" aria-pressed="false">Sound on</button><p class="mascot-name">Sisiw the Judge</p><p class="mascot-caption" title="Sisiw (see-seew): Tagalog for chick, and slang for easy">see-seew · Tagalog for chick</p>
           </aside>
         </div>
       </div>
@@ -465,7 +465,7 @@ $('#ticks').addEventListener('click', e => {
 let scrubbing = null;
 function scrubTo(t){
   const p = $('#player'), has = p.src && !p.classList.contains('hidden');
-  const from = has ? p.currentTime : (S.head || 0);
+  const from = has ? p.currentTime : (S.head || 0), wasPlaying = has && !p.paused;
   cancelAnimationFrame(scrubbing);
   const t0 = performance.now(), ms = REDUCED ? 0 : 450;
   const step = now => {
@@ -473,7 +473,7 @@ function scrubTo(t){
     const at = from + (t - from) * eased;
     S.head = at; setHead(at);
     if (has) p.currentTime = at;
-    if (k < 1) scrubbing = requestAnimationFrame(step); else if (has) p.pause();
+    if (k < 1) scrubbing = requestAnimationFrame(step); else if (has && !wasPlaying) p.pause();
   };
   scrubbing = requestAnimationFrame(step);
 }
