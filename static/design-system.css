@@ -125,3 +125,7 @@
   #checking-screen #event-details{grid-column:1;grid-row:4}
   #checking-screen .lbox{display:none}
 }
+
+/* "by Dasho" byline: the real Dasho lockup in one black, small and quiet */
+.brand-byline{display:inline-flex;align-items:center;gap:4px}
+.brand-byline .brand-dasho{height:14px;width:auto;opacity:.72;display:block}
