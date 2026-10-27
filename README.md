@@ -1,4 +1,6 @@
-# Dasho Claim Check
+<p align="center"><img src="static/brand/claims-check-logo.png" width="320" alt="Claims Check by Dasho"></p>
+
+# Claims Check (by Dasho)
 
 Meet **Sisiw the Judge** (SEE-seew; Tagalog for chick, and slang for "easy"). Sisiw watches the clip with you, reacts at every flagged second, and stamps PASSED on claims that hold up. A named person still makes the final call.
 

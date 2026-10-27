@@ -75,7 +75,16 @@ def test_config_and_validation(client):
     assert client.post("/api/reviews", data={"sources": " "}).status_code == 400
     assert client.get("/api/reviews/nope/events").status_code == 404
     page = client.get("/")
-    assert page.status_code == 200 and "Dasho Claim Check" in page.text
+    assert page.status_code == 200 and "Claims Check" in page.text
+
+
+def test_new_sample_screens_and_presets_are_present(client):
+    page = client.get("/")
+    assert page.status_code == 200
+    for label in ("Try the sample", "Choose another sample", "Product facts", "Start claim check"):
+        assert label in page.text
+    for sample in ("LunaDerm Barrier Serum", "TsekPay", "Ledgerly AI"):
+        assert sample in page.text
 
 
 def test_fda_pack_through_the_api(client):

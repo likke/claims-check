@@ -6,3 +6,4 @@ samples/
 eval/private/
 .venv
 .cache/
+.DS_Store
