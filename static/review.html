@@ -214,7 +214,7 @@ body.entry-mode .details{display:none}
 .flow-screen .quiet{font-size:16px}
 .flow-mascot{display:flex;align-items:center;gap:12px;margin:16px 0}
 .flow-mascot img{width:72px;height:72px;object-fit:contain}
-.live-step{padding:8px 0;border-bottom:1px solid var(--rule)}
+.live-step{padding:8px 0;border:1px solid var(--rule)}
 .stage-actions{position:sticky;bottom:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:var(--paper)}
 .flow-video{margin:16px 0;max-width:640px}
 .source-panel{margin-top:14px;padding:14px;border:1px solid var(--rule);background:var(--white)}
@@ -505,7 +505,7 @@ function begin(videoUrl, replay){
   if (videoUrl) { p.src = videoUrl; p.classList.remove('hidden'); $('#novideo').classList.add('hidden'); p.muted = replay || params.has('auto') || p.muted; }
   else { p.classList.add('hidden'); p.removeAttribute('src'); $('#novideo').classList.remove('hidden'); $('#novideo').textContent = 'Offline demo: no video file. Ledgerly AI is a made-up product.'; }
   updateReaction(0);
-  $('#run-label').textContent = replay ? 'Recorded sample' : config.provider.name === 'fixture' ? 'Fixture check' : 'Live AI check';
+  $('#run-label').textContent = replay ? 'Recorded sample' : config.provider.name === 'fixture' ? 'Sample check' : 'Live AI check';
   showScreen('checking-screen'); moveVideo();
   status();
 }
