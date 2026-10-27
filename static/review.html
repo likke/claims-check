@@ -473,7 +473,7 @@ function renderFlowClaim(){
   $('#play-claim').onclick=()=>{if(n.time!=null){scrubTo(n.time);const p=$('#player');p.play().catch(()=>{});}};
   $('#claim-source').innerHTML=sourceLine(passed?r:(suggested.verdict==='pass'?suggested:r))||'<p>Source facts are available in Details.</p>';
   $('#claim-source').classList.add('hidden');
-  $('#next-claim').textContent=flowIndex+1<flowClaims.length?'Next':'Continue';
+  $('#next-claim').textContent='Add to change request';
   $('#back-claim').style.display=flowIndex?'inline-block':'none'; showScreen('claim-screen'); moveVideo('claim-video');
 }
 function showDisclosure(){
