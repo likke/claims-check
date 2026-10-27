@@ -6,6 +6,7 @@
 <link rel="preload" as="image" href="/static/mascot/popcorn.webp">
 <script>for (const frame of ['hide-1-jump','hide-2-duck','hide-3-shell','hide-4-peek','prop-magnifier','prop-redcard','prop-facepalm','prop-clipboard','confused','party','stamp-1-windup','stamp-2-slam','popcorn']) { const img = new Image(); img.src = `/static/mascot/${frame}.webp`; }</script>
 <title>Dasho Claim Check · Review</title>
+<link rel="stylesheet" href="/static/design-system.css">
 <style>
 /*
   Design rules (round 4):
@@ -205,80 +206,40 @@ body.entry-mode .details{display:none}
 </style>
 <style>
 /* Staged review screens */
-.flow-screen{max-width:760px;margin:7vh auto 0;min-height:55vh}
-.flow-screen h2{font:600 32px/1.15 system-ui,sans-serif;margin:0 0 16px}
-.flow-screen h3{font:600 20px/1.25 system-ui,sans-serif}
-.flow-screen .verdict{font-size:48px;font-weight:700;line-height:1.08;max-width:620px}
-.flow-screen .quote{font-size:20px;line-height:1.35;margin:16px 0}
-.primary-action{min-height:52px;margin-top:24px;padding:12px 22px;border-radius:10px}
-.flow-screen .quiet{font-size:16px}
-.flow-mascot{display:flex;align-items:center;gap:12px;margin:16px 0}
-.flow-mascot img{width:72px;height:72px;object-fit:contain}
-.live-step{padding:8px 0;border:1px solid var(--rule)}
-.stage-actions{position:sticky;bottom:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:var(--paper)}
-.flow-video{margin:16px 0;max-width:640px}
-.source-panel{margin-top:14px;padding:14px;border:1px solid var(--rule);background:var(--white)}
-.details{margin:24px auto;max-width:1152px}
-.details summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.details .grid{margin-top:18px}
-.details .approve{display:none}
-.details[open] .approve{display:grid}
-@media(max-width:700px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.flow-screen{margin:4vh auto 0;min-height:0}.flow-screen h2{font-size:26px}.flow-screen .verdict{font-size:48px}.flow-screen .quote{font-size:20px}.flow-video{margin:12px 0}.details .grid{display:block}}
-
-.flow-screen{max-width:640px;margin:96px auto 0;min-height:0;font-size:16px;line-height:1.5}
-#checking-screen{max-width:840px}
-.flow-screen h2{font-size:32px;line-height:1.1;margin-bottom:20px}
-.flow-screen .verdict{font-size:48px;line-height:1.02}
-.flow-screen .quote{font-size:20px;line-height:1.4}
-.flow-screen .small,.flow-screen label{font-size:13px}
-.flow-screen .primary-action,.entry>.btn{min-height:48px;border-radius:12px;margin-top:24px}
-.flow-screen .live-step{border:0;padding:5px 0}
-.checking-layout{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:24px;align-items:start}
-.checking-main{min-width:0}
-.flow-video{max-width:none;margin:0}
-.flow-mascot{font-size:16px}.flow-mascot img{width:100px;height:100px}
-.masthead h1{font:600 16px/1.2 system-ui,sans-serif}
-.entry{max-width:640px;margin:48px auto 0;text-align:center}
-.entry h1{font-size:32px;max-width:640px;margin:16px auto}
-.entry p{font-size:16px;max-width:640px;margin:12px auto;color:var(--ink)}
-.entry .small{font-size:13px;color:var(--muted)}
-.welcome-sisiw{display:block;width:160px;height:160px;object-fit:contain;margin:0 auto 8px}
-.welcome-bubble{display:table!important;padding:12px 18px;background:var(--white);border-radius:18px;margin:0 auto 18px!important}
-.welcome-links{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:12px}
-.welcome-links .quiet{font-size:13px}
-body.entry-mode .status{display:none}
-#new-check{display:block!important;color:var(--muted);font-size:13px}
-#provider{display:none!important}
-.stage-actions{display:flex;align-items:center;gap:18px;margin-top:22px;padding:12px 0 calc(12px + env(safe-area-inset-bottom))}
+.flow-screen{max-width:1120px;margin:32px auto 0;min-height:0;font-size:16px;line-height:1.5}
+.flow-screen h2{font-size:32px;line-height:1.1;margin:0 0 16px}
+.flow-screen h3{font-size:20px}.flow-screen .verdict{font-size:48px;line-height:1.05;max-width:800px}
+.flow-screen .quote{font-size:26px;line-height:1.3;margin:16px 0}
+.flow-screen .small,.flow-screen label{font-size:16px}
+.flow-screen .primary-action,.entry>.btn{min-height:52px;border-radius:12px;margin-top:24px}
+.flow-screen .live-step{padding:12px 16px;border:1px solid var(--rule);border-radius:12px;background:var(--white)}
+.checking-layout{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:32px;align-items:start}
+.checking-main{min-width:0}.flow-video{max-width:none;margin:16px 0}
+.flow-mascot{display:flex;align-items:center;gap:12px;margin:20px 0}.flow-mascot img{width:88px;height:88px;object-fit:contain;flex:none}
+.checking-mascot{display:flex;align-items:center;flex-direction:column;gap:8px;min-width:0}
+.checking-mascot img{width:112px;height:112px;object-fit:contain}
+.flow-reaction{display:block;max-width:100%;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;margin:0!important;font-size:16px;line-height:1.35}
+.entry{max-width:1120px;margin:40px auto 0;text-align:left;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);grid-template-areas:"copy preview" "actions preview";align-items:center;column-gap:clamp(32px,6vw,88px);row-gap:24px}
+.entry h1{grid-area:copy;font-size:48px;line-height:1.08;max-width:12ch;margin:16px 0}
+.entry p{font-size:20px;max-width:540px;margin:12px 0;color:var(--ink)}
+.entry .small{font-size:16px;color:var(--muted)}
+.welcome-sisiw{display:block;width:112px;height:112px;object-fit:contain;margin:8px 0 0}
+.welcome-bubble{display:table!important;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;margin:0 0 16px!important}
+.welcome-preview{grid-area:preview;min-width:0}.welcome-preview .flow-video{margin:0}.welcome-preview .mascot-wrap{width:auto;display:flex;align-items:center;gap:12px;margin-top:12px}
+.welcome-preview .mascot{width:92px;height:92px;flex:none}.welcome-preview .bubble{min-height:0;width:auto;margin:0}
+.entry-actions{grid-area:actions;display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.welcome-links{display:flex;justify-content:flex-start;gap:18px;flex-wrap:wrap;margin-top:14px}
+.welcome-links .quiet{font-size:16px}.flow-screen>.primary-action{display:block;width:auto;min-width:200px;margin-left:0}
+.stage-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px;padding:12px 0 calc(12px + env(safe-area-inset-bottom))}
 .stage-actions .primary-action{flex:none;min-width:200px;width:auto;margin-top:0}
-.flow-screen>.primary-action{display:block;width:auto;min-width:200px;margin-left:0}
-.flow-reaction{display:table;padding:12px 18px;background:var(--white);border-radius:18px;margin:0!important;font-size:16px;line-height:1.35}
-.flow-mascot{align-items:flex-start;flex-direction:column;gap:8px}
-.flow-mascot img{width:100px;height:100px}
-@media(max-width:700px){
- .page{padding:48px 20px calc(24px + env(safe-area-inset-bottom))}
- .flow-screen{margin:0 auto;max-width:640px;padding-bottom:20px}
- .flow-screen h2,.entry h1{font-size:26px}
- .flow-screen .verdict{font-size:32px}
- .flow-screen .quote{font-size:20px}
- .entry{margin:0 auto}
- .welcome-sisiw{width:160px;height:160px}
- .entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}
- .checking-layout{grid-template-columns:1fr;gap:18px}
- .checking-mascot{grid-row:2;display:flex;align-items:center;gap:12px}
- .checking-mascot img{width:72px;height:72px}
- .flow-video{margin:0}
- .stage-actions .primary-action,.flow-screen>.primary-action{width:100%;min-width:0}
- .stage-actions{position:sticky;bottom:0;margin-left:-20px;margin-right:-20px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:var(--paper)}
-}
-@media(max-width:1023px){
- .checking-layout{grid-template-columns:minmax(0,1fr);gap:18px}
- .checking-main{display:contents}
- .checking-layout>.flow-video{grid-row:1}
- .checking-mascot{grid-row:2;display:flex;align-items:center;gap:12px}
- .checking-mascot img{width:72px;height:72px}
- #live-steps{grid-row:3}
-}
+.source-panel{margin-top:14px;padding:16px;border:1px solid var(--rule);border-radius:12px;background:var(--white)}
+.claim-stage{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:32px;align-items:start}
+.claim-stage-media{min-width:0}.claim-stage-content{min-width:0}.claim-stage-content .flow-video{margin:0 0 14px}
+.disclosure-proof,.decision-card,.result-card{margin:20px 0;padding:24px;border:1px solid var(--rule);border-radius:16px;background:var(--white)}
+.flow-stamp{display:inline-flex;margin:16px 0;color:var(--olive);border:2px solid currentColor;border-radius:4px;padding:6px 12px;font-size:16px;font-weight:700;letter-spacing:.08em;transform:rotate(-5deg)}
+#approval-imprint-flow{position:static;transform:rotate(-6deg);margin:18px 0;border:3px solid #a51e16;padding:8px 16px;font-size:32px;filter:none}
+@media(max-width:760px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.flow-screen{margin:0 auto;max-width:100%;padding-bottom:20px}.entry{margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:20px}.entry h1{font-size:32px;max-width:13ch;margin:8px 0}.entry p{font-size:16px}.entry-actions{display:flex;flex-direction:column;align-items:stretch}.entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}.welcome-preview{order:2}.checking-layout,.claim-stage{grid-template-columns:minmax(0,1fr);gap:18px}.checking-layout>.flow-video{grid-row:1}.checking-mascot{grid-row:2;display:flex;flex-direction:row;align-items:center;justify-content:flex-start}.checking-mascot img{width:72px;height:72px;flex:none}.checking-main{display:contents}#live-steps{grid-row:3}.flow-screen .verdict{font-size:32px}.flow-screen .quote{font-size:20px}.stage-actions{position:static;margin:18px 0 0;padding:12px 0}.stage-actions .primary-action{width:100%;min-width:0}.flow-video{margin:12px 0}.flow-mascot img{width:72px;height:72px}}
+@media(prefers-reduced-motion:reduce){.flow-screen,.welcome-sisiw,.flow-mascot img{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -289,12 +250,11 @@ body.entry-mode .status{display:none}
   </header>
   <p class="status muted" id="status">Upload a creator video to review it before it posts.</p>
 
-  <section class="entry" id="welcome"><img class="welcome-sisiw" src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="welcome-bubble">“Show me a post. I'll check every claim.”</p>
-    <h1>Check a creator post before it goes live.</h1>
-    <p>Review product claims, check disclosures, and decide what happens next.</p>
-    <button type="button" class="btn" id="try-sample">Try the sample</button>
+  <section class="entry" id="welcome"><div><p class="small muted">YOUR PRE-POST CHECK</p><h1>Catch the claim before it goes live.</h1><p>Watch Sisiw check a creator video for risky claims and paid-partnership labels.</p></div>
+    <div class="welcome-preview"><div class="flow-video" id="welcome-video"></div><div class="flow-mascot"><img class="welcome-sisiw" src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction">Ready when you are.</p></div><p class="small muted">Ledgerly AI · Creator video · Recorded sample</p></div>
+    <div class="entry-actions"><button type="button" class="btn" id="try-sample">Try the sample</button>
     <nav class="welcome-links"><button type="button" class="quiet" id="choose-sample">Choose another sample</button><button type="button" class="quiet" id="upload-link">Upload your own post</button><button type="button" class="quiet" id="welcome-replay">Replay recorded run</button></nav>
-    <p class="small">Fictional sample data. No account required.</p>
+    <p class="small">Fictional sample data. No account required.</p></div>
   </section>
   <section class="entry hidden" id="sample-picker"><h2>Choose a sample</h2><p>Three fictional brands. Three common claim risks.</p>
     <div class="sample-list" id="sample-list"></div><div class="entry-actions"><button type="button" class="btn" id="load-sample">Load sample</button></div></section>
@@ -303,8 +263,8 @@ body.entry-mode .status{display:none}
   <main id="flow" class="hidden">
     <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="checking-main"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step">Listening to speech…</p><p class="live-step">Comparing claims with product facts…</p><p class="live-step">Checking the paid-partnership label…</p></div></div><aside class="checking-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="checking-reaction">“Let me take a look.”</p></aside></div><button class="quiet" id="event-details" type="button">Details</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
     <section class="flow-screen hidden" id="results-screen"><p class="small muted">CHECK COMPLETE</p><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review claims</button></section>
-    <section class="flow-screen hidden" id="claim-screen"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="quiet" type="button" id="see-source">See source</button><div class="source-panel hidden" id="claim-source"></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Next</button> <button class="quiet" id="back-claim" type="button">Back</button></div></section>
-    <section class="flow-screen hidden" id="disclosure-screen"><p class="small muted">DISCLOSURE CHECK</p><h2 id="disclosure-title"></h2><p id="disclosure-copy"></p><button class="btn primary-action" id="to-decision">Continue</button></section>
+    <section class="flow-screen hidden" id="claim-screen"><p class="small muted" id="claim-count"></p><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Sisiw examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><div id="claim-content"></div><button class="quiet" type="button" id="see-source">See source</button><div class="source-panel hidden" id="claim-source"></div></div></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Next</button> <button class="quiet" id="back-claim" type="button">Back</button></div></section>
+    <section class="flow-screen hidden" id="disclosure-screen"><p class="small muted">PARTNERSHIP DISCLOSURE</p><h2 id="disclosure-title"></h2><div class="disclosure-proof"><p id="disclosure-copy"></p><button class="quiet" id="replay-disclosure" type="button">Replay this moment</button><span class="flow-stamp hidden" id="disclosure-passed">PASSED</span></div><div class="flow-mascot"><img src="/static/mascot/cool.webp" alt="Sisiw found the partnership label"><p class="flow-reaction">Found it.</p></div><button class="btn primary-action" id="to-decision">Continue to decision</button></section>
     <section class="flow-screen hidden" id="decision-screen"><p class="small muted">FINAL REVIEW</p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction">“Your call, human.”</p></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div class="stage-actions"><button class="btn primary-action" id="human-approve">Approve the post</button><br><button class="quiet" id="human-changes">Request changes</button></div><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
     <section class="flow-screen hidden" id="done-screen"><h2 id="done-title"></h2><p id="done-copy"></p><button class="btn primary-action" id="check-another">Check another post</button></section>
   </main>
@@ -479,33 +439,36 @@ function showScreen(id){
   document.querySelectorAll('.flow-screen').forEach(x => x.classList.toggle('hidden', x.id !== id));
   $('#details').classList.toggle('hidden', id === 'checking-screen');
 }
-function moveVideo(){ const box=$('#flow-video'); if(box && !box.contains($('.watch-layout'))) box.appendChild($('.watch-layout')); }
+function moveVideo(target='flow-video'){ const box=$(`#${target}`); if(box && !box.contains($('.watch-layout'))) box.appendChild($('.watch-layout')); }
 function showResults(){
   flowClaims = S.notes.filter(n => n.kind === 'claim'); flowIndex=0;
   const flagged=flowClaims.filter(n=>n.kind==='claim').length, passed=flowClaims.filter(n=>n.kind==='verified').length;
-  $('#verdict').textContent = flagged ? `${flagged} ${flagged===1?'claim needs':'claims need'} changes` : 'No issues found in this check.';
-  $('#result-counts').textContent = `${flagged} flagged, ${passed} supported, ${S.notes.some(n=>n.kind==='disclosure')?'disclosure found':'disclosure needs attention'}`;
-  $('#review-claims').textContent = flagged ? 'Review claims' : 'Review disclosure';
+  $('#verdict').textContent = flagged ? `${flagged===1?'One line needs':'Several lines need'} a closer look.` : 'No issues found in this check.';
+  $('#result-counts').textContent = `${flowClaims.length+passed} claims checked · ${flagged} need attention · ${S.notes.some(n=>n.kind==='disclosure')?'Paid partnership found':'Disclosure needs attention'}`;
+  $('#result-reaction').textContent = flagged ? 'I caught something.' : 'Everything looks good.';
+  $('#review-claims').textContent = flagged ? 'Review that line' : 'Review disclosure';
   $('#review-time').textContent = `Reviewed in ${clock(S.lastT)}`;
   showScreen('results-screen');
 }
 function renderFlowClaim(){
   const n=flowClaims[flowIndex], c=n?.claim, r=c?.rounds?.[0]||{}, suggested=c?.rounds?.find(x=>x.verdict==='pass')||c?.rounds?.find(x=>x.round>0)||{};
   if(!n){ showDisclosure(); return; }
-  $('#claim-count').textContent=`CLAIM ${flowIndex+1} OF ${flowClaims.length}`;
+  $('#claim-count').textContent=`CLAIM ${flowIndex+1} OF ${flowClaims.length} · NEEDS A FIX · ${tc(n.time)} · Replay this moment`;
   const passed=n.kind==='verified';
-  $('#claim-content').innerHTML=`${passed?'<p class="label">PASSED</p>':'<p class="small muted">NOT SUPPORTED BY PRODUCT FACTS</p>'}<button class="link" type="button" id="claim-time">${tc(n.time)}</button><p class="quote ${passed?'':'struck'}">“${esc(c?.quote||'')}”</p>${passed?'<p>Matches the product facts.</p>':`<p>${esc(plain(r.reason||'No supporting evidence was supplied.'))}</p><p class="small muted">SUGGESTED LINE</p><p class="quote">“${esc(suggested.line||'Review this line with the creator.')}”</p>`}`;
-  $('#claim-time').onclick=()=>{if(n.time!=null){scrubTo(n.time);const p=$('#player');p.play().catch(()=>{});}};
+  $('#claim-content').innerHTML=`${passed?'<p class="label">PASSED</p>':'<p class="small muted">ORIGINAL LINE · NOT SUPPORTED BY PRODUCT FACTS</p>'}<p class="quote ${passed?'':'struck'}">“${esc(c?.quote||'')}”</p>${passed?'<p>Matches the product facts.</p>':`<p>${esc(plain(r.reason||'No supporting evidence was supplied.'))}</p><p class="small muted">SUGGESTED WORDING</p><p class="quote suggested">“${esc(suggested.line||'Review this line with the creator.')}”</p>`}`;
+  $('#claim-count').onclick=()=>{if(n.time!=null){scrubTo(n.time);const p=$('#player');p.play().catch(()=>{});}};
   $('#claim-source').innerHTML=sourceLine(passed?r:(suggested.verdict==='pass'?suggested:r))||'<p>Source facts are available in Details.</p>';
   $('#claim-source').classList.add('hidden');
   $('#next-claim').textContent=flowIndex+1<flowClaims.length?'Next':'Continue';
-  $('#back-claim').style.display=flowIndex?'inline-block':'none'; showScreen('claim-screen'); moveVideo();
+  $('#back-claim').style.display=flowIndex?'inline-block':'none'; showScreen('claim-screen'); moveVideo('claim-video');
 }
 function showDisclosure(){
   const d=S.notes.find(n=>n.kind==='disclosure'||n.kind==='nodisclosure');
   const found=d?.kind==='disclosure';
   $('#disclosure-title').textContent=found?'Disclosure found.':'Disclosure needs attention.';
   $('#disclosure-copy').textContent=found?`${d.text}, ${d.how}${d.time==null?'':` at ${tc(d.time)}`}.`:'No clear paid-partnership label was found in the submitted post.';
+  $('#disclosure-passed').classList.toggle('hidden',!found);
+  $('#replay-disclosure').onclick=()=>{if(d?.time!=null){scrubTo(d.time);const p=$('#player');p.play().catch(()=>{});}};
   $('#to-decision').textContent=found?'Continue':'Continue'; showScreen('disclosure-screen');
 }
 function showDecision(){
