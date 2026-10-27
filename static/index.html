@@ -3,13 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dasho Claim Check</title>
+<title>Claims Check by Dasho</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/static/brand/icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/brand/icon-180.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/static/brand/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
 /* Type scale (4 sizes): 13 / 15 / 17 / 20 px. */
 :root{
   --paper:#f6f5f2;--card:#fff;--line:#e2dfd8;--ink:#14161a;--muted:#686c74;--faint:#f8f7f4;
   --teal:#0e5b54;--teal-soft:#e6f1ef;--teal-line:#c3ddd8;
-  --red:#a3271e;--red-soft:#f9e9e7;--red-line:#efc9c4;
+  --red:#a3271e;--flagged:#a3271e;--red-soft:#f9e9e7;--red-line:#efc9c4;
   --amber:#8f5a00;--amber-dot:#e0a21f;--amber-soft:#fbf1dc;--amber-line:#f0d79f;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
@@ -25,11 +31,13 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .shell{max-width:1500px;margin:0 auto;padding:18px 24px 110px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;height:72px;margin-bottom:16px}
 .top h1{font-size:20px;font-weight:600;margin:0}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap}.brand-name{display:flex;align-items:center;gap:4px}.brand-check{text-decoration:line-through;text-decoration-color:var(--flagged);text-decoration-thickness:2px}.brand-chick{font:20px 'Permanent Marker',cursive;color:var(--flagged);display:inline-block;transform:rotate(-4deg)}.brand-byline{font-size:13px;color:var(--muted);font-weight:400}
 .top-right{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 14px;font-size:15px;color:var(--muted);max-width:100%;min-width:0}
 .badge b{color:var(--ink);font-weight:600}
+.brand-byline{display:inline}
 .badge span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);flex:none}
 .btn{font-weight:600;border-radius:12px;padding:10px 20px;cursor:pointer;border:1px solid var(--teal);background:var(--teal);color:#fff}
@@ -181,6 +189,7 @@ label{display:block;font-weight:600;font-size:15px;margin-bottom:4px}
   .tiles{grid-template-columns:1fr}
   .line,.cand .cl{font-size:17px}
 }
+@media (max-width:600px){.brand{align-items:flex-start;flex-direction:column;gap:0}.top{flex-wrap:nowrap}.top-right{flex:0 1 auto}.brand-byline{display:block}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
@@ -201,7 +210,7 @@ label{display:block;font-weight:600;font-size:15px;margin-bottom:4px}
 </svg>
 <div class="shell">
   <header class="top">
-    <h1>Dasho Claim Check</h1>
+    <h1 class="brand" aria-label="Claims Check by Dasho"><span class="brand-name"><span>Claims</span><span class="brand-check">Check</span><span class="brand-chick">Chick</span></span><span class="brand-byline">by Dasho</span></h1>
     <div class="top-right"><span class="badge" id="provider"><span class="dot"></span><span>Loading…</span></span><button type="button" class="linkbtn hidden" id="new-check">New check</button></div>
   </header>
 
