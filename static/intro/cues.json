@@ -1,0 +1,95 @@
+{
+ "video": "/static/intro/intro-staging.mp4",
+ "poster": "/static/intro/intro-poster.jpg",
+ "ai_label": "AI avatar and voice: staging preview",
+ "cues": [
+  {
+   "start": 0,
+   "end": 2.48,
+   "caption": "Hi! I'm Fleire. And this is Kutis Glow.",
+   "react": 2.58,
+   "frame": "popcorn",
+   "bubble": "Ooh, what's this?"
+  },
+  {
+   "start": 3.49,
+   "end": 5.35,
+   "caption": "Isang inom lang, gumaling na ang acne ko!",
+   "react": 5.45,
+   "frame": "hide-3-shell",
+   "bubble": "A cure claim! Hiding!"
+  },
+  {
+   "start": 7.22,
+   "end": 10.07,
+   "caption": "One hundred percent guaranteed. Walang side effects.",
+   "react": 10.17,
+   "frame": "prop-facepalm",
+   "bubble": "Guaranteed? Says who?"
+  },
+  {
+   "start": 11.54,
+   "end": 12.75,
+   "caption": "Doctors recommend it.",
+   "react": 12.85,
+   "frame": "prop-magnifier",
+   "bubble": "Which doctors? No source."
+  },
+  {
+   "start": 14.42,
+   "end": 16.07,
+   "caption": "And no, this is not sponsored.",
+   "react": 16.17,
+   "frame": "prop-redcard",
+   "bubble": "Paid post, no label. Red card!"
+  },
+  {
+   "start": 17.78,
+   "end": 20.02,
+   "caption": "Okay, okay. None of that is true.",
+   "react": 20.12,
+   "frame": "hide-4-peek",
+   "bubble": "Phew."
+  },
+  {
+   "start": 21.18,
+   "end": 26.19,
+   "caption": "That's the problem. When a creator says this, the brand gets the FDA notice.",
+   "react": 26.29,
+   "frame": "prop-clipboard",
+   "bubble": "I keep the receipts."
+  },
+  {
+   "start": 27.08,
+   "end": 28.43,
+   "caption": "Meet Sisiw the Judge.",
+   "react": 28.53,
+   "frame": "party",
+   "bubble": "That's me! SEE-seew!"
+  },
+  {
+   "start": 29.9,
+   "end": 36.73,
+   "caption": "Sisiw watches every creator video, flags the risky claim, shows the proof, and suggests a fix.",
+   "react": 36.83,
+   "frame": "prop-magnifier",
+   "bubble": "Every second. Every claim."
+  },
+  {
+   "start": 37.73,
+   "end": 40.22,
+   "caption": "But Sisiw never approves. You do.",
+   "react": 40.32,
+   "frame": "cool",
+   "bubble": "Your call, human."
+  },
+  {
+   "start": 41.63,
+   "end": 45.94,
+   "caption": "Try a sample, or upload your own. Sisiw will guide you.",
+   "react": 46.04,
+   "frame": "popcorn",
+   "bubble": "Ready when you are."
+  }
+ ]
+}
