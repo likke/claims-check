@@ -65,9 +65,10 @@ body.layout-vertical .grid{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
 body.layout-square .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--arn,1.7778))}
 .novideo{aspect-ratio:var(--ar,16/9);display:flex;align-items:center;justify-content:center;color:#d8d3c8;padding:24px;text-align:center}
-.watch-layout{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:16px;align-items:center}
+.watch-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:36px;align-items:start}
 .mascot-name{margin:6px 0 0;font-weight:600;font-size:17px}
-.mascot-wrap{position:relative;width:160px;max-width:100%;justify-self:center;text-align:center}
+.mascot-wrap{position:relative;width:230px;max-width:100%;justify-self:center;text-align:center}
+.mascot-wrap .mascot{margin:0 auto}
 .mascot{display:block;width:160px;height:160px;object-fit:contain;transform-origin:50% 90%}
 .mascot.watching{animation:mascot-bob 2.4s ease-in-out infinite}
 .mascot.cur{animation:mascot-lean .65s cubic-bezier(.2,1.5,.4,1) both}
@@ -84,8 +85,8 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 @keyframes mascot-wobble{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-16deg) scale(1.12,.9)}50%{transform:rotate(13deg) scale(.92,1.1)}75%{transform:rotate(-7deg)}}
 @keyframes mascot-pop{0%{transform:scale(.6)}65%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes mascot-shell{50%{transform:translateX(5px) rotate(4deg)}}
-.bubble{position:absolute;z-index:3;right:calc(100% + 8px);top:0;width:min(220px,calc(100vw - 32px));min-height:56px;padding:10px 12px;background:var(--white);border:1px solid var(--ink);border-radius:6px;text-align:left;font-size:17px;line-height:1.35;cursor:pointer}
-.bubble:empty{display:none}
+.bubble{position:static;display:block;width:100%;min-height:76px;margin:0 0 10px;padding:10px 12px;background:var(--white);border:1px solid var(--ink);border-radius:6px;text-align:left;font-size:17px;line-height:1.35;cursor:pointer}
+.bubble:empty{display:block;visibility:hidden}
 .mute{display:block;margin:4px auto 0;padding:3px 7px;font-size:14px;background:var(--paper);border:1px solid var(--ink);border-radius:4px;cursor:pointer}
 .mascot-caption{font-size:14px;color:var(--muted);margin-top:3px}
 
@@ -141,7 +142,7 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 .decide{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
 .decided{font-size:14px;color:var(--muted)}
 .note{position:relative}
-.stamp-imprint{position:absolute;right:8px;top:8px;z-index:2;color:#a51e16;font:600 22px/1 system-ui,sans-serif;letter-spacing:2px;transform:rotate(-8deg);filter:url(#ink-edge);pointer-events:none}
+.stamp-imprint{position:static;display:block;width:max-content;margin:8px 0 10px 4px;color:#a51e16;font:600 22px/1 system-ui,sans-serif;letter-spacing:2px;transform:rotate(-8deg);filter:url(#ink-edge);pointer-events:none}
 .stamp-imprint.pop{animation:stamp-land .34s cubic-bezier(.2,1.4,.5,1) both}
 @keyframes stamp-land{from{opacity:0;transform:rotate(-8deg) scale(1.45)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
 .page.stamp-shake{animation:page-shake .22s ease-out}
@@ -173,7 +174,9 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
   .mascot-wrap{order:0;width:120px;height:auto}
   .mascot{width:120px;height:120px;margin:auto}
   #stage{order:1;width:100%}
-  .bubble{right:calc(100% + 4px);top:0;width:min(230px,calc(100vw - 32px))}
+  .mascot-wrap{width:100%;display:grid;grid-template-columns:156px minmax(0,360px);justify-content:start;padding-left:18px;column-gap:14px;align-items:center;text-align:center}
+  .mascot-wrap>*{grid-column:1}
+  .mascot-wrap .bubble{grid-column:2;grid-row:1 / span 4;margin:0;align-self:center}
   body.layout-vertical .m-video,body.layout-vertical .m-ruler{width:100%;max-width:calc(68vh * var(--arn,1.7778));margin:0 auto}
   .grid{display:flex;flex-direction:column}
   .log{margin-top:0}
@@ -186,7 +189,6 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
   .approve{grid-template-columns:1fr}
   .setup-grid{grid-template-columns:1fr}
 }
-@media(max-width:500px){.bubble{right:auto;left:50%;top:auto;bottom:calc(100% + 4px);transform:translateX(-50%);width:min(230px,calc(100vw - 32px))}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -756,7 +758,7 @@ function noteHtml(note){
   }
   const passed = note.claim && note.claim.status === 'pass';
   const imprint = passed ? `<span class="stamp-imprint">PASSED</span>` : '';
-  return head + `<div class="body">${body}</div>${imprint}`;
+  return head + `<div class="body">${imprint ? body.replace('</h3>', '</h3>' + imprint) : body}</div>`;
 }
 function shortReason(c, reason){
   const r = String(reason || '');
