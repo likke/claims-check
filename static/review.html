@@ -27,13 +27,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .hidden{display:none!important}
 .rule{height:1px;background:var(--rule);width:100%}
 a,.link{color:var(--blue);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.btn{border:1px solid var(--ink);background:var(--ink);color:var(--white);border-radius:4px;padding:9px 18px;cursor:pointer;font-weight:600}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--white);border-radius:12px;padding:9px 18px;cursor:pointer;font-weight:600}
 .btn.plain{background:transparent;color:var(--ink)}
 .btn.olive{border-color:var(--olive);background:var(--olive)}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.on{background:var(--olive);border-color:var(--olive);color:var(--white)}
 .btn.plain.on{background:var(--ink);border-color:var(--ink)}
-input[type=text],textarea,select{width:100%;background:var(--white);border:1px solid var(--rule);border-radius:4px;padding:8px 10px}
+input[type=text],textarea,select{width:100%;background:var(--white);border:1px solid var(--rule);border-radius:12px;padding:8px 10px}
 input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
 label{display:block;font-weight:600;margin-bottom:4px}
 
@@ -43,17 +43,17 @@ label{display:block;font-weight:600;margin-bottom:4px}
 .status{margin:6px 0 20px}
 
 .grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:40px;align-items:start}
-.video{position:relative;background:#111;border-radius:4px;overflow:hidden}
+.video{position:relative;background:#111;border-radius:16px;overflow:hidden}
 .video video{display:block;width:100%;aspect-ratio:var(--ar,16/9);background:#111;object-fit:contain}
 .watch-video{position:absolute;z-index:4;inset:0;display:flex;align-items:center;justify-content:center;background:#1119;color:white;font-size:20px}
-.lbox{position:absolute;border:2px solid var(--blue);border-radius:2px;opacity:0;transition:opacity .3s;pointer-events:none}
+.lbox{position:absolute;border:2px solid var(--blue);border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none}
 .lbox.on{opacity:1}
-.lbox span{position:absolute;left:-2px;bottom:100%;margin-bottom:4px;background:var(--blue);color:var(--white);font-size:13px;padding:1px 8px;border-radius:2px;white-space:nowrap}
+.lbox span{position:absolute;left:-2px;bottom:100%;margin-bottom:4px;background:var(--blue);color:var(--white);font-size:13px;padding:1px 8px;border-radius:999px;white-space:nowrap}
 .vcol{width:100%;margin:0 auto}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.gallery figure{margin:0;padding:4px;border:2px solid transparent;border-radius:4px;cursor:pointer}
+.gallery figure{margin:0;padding:4px;border:2px solid transparent;border-radius:12px;cursor:pointer}
 .gallery figure.on{border-color:var(--blue)}
-.gallery img{display:block;width:100%;border-radius:2px}
+.gallery img{display:block;width:100%;border-radius:12px}
 .gallery figcaption{font-size:13px;color:var(--muted);margin-top:4px}
 body.layout-images .m-ruler,body.layout-images #stage{display:none}
 .origin{font-size:13px;color:var(--muted)}
@@ -82,9 +82,9 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 @keyframes mascot-wobble{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-16deg) scale(1.12,.9)}50%{transform:rotate(13deg) scale(.92,1.1)}75%{transform:rotate(-7deg)}}
 @keyframes mascot-pop{0%{transform:scale(.6)}65%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes mascot-shell{50%{transform:translateX(5px) rotate(4deg)}}
-.bubble{position:static;display:block;width:100%;min-height:76px;margin:0 0 10px;padding:10px 12px;background:var(--white);border:1px solid var(--ink);border-radius:6px;text-align:left;font-size:16px;line-height:1.35;cursor:pointer}
+.bubble{position:static;display:block;width:100%;min-height:76px;margin:0 0 10px;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;text-align:left;font-size:16px;line-height:24px;cursor:pointer}
 .bubble:empty{display:block;visibility:hidden}
-.mute{display:block;margin:4px auto 0;padding:3px 7px;font-size:13px;background:var(--paper);border:1px solid var(--ink);border-radius:4px;cursor:pointer}
+.mute{display:block;margin:4px auto 0;padding:0;font-size:13px;background:none;border:0;border-radius:999px;cursor:pointer}
 .mascot-caption{font-size:13px;color:var(--muted);margin-top:3px}
 
 /* timecode ruler */
@@ -95,13 +95,13 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 .tick span{position:absolute;bottom:18px;left:0;transform:translateX(-50%);font-size:13px;color:var(--muted)}
 .base{position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--ink)}
 .pin{position:absolute;top:0;z-index:2;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:0;cursor:pointer}
-.pin b{width:24px;height:24px;border-radius:3px;background:var(--blue);color:var(--white);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.pin b{width:24px;height:24px;border-radius:12px;background:var(--blue);color:var(--white);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
 .pin i{width:1px;height:44px;background:var(--blue)}
 .pin.red b{background:var(--red)}.pin.red i{background:var(--red)}
 .pin.drop{animation:drop .45s ease-out}
 @keyframes drop{from{transform:translate(-50%,-18px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 .playhead{position:absolute;top:30px;bottom:0;width:1px;background:var(--ink);pointer-events:none;left:0}
-.art{display:block;width:100%;height:54px;object-fit:fill;margin-top:8px;border-radius:2px}
+.art{display:block;width:100%;height:54px;object-fit:fill;margin-top:8px;border-radius:12px}
 .art.wave{height:40px;margin-top:4px;opacity:.85}
 
 /* event log */
@@ -219,7 +219,6 @@ body.entry-mode .details{display:none}
 .flow-mascot{display:flex;align-items:center;gap:12px;margin:20px 0}.flow-mascot img{width:88px;height:88px;object-fit:contain;flex:none}
 .checking-mascot{display:flex;align-items:center;flex-direction:column;gap:8px;min-width:0}
 .checking-mascot img{width:112px;height:112px;object-fit:contain}
-.checking-screen .watch-layout>.mascot-wrap{display:none}
 #flow:not(.hidden)~.details .mascot-wrap{display:none}
 .flow-reaction{display:block;max-width:100%;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;margin:0!important;font-size:16px;line-height:1.35}
 .disclosure-proof{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:center}
@@ -251,7 +250,7 @@ body.entry-mode .details{display:none}
 .result-count-chip{display:inline-block;margin-top:8px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--white);opacity:0;animation:fade .2s ease 150ms forwards}
 .claim-stage-media{min-width:0}.claim-stage-content{min-width:0}.claim-stage-content .flow-video{margin:0 0 14px}
 .disclosure-proof,.decision-card,.result-card{margin:20px 0;padding:24px;border:1px solid var(--rule);border-radius:16px;background:var(--white)}
-.flow-stamp{display:inline-flex;margin:16px 0;color:var(--olive);border:2px solid currentColor;border-radius:4px;padding:6px 12px;font-size:16px;font-weight:700;letter-spacing:.08em;transform:rotate(-5deg)}
+.flow-stamp{display:inline-flex;margin:16px 0;color:var(--olive);border:2px solid currentColor;border-radius:6px;padding:6px 12px;font-size:16px;font-weight:700;letter-spacing:.08em;transform:rotate(-5deg)}
 #approval-imprint-flow{position:static;transform:rotate(-6deg);margin:18px 0;border:3px solid #a51e16;padding:8px 16px;font-size:32px;filter:none}
 @media(max-width:760px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.flow-screen{margin:0 auto;max-width:100%;padding-bottom:20px}.entry{margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:20px}.entry>div:first-child{display:contents}.entry h1{font-size:32px;max-width:13ch;margin:8px 0;order:2}.entry>div:first-child>.small{order:1}.entry>div:first-child>p:not(.small){order:3}.welcome-preview{order:0;display:contents}.welcome-preview>.flow-video{display:none}.welcome-preview>.flow-mascot{order:1;justify-content:center;width:100%}.welcome-preview>.small{display:none}.welcome-preview .welcome-sisiw{width:120px;height:120px}.entry-actions{display:flex;flex-direction:column;align-items:stretch;order:4}.entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}.checking-layout,.claim-stage{grid-template-columns:minmax(0,1fr);gap:18px}.checking-layout>.flow-video{grid-row:1}.checking-mascot{grid-row:2;display:flex;flex-direction:row;align-items:center;justify-content:flex-start}.checking-mascot img{width:72px;height:72px;flex:none}.checking-main{display:contents}#live-steps{grid-row:3}.disclosure-proof{grid-template-columns:1fr}.disclosure-proof #disclosure-copy,.disclosure-proof #replay-disclosure,.disclosure-proof .flow-stamp{grid-column:1;grid-row:auto}.disclosure-proof .flow-stamp{justify-self:start;margin:8px 0}.flow-screen .verdict{font-size:32px}.flow-screen .quote{font-size:20px}.stage-actions{position:static;margin:18px 0 0;padding:12px 0}.stage-actions .primary-action{width:100%;min-width:0}.flow-video{margin:12px 0}.flow-mascot img{width:72px;height:72px}}
 @media(prefers-reduced-motion:reduce){.flow-screen,.welcome-sisiw,.flow-mascot img{animation:none!important;transition:none!important}}
@@ -277,7 +276,7 @@ body.entry-mode .details{display:none}
   <section class="facts hidden" id="facts-screen"><p class="small muted">STEP 1 OF 3</p><h2>Product facts</h2><p>What should we check against?</p><h3 id="facts-product"></h3><ul id="facts-list"></ul><p class="small muted" id="facts-context"></p><button type="button" class="btn" id="start-check">Start claim check</button><p class="small muted">Checks use brand-provided facts. Confirm their accuracy before continuing.</p></section>
 
   <main id="flow" class="hidden">
-    <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="checking-main"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step">Listening to speech…</p><p class="live-step">Comparing claims with product facts…</p><p class="live-step">Checking the paid-partnership label…</p></div></div><aside class="checking-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="checking-reaction">“Let me take a look.”</p><button class="quiet" id="checking-sound" type="button">Sound on</button></aside></div><button class="quiet" id="event-details" type="button">Details</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
+  <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step">Listening to speech…</p><p class="live-step">Comparing claims with product facts…</p><p class="live-step">Checking the paid-partnership label…</p></div></div><button class="quiet" id="event-details" type="button">Details</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
     <section class="flow-screen hidden" id="results-screen"><p class="small muted">CHECK COMPLETE</p><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img id="result-mascot" src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review claims</button></section>
     <section class="flow-screen hidden" id="claim-screen"><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Sisiw examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="quiet" type="button" id="see-source">See source</button><div class="source-panel hidden" id="claim-source"></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Add to change request</button><button class="quiet" id="back-claim" type="button">Back</button></div></div></div></section>
     <section class="flow-screen hidden" id="disclosure-screen"><p class="small muted">PARTNERSHIP DISCLOSURE</p><h2 id="disclosure-title"></h2><div class="disclosure-proof"><p id="disclosure-copy"></p><button class="quiet" id="replay-disclosure" type="button">Replay this moment</button><span class="flow-stamp hidden" id="disclosure-passed">PASSED</span></div><div class="flow-mascot"><img src="/static/mascot/cool.webp" alt="Sisiw found the partnership label"><p class="flow-reaction">Found it.</p></div><button class="btn primary-action" id="to-decision">Continue to decision</button></section>
@@ -457,7 +456,7 @@ function showScreen(id){
   document.querySelectorAll('.flow-screen').forEach(x => x.classList.toggle('hidden', x.id !== id));
   $('#details').classList.toggle('hidden', id === 'checking-screen');
 }
-function moveVideo(target='flow-video'){ const box=$(`#${target}`); if(box && !box.contains($('.watch-layout'))) box.appendChild($('.watch-layout')); }
+function moveVideo(target='flow-video'){ const box=$(`#${target}`), stage=$('#stage'), wrap=$('.mascot-wrap'); if(box && stage && !box.contains(stage)) box.appendChild(stage); if(wrap){ const parent=target==='flow-video'?$('.checking-layout'):$('#details .m-video'); if(parent && wrap.parentElement!==parent) parent.appendChild(wrap); } }
 function showResults(){
   flowClaims = S.notes.filter(n => n.kind === 'claim'); flowIndex=0;
   const flagged=flowClaims.filter(n=>n.kind==='claim').length, checked=S.notes.filter(n=>n.kind==='claim'||n.kind==='verified').length;
@@ -549,7 +548,7 @@ $('#new-check').addEventListener('click', () => location.href = location.pathnam
 function begin(videoUrl, replay){
   S = fresh(); S.running = true; S.replay = replay;
   $('#welcome').classList.add('hidden'); $('#sample-picker').classList.add('hidden'); $('#facts-screen').classList.add('hidden');
-  $('#reaction-bubble').textContent = ''; $('#mascot').className = 'mascot watching'; $('#mascot').src = '/static/mascot/popcorn.webp';
+  $('#reaction-bubble').textContent = 'Let me take a look.'; $('#mascot').className = 'mascot watching'; $('#mascot').src = '/static/mascot/popcorn.webp';
   $('#setup').classList.add('hidden'); $('#new-check').classList.remove('hidden');
   $('#notes').innerHTML = ''; $('#log').innerHTML = ''; $('#ticks').innerHTML = '';
   $('#approve').disabled = true; $('#request-changes').disabled = true; $('#approval-imprint').classList.add('hidden'); $('#approve-note').textContent = 'Decide each claim note first.';
