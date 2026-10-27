@@ -38,6 +38,14 @@ def test_review_is_the_default_route_and_classic_stays():
     assert "Ask the agent" in client.get("/classic").text
 
 
+def test_review_includes_timeline_mascot_and_reaction_sync():
+    page = PAGE.read_text()
+    assert 'id="mascot"' in page and 'id="reaction-bubble"' in page
+    assert "$('#player').currentTime" in page
+    assert "prefers-reduced-motion:reduce" in page
+    assert "AudioContext" in page and "id=\"mute\"" in page
+
+
 def test_stylesheet_has_no_edge_bars_shadows_gradients_or_round_cards():
     sheet = re.sub(r"/\*.*?\*/", "", css(), flags=re.S)
     assert not re.search(r"border-(left|right|top|bottom)\s*:", sheet), "one-edge border found"

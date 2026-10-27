@@ -62,6 +62,29 @@ body.layout-vertical .grid{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
 body.layout-square .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--arn,1.7778))}
 .novideo{aspect-ratio:var(--ar,16/9);display:flex;align-items:center;justify-content:center;color:#d8d3c8;padding:24px;text-align:center}
+.watch-layout{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:16px;align-items:center}
+.mascot-wrap{position:relative;width:160px;max-width:100%;justify-self:center;text-align:center}
+.mascot{display:block;width:160px;height:160px;overflow:visible}
+.mascot .head{transform-box:fill-box;transform-origin:center;transition:transform .25s ease}
+.mascot .pupil{transition:transform .18s ease}
+.mascot.look-left .pupil{transform:translateX(-2px)}
+.mascot.look-right .pupil{transform:translateX(2px)}
+.mascot .mouth{fill:none;stroke:#171717;stroke-width:3;stroke-linecap:round}
+.mascot .eye{fill:#171717}
+.mascot.watching .mascot-body{animation:mascot-bob 2.4s ease-in-out infinite}
+.mascot.watching .eye{animation:mascot-blink 4.6s ease-in-out infinite}
+.mascot.cur .head{transform:rotate(-11deg)}
+.mascot.worried .brow{stroke:#171717;stroke-width:3;stroke-linecap:round}
+.mascot.shocked .mouth{fill:#171717}
+.mascot.unsure .head{transform:rotate(7deg)}
+.mascot.happy .mouth{stroke-width:4}
+.mascot.done .mouth{stroke-width:4}
+@keyframes mascot-bob{50%{transform:translateY(-4px)}}
+@keyframes mascot-blink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.08)}}
+.bubble{position:absolute;z-index:3;right:calc(100% + 8px);top:0;width:min(220px,calc(100vw - 32px));min-height:56px;padding:10px 12px;background:var(--white);border:1px solid var(--ink);border-radius:6px;text-align:left;font-size:17px;line-height:1.35;cursor:pointer}
+.bubble:empty{display:none}
+.mute{display:block;margin:4px auto 0;padding:3px 7px;font-size:14px;background:var(--paper);border:1px solid var(--ink);border-radius:4px;cursor:pointer}
+.mascot-caption{font-size:14px;color:var(--muted);margin-top:3px}
 
 /* timecode ruler */
 .ruler{position:relative;margin-top:14px;padding-top:34px;user-select:none}
@@ -132,6 +155,9 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
   .left,.right{display:contents}
   .m-video{order:1}.m-ruler{order:2}.m-notes{order:3}.m-log{order:4}
   .vcol{display:contents}
+  .watch-layout{grid-template-columns:minmax(0,1fr) 104px;gap:6px}
+  .mascot-wrap,.mascot{width:104px;height:104px}
+  .bubble{right:calc(100% + 4px);top:0;width:min(230px,calc(100vw - 32px))}
   body.layout-vertical .m-video,body.layout-vertical .m-ruler{width:100%;max-width:calc(68vh * var(--arn,1.7778));margin:0 auto}
   .grid{display:flex;flex-direction:column}
   .log{margin-top:0}
@@ -174,7 +200,16 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
     <div class="left">
       <div class="vcol">
       <div class="m-video">
-        <div class="video" id="stage"><video id="player" playsinline preload="auto" controls class="hidden"></video><div class="novideo" id="novideo">No video yet.</div><div class="lbox" id="lbox"><span id="lbox-tag"></span></div></div>
+        <div class="watch-layout"><div class="video" id="stage"><video id="player" playsinline preload="auto" controls class="hidden"></video><div class="novideo" id="novideo">No video yet.</div><div class="lbox" id="lbox"><span id="lbox-tag"></span></div></div>
+          <aside class="mascot-wrap" aria-label="Friendly review companion"><button type="button" class="bubble" id="reaction-bubble" aria-label="Open this review note"></button>
+            <svg class="mascot watching" id="mascot" viewBox="0 0 160 160" role="img" aria-label="Mascot is watching">
+              <g class="mascot-body"><path d="M22 81C22 45 45 19 80 19s58 26 58 62-23 59-58 59-58-23-58-59Z" fill="#d8e4dc" stroke="#171717" stroke-width="3"/><path d="M38 116c-9 8-11 18-7 25 9 1 18-4 23-13M122 116c9 8 11 18 7 25-9 1-18-4-23-13" fill="#d8e4dc" stroke="#171717" stroke-width="3" stroke-linecap="round"/>
+                <g class="head"><path class="brow" d="M49 63q9-6 17-1M94 62q9-5 17 1" fill="none"/><ellipse class="eye" cx="59" cy="75" rx="5" ry="8"/><ellipse class="eye" cx="101" cy="75" rx="5" ry="8"/><circle class="pupil" cx="60" cy="76" r="2" fill="#fffdf9"/><circle class="pupil" cx="102" cy="76" r="2" fill="#fffdf9"/><path class="mouth" d="M67 99q13 11 26 0"/></g>
+              </g>
+            </svg>
+            <button type="button" class="mute" id="mute" aria-pressed="false">Sound on</button><p class="mascot-caption">Watching with you</p>
+          </aside>
+        </div>
       </div>
       <div class="m-ruler">
         <div class="ruler" id="ruler">
@@ -210,6 +245,7 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
     <span class="small muted" id="approve-note">Decide each claim note first.</span>
   </section>
 </div>
+<script src="/static/reactions.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -239,8 +275,36 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = ms => new Promise(r => setTimeout(r, REDUCED ? 0 : ms));
 
 let config = null, reviewId = null, source = null, S = null;
-const fresh = () => ({duration: 0, claims: new Map(), notes: [], sources: {}, running: false, replay: false, done: false, lastT: 0, decisions: {}});
+const fresh = () => ({duration: 0, claims: new Map(), notes: [], sources: {}, reactions: {}, running: false, replay: false, done: false, lastT: 0, decisions: {}, selectedImage: null, expression: 'watching'});
 S = fresh();
+
+let audioContext = null, soundAllowed = false, soundMuted = false;
+document.addEventListener('pointerdown', () => {
+  soundAllowed = true;
+  if (audioContext?.state === 'suspended') audioContext.resume();
+}, {once: true});
+function chime(state){
+  if (!soundAllowed || soundMuted || state === 'watching' || !window.AudioContext) return;
+  audioContext ||= new AudioContext();
+  const now = audioContext.currentTime;
+  const tones = {cur: [[500, 760, .17]], worried: [[210, 155, 0], [175, 135, .13]], shocked: [[700, 260, .24]], unsure: [[390, 310, .04], [330, 290, .17]], happy: [[620, 850, .03], [790, 1050, .16]], done: [[520, 690, .02], [690, 880, .11], [880, 1120, .20]]}[state];
+  if (!tones) return;
+  for (const [from, to, offset] of tones){
+    const osc = audioContext.createOscillator(), gain = audioContext.createGain();
+    osc.type = state === 'worried' ? 'sine' : 'triangle';
+    osc.frequency.setValueAtTime(from, now + offset);
+    osc.frequency.exponentialRampToValueAtTime(to, now + offset + .09);
+    gain.gain.setValueAtTime(.0001, now + offset);
+    gain.gain.exponentialRampToValueAtTime(.045, now + offset + .025);
+    gain.gain.exponentialRampToValueAtTime(.0001, now + offset + .12);
+    osc.connect(gain).connect(audioContext.destination); osc.start(now + offset); osc.stop(now + offset + .13);
+  }
+}
+$('#mute').addEventListener('click', () => {
+  soundMuted = !soundMuted;
+  $('#mute').textContent = soundMuted ? 'Sound off' : 'Sound on';
+  $('#mute').setAttribute('aria-pressed', String(soundMuted));
+});
 
 /* ---------------- start ---------------- */
 async function init(){
@@ -263,12 +327,14 @@ $('#new-check').addEventListener('click', () => location.href = location.pathnam
 
 function begin(videoUrl, replay){
   S = fresh(); S.running = true; S.replay = replay;
+  $('#reaction-bubble').textContent = ''; $('#mascot').className.baseVal = 'mascot watching';
   $('#setup').classList.add('hidden'); $('#new-check').classList.remove('hidden');
   $('#notes').innerHTML = ''; $('#log').innerHTML = ''; $('#ticks').innerHTML = '';
   $('#approve').disabled = true; $('#approve-note').textContent = 'Decide each claim note first.';
   const p = $('#player');
   if (videoUrl) { p.src = videoUrl; p.classList.remove('hidden'); $('#novideo').classList.add('hidden'); p.muted = params.has('auto') || p.muted; }
   else { p.classList.add('hidden'); p.removeAttribute('src'); $('#novideo').classList.remove('hidden'); $('#novideo').textContent = 'Offline demo: no video file. Ledgerly AI is a made-up product.'; }
+  updateReaction(0);
   status();
 }
 function status(){
@@ -367,11 +433,15 @@ function scrubTo(t){
 }
 function showGallery(images){
   const g = $('#gallery'); g.classList.remove('hidden');
+  S.imageCount = images.length;
   g.innerHTML = images.map(i => `<figure id="img-${Math.round(i.number)}"><img alt="Image ${Math.round(i.number)} of the post" src="data:image/jpeg;base64,${i.image}"><figcaption>Image ${Math.round(i.number)}</figcaption></figure>`).join('');
+  g.querySelectorAll('figure').forEach(f => f.addEventListener('click', () => showImage(Number(f.id.replace('img-', '')))));
 }
 function showImage(n){
+  S.selectedImage = Math.round(n);
   document.querySelectorAll('.gallery figure').forEach(f => f.classList.toggle('on', f.id === `img-${Math.round(n)}`));
   const f = document.getElementById(`img-${Math.round(n)}`); if (f) f.scrollIntoView({block: 'nearest', behavior: REDUCED ? 'auto' : 'smooth'});
+  updateReaction(S.selectedImage, true);
 }
 function applyMedia(m, url){
   if (!m) return;
@@ -399,8 +469,42 @@ function showLabelBox(scr){
   clearTimeout(S.boxTimer);
   S.boxTimer = setTimeout(() => { if (!S.frozen) $('#lbox').classList.remove('on'); }, REDUCED ? 3000 : 2800);
 }
-function setHead(t){ if (S.duration) $('#playhead').style.left = `${Math.max(0, Math.min(100, t / S.duration * 100))}%`; }
+function noteExpression(note){
+  if (note.claim?.review) return 'unsure';
+  if (note.kind === 'verified' || note.kind === 'disclosure') return 'happy';
+  if (note.kind === 'message') return 'cur';
+  if (note.kind === 'nodisclosure') return 'worried';
+  const first = note.claim?.rounds?.[0] || {};
+  if (first.judgement === 'rule' || first.judgement === 'contradicted' || note.claim?.status === 'fail') return 'shocked';
+  return 'worried';
+}
+function updateReaction(time, imageMode = false){
+  const current = imageMode ? S.notes.find(n => n.time !== null && Math.round(n.time) === time) : ReviewReactions.activeReactionAt(S.notes, time);
+  const note = current || null;
+  const state = S.videoEnded ? 'done' : note ? noteExpression(note) : 'watching';
+  if (state !== S.expression || (note && note.n !== S.activeNote)){ if (state !== 'watching') chime(state); S.expression = state; }
+  S.activeNote = note?.n || null;
+  const progress = imageMode ? time / Math.max(1, S.imageCount || 1) : time / Math.max(1, S.duration || 1);
+  const look = progress < .34 ? 'look-left' : progress < .67 ? 'look-mid' : 'look-right';
+  $('#mascot').className.baseVal = `mascot ${state} ${look}`;
+  $('#mascot').setAttribute('aria-label', `Mascot is ${state === 'cur' ? 'curious' : state}`);
+  const bubble = $('#reaction-bubble');
+  bubble.textContent = note ? ReviewReactions.fallbackReaction(note) : '';
+  bubble.dataset.note = note ? `note-${note.n}` : '';
+  bubble.setAttribute('aria-label', note ? `Open review note ${note.n}: ${bubble.textContent}` : 'No active review note');
+  bubble.disabled = !note;
+  if (imageMode && note) bubble.textContent = ReviewReactions.fallbackReaction(note);
+}
+$('#reaction-bubble').addEventListener('click', () => {
+  const card = document.getElementById($('#reaction-bubble').dataset.note);
+  if (card) card.scrollIntoView({block: 'nearest', behavior: REDUCED ? 'auto' : 'smooth'});
+});
+function setHead(t){ if (S.duration) $('#playhead').style.left = `${Math.max(0, Math.min(100, t / S.duration * 100))}%`; updateReaction(t); }
 $('#player').addEventListener('timeupdate', () => setHead($('#player').currentTime));
+$('#player').addEventListener('seeking', () => setHead($('#player').currentTime));
+$('#player').addEventListener('seeked', () => setHead($('#player').currentTime));
+$('#player').addEventListener('play', () => { S.videoEnded = false; setHead($('#player').currentTime); });
+$('#player').addEventListener('ended', () => { S.videoEnded = true; updateReaction($('#player').currentTime); });
 
 /* ---------------- event log ---------------- */
 function log(time, event, detail, guard){
@@ -490,9 +594,9 @@ function onAction(e){
       break;
     }
     case 'check_coverage':
-      (o.messages || []).forEach(m => {
+      (o.messages || []).forEach((m, index) => {
         log(m.time, m.status === 'covered' ? 'Key message covered' : m.status === 'partly' ? 'Key message partly covered' : 'Key message missing', `“${m.message}”`, guard);
-        addNote({kind: 'message', time: m.time, message: m});
+        addNote({kind: 'message', time: m.time, message: m, reactionKey: `message-${index + 1}`});
       });
       break;
     case 'fetch_source': log(null, 'Source page read', String(o.url || '').replace(/^fixture:\/\//, '').replace(/^https?:\/\//, ''), guard); break;
@@ -504,6 +608,8 @@ function onAction(e){
 /* ---------------- notes ---------------- */
 function noteFor(c){ return S.notes.find(n => n.claim === c); }
 function addNote(note){
+  if (note.claim) note.reactionKey = note.claim.id;
+  else if (note.kind === 'disclosure' || note.kind === 'nodisclosure') note.reactionKey = 'disclosure';
   if (note.claim && noteFor(note.claim)) return renderNote(noteFor(note.claim));
   note.n = S.notes.length + 1; S.notes.push(note);
   S.notes.sort((a, b) => (a.time ?? 1e9) - (b.time ?? 1e9));
@@ -512,6 +618,8 @@ function addNote(note){
   S.notes.forEach(n => renderNote(n, n === note));
   document.querySelectorAll('.pin').forEach(p => p.remove());
   S.notes.forEach(n => placePin(n, n === note));
+  if (document.body.classList.contains('layout-images') && S.selectedImage) updateReaction(S.selectedImage, true);
+  else updateReaction($('#player').currentTime || 0);
   updateApprove();
 }
 function sourceLine(r){
@@ -596,6 +704,7 @@ function updateApprove(){
 }
 function finish(r){
   S.running = false; S.done = true;
+  S.reactions = r.reactions || {};
   (r.sources || []).forEach(c => S.sources[c.id] = c);
   if (r.duration && !S.duration) { S.duration = r.duration; drawRuler(); }
   r.claims.forEach(rc => {
@@ -603,8 +712,10 @@ function finish(r){
     c.status = rc.status; c.review = !!rc.needs_human_review; c.rounds = rc.rounds.map(x => ({...x, origin: x.evidence_origin || (S.sources[x.chunk_id] || {}).origin || ''}));
   });
   S.lastT = r.trace && r.trace.length ? r.trace[r.trace.length - 1].t : S.lastT;
+  S.notes.forEach(n => { n.reaction = S.reactions[n.reactionKey] || n.reaction || ''; });
   status();
   S.notes.forEach(n => renderNote(n));
+  updateReaction($('#player').currentTime || 0);
   updateApprove();
 }
 $('#approve').addEventListener('click', async () => {

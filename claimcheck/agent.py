@@ -204,6 +204,18 @@ class Agent:
 
     def _result(self, finished_by: str) -> dict:
         state = self.state
+        claims = []
+        for claim in state.claims:
+            item = claim.as_dict()
+            item["reaction"] = state.reactions.get(claim.id, "")
+            claims.append(item)
+        disclosure = dict(state.disclosure) if state.disclosure else state.disclosure
+        if disclosure is not None:
+            disclosure["reaction"] = state.reactions.get("disclosure", "")
+        coverage = dict(state.coverage) if state.coverage else state.coverage
+        if coverage is not None:
+            coverage["messages"] = [dict(message, reaction=state.reactions.get(f"message-{index + 1}", ""))
+                                    for index, message in enumerate(coverage.get("messages", []))]
         return {
             "id": uuid.uuid4().hex[:12],
             "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -217,10 +229,11 @@ class Agent:
             "timing": state.timing,
             "transcript": [s.as_dict() for s in state.sentences],
             "frames": [{"time": f["time"], "text": f.get("text", "")} for f in state.frames],
-            "claims": [c.as_dict() for c in state.claims],
+            "claims": claims,
+            "reactions": state.reactions,
             "language": state.language,
-            "disclosure": state.disclosure,
-            "coverage": state.coverage,
+            "disclosure": disclosure,
+            "coverage": coverage,
             "sources": [c.as_dict() for c in state.sources.chunks],
             "fetched_urls": state.sources.fetched_urls,
             "agent": {

@@ -98,6 +98,7 @@ class ReviewState:
     coverage: dict | None = None
     finished: bool = False
     finish_summary: str = ""
+    reactions: dict[str, str] = field(default_factory=dict)
 
     def claim(self, claim_id: str) -> Claim | None:
         wanted = str(claim_id or "").strip().upper()

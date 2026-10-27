@@ -36,6 +36,8 @@ Optional settings: `MODEL_BASE_URL` (default `https://api.meta.ai/v1`), `MODEL_N
 
 `/` is the review screen (timecode-pinned notes and an event log); `/classic` keeps the earlier chat-style screen. Both have **Replay recorded run**, which plays back the run named in `demo/replay.json` at three times its real pace without calling any API. `?auto=run` and `?auto=replay` start either one on load. To demo a new clip, record a live run with `demo/live_check.py --video <clip> --update-replay`.
 
+The review screen includes an original inline SVG companion that reacts beside the video. Its bubbles follow the playhead (including pause and seek), and image posts react as each image is selected. Gentle browser-generated chimes are available after the first click and can be muted.
+
 ### Hosting the demo
 
 Set `DEMO_MODE=1` before hosting it for others:
@@ -133,6 +135,7 @@ Tested on 400 real Philippine paid ads.
 - 27 Oct 2026: review screen with timecode ruler, note pins, frame strip, waveform, event log and tracked-change revisions; a real-browser test that no element has a border on one edge only.
 - 27 Oct 2026: vertical, square and landscape layouts from the displayed clip size; H.264 playback copies for HEVC and WebM; no-audio and over-90-second clips.
 - 27 Oct 2026: post caption (claims and disclosure), image and carousel posts, language check with human-review flags, and `DEMO_MODE` limits.
+- 27 Oct 2026: original animated SVG review companion, playhead-synced reaction bubbles, gentle browser chimes, and reaction lines in the finish step.
 
 A same-day prototype (26 Oct, before kickoff) existed in a separate private repo; no code from it is used here.
 

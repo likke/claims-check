@@ -160,7 +160,7 @@ The review is complete when:
 3. judge_claim has run on every claim (target "original").
 4. Every claim that failed has a rewrite: call rewrite_line, then judge_claim with target "rewrite". If that rewrite fails, call rewrite_line again (it receives the failure reason), then judge it. At most 2 rewrites per claim.
 5. check_disclosure and check_coverage have run.
-Then call finish with a one-sentence summary.
+Then call finish with a one-sentence summary and reactions for every note. Use keys C1, C2 for claims, "disclosure" for the disclosure result, and message-1, message-2 for key messages in their listed order. Each reaction is playful, plain English, at most 12 words, kind to the creator, and never a legal verdict. Taglish is welcome when the clip is Taglish. React to the specific result; do not invent facts.
 
 Call several independent tools in one turn when you can (for example, judge three claims at once). search_source is optional: use it when a claim needs evidence that the default retrieval may miss, then pass the chunk ids to judge_claim. You have {remaining} of {cap} actions left, so plan for the work to fit. You never approve the video. A named human approves it.
 

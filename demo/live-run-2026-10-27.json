@@ -120,7 +120,8 @@
         "chunk_id": "S3",
         "quote": "Dasho flags possible claim issues for a human reviewer; it does not guarantee regulatory compliance.",
         "origin": "pasted"
-      }
+      },
+      "reaction": "Wait, zero violations? Let’s check that claim!"
     },
     {
       "id": "C2",
@@ -150,7 +151,8 @@
         "chunk_id": "S2",
         "quote": "Each post gets a draft first and a named human approver.",
         "origin": "pasted"
-      }
+      },
+      "reaction": "A named approver is in place. Nice!"
     }
   ],
   "disclosure": {
@@ -190,7 +192,8 @@
       }
     ],
     "notes": [],
-    "required_disclaimer": null
+    "required_disclaimer": null,
+    "reaction": "The partnership label is right there!"
   },
   "coverage": {
     "messages": [
@@ -199,7 +202,8 @@
         "status": "covered",
         "quote": "Every draft gets a named approver before it goes live.",
         "time": 5.05304347826087,
-        "note": ""
+        "note": "",
+        "reaction": "That key point came through!"
       }
     ]
   },
@@ -658,5 +662,11 @@
   "approval": {
     "status": "awaiting human review",
     "note": "The agent never approves. A named reviewer decides."
+  },
+  "reactions": {
+    "C1": "Wait, zero violations? Let’s check that claim!",
+    "C2": "A named approver is in place. Nice!",
+    "disclosure": "The partnership label is right there!",
+    "message-1": "That key point came through!"
   }
 }

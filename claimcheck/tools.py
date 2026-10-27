@@ -41,8 +41,9 @@ TOOL_SPECS = [
      "parameters": {"type": "object", "properties": {}, "required": []}},
     {"name": "check_coverage", "description": "Check each key message from the brief: covered, partly or missing, with the quote.",
      "parameters": {"type": "object", "properties": {}, "required": []}},
-    {"name": "finish", "description": "End the review with a one-sentence summary.",
-     "parameters": {"type": "object", "properties": {"summary": {"type": "string"}}, "required": ["summary"]}},
+    {"name": "finish", "description": "End the review with a one-sentence summary and one playful, plain-English reaction per finished note. Use note keys C1, C2 for claims, disclosure for the disclosure result, and message-1, message-2 for key messages. Each reaction is at most 12 words, never rude about the creator, and never a legal verdict. Taglish is welcome for Taglish clips.",
+     "parameters": {"type": "object", "properties": {"summary": {"type": "string"},
+       "reactions": {"type": "array", "items": {"type": "object", "properties": {"key": {"type": "string"}, "reaction": {"type": "string"}}, "required": ["key", "reaction"]}}}, "required": ["summary"]}},
 ]
 TOOL_NAMES = [t["name"] for t in TOOL_SPECS]
 
@@ -529,9 +530,14 @@ class ToolBox:
         summary = "; ".join(f"\"{r['message']}\": {r['status']}" for r in results)
         return {"messages": results}, summary
 
-    def tool_finish(self, summary: str = ""):
+    def tool_finish(self, summary: str = "", reactions: list[dict] | None = None):
         self.state.finished = True
         self.state.finish_summary = str(summary or "").strip()
+        for item in reactions or []:
+            key = str(item.get("key", "")).strip()
+            reaction = str(item.get("reaction", "")).strip()
+            if key and reaction and len(reaction.split()) <= 12:
+                self.state.reactions[key] = reaction
         open_work = self.state.open_work()
-        return ({"summary": self.state.finish_summary, "open_work_left_for_guard": open_work},
+        return ({"summary": self.state.finish_summary, "reactions": self.state.reactions, "open_work_left_for_guard": open_work},
                 "Agent finished" + (f"; {len(open_work)} open items go to the guard" if open_work else "; nothing left open"))
