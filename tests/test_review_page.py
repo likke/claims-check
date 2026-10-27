@@ -46,6 +46,24 @@ def test_review_includes_timeline_mascot_and_reaction_sync():
     assert "AudioContext" in page and "id=\"mute\"" in page
 
 
+def test_replay_passed_imprints_match_passed_claims_and_found_disclosures():
+    replay = json.loads((ROOT / "demo" / "live-run-2026-10-27.json").read_text())
+    passed_claims = sum(claim.get("status") == "pass" for claim in replay["claims"])
+    disclosure = replay.get("disclosure", {})
+    found_disclosures = sum(bool(disclosure.get(channel, {}).get("found")) for channel in ("spoken", "on_screen"))
+    assert passed_claims == 1
+    assert found_disclosures == 1
+    assert "note.claim.status === 'pass'" in PAGE.read_text()
+
+
+def test_replay_video_and_approval_controls_are_wired():
+    page = PAGE.read_text()
+    assert "startReplayVideo();" in page
+    assert 'id="watch-video">Watch with Sisiw</button>' in page
+    assert "replayLoopPending" in page and "replayLooped" in page
+    assert "Human review summary" in page
+
+
 def test_stylesheet_has_no_edge_bars_shadows_gradients_or_round_cards():
     sheet = re.sub(r"/\*.*?\*/", "", css(), flags=re.S)
     assert not re.search(r"border-(left|right|top|bottom)\s*:", sheet), "one-edge border found"
