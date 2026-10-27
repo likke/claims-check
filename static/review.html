@@ -273,8 +273,8 @@ body.entry-mode .details{display:none}
   </header>
   <p class="status muted" id="status"></p>
 
-  <section class="entry" id="welcome"><div><img class="welcome-logo" src="/static/brand/claims-check-logo.png" alt=""><p class="small muted">YOUR PRE-POST CHECK</p><h1>Catch the claim before it goes live.</h1><p>Watch Sisiw check a creator video for risky claims and paid-partnership labels.</p></div>
-    <div class="welcome-preview"><div class="flow-video" id="welcome-video"><video id="sample-preview" muted playsinline preload="metadata"></video></div><div class="flow-mascot"><p class="flow-reaction">Ready when you are.</p></div><p class="small muted">Ledgerly AI, creator video, recorded sample</p></div>
+  <section class="entry intro-mode" id="welcome"><div class="welcome-copy"><img class="welcome-logo" src="/static/brand/claims-check-logo.png" alt=""><p class="small muted">YOUR PRE-POST CHECK</p><h1>Catch the claim before it goes live.</h1><p>Watch Sisiw check a creator video for risky claims and paid-partnership labels.</p></div>
+    <div class="welcome-preview"><div class="flow-video" id="welcome-video"><video id="intro-video" playsinline preload="none"></video><button type="button" class="intro-play" id="intro-play">Watch the 45-second intro</button></div><div class="mascot-wrap intro-mascot" aria-label="Sisiw the Judge"><img class="mascot welcome-sisiw" id="intro-sisiw" src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><button type="button" class="bubble" id="intro-bubble">Ready when you are.</button></div><p class="intro-caption" id="intro-caption" aria-live="polite"></p><p class="intro-ai-label small muted" id="intro-ai-label"></p><button type="button" class="quiet intro-skip" id="intro-skip">Skip intro</button><button type="button" class="quiet intro-watch hidden" id="intro-watch">Watch intro</button><video class="hidden" id="sample-preview" muted playsinline preload="metadata"></video></div>
     <div class="entry-actions"><button type="button" class="btn" id="try-sample">Try the sample video</button>
     <nav class="welcome-links"><button type="button" class="quiet" id="choose-sample">Choose another sample</button><button type="button" class="quiet" id="upload-link">Upload your own post</button><button type="button" class="quiet" id="welcome-replay">Replay recorded run</button></nav>
     <p class="small">Fictional sample data. No account required.</p></div>
@@ -363,6 +363,35 @@ const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tc = t => { if (t === null || t === undefined || isNaN(t)) return '—'; const s = Math.round(t); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 const params = new URLSearchParams(location.search);
+const INTRO_SEEN = 'claims-check-intro-seen';
+let introCues = [], introPlaying = false, introReacted = new Set();
+function rememberIntro(){ try { localStorage.setItem(INTRO_SEEN, '1'); } catch {} }
+function finishIntro(){ const video = $('#intro-video'); video.pause(); introPlaying = false; rememberIntro(); $('#welcome').classList.remove('intro-mode'); $('#intro-watch').classList.remove('hidden'); $('#intro-skip').classList.add('hidden'); $('#intro-caption').textContent = ''; $('#intro-bubble').textContent = 'Ready when you are.'; $('#intro-sisiw').src = '/static/mascot/popcorn.webp'; }
+function updateIntro(){
+  if (!introPlaying) return;
+  const video = $('#intro-video'), time = video.currentTime;
+  const cue = introCues.find(item => time >= item.start && time <= item.end);
+  $('#intro-caption').textContent = cue?.caption || '';
+  for (const item of introCues){
+    if (time >= item.react && !introReacted.has(item.react)){
+      introReacted.add(item.react); $('#intro-sisiw').src = `/static/mascot/${item.frame}.webp`; $('#intro-bubble').textContent = item.bubble;
+      const reactions = {popcorn:'happy',party:'happy',cool:'cur', 'hide-3-shell':'hide','hide-4-peek':'unsure','prop-facepalm':'worried','prop-redcard':'shocked','prop-magnifier':'cur','prop-clipboard':'cur'};
+      chime(reactions[item.frame] || 'cur');
+    }
+  }
+}
+async function loadIntro(){
+  try { const response = await fetch('/static/intro/cues.json'); if (!response.ok) return; const cues = await response.json();
+    introCues = cues.cues || []; const video = $('#intro-video'); video.src = cues.video; video.poster = cues.poster;
+    $('#intro-ai-label').textContent = cues.ai_label || ''; $('#intro-ai-label').classList.toggle('hidden', !cues.ai_label);
+    video.addEventListener('timeupdate', updateIntro); video.addEventListener('ended', finishIntro);
+    let seen = false; try { seen = localStorage.getItem(INTRO_SEEN) === '1'; } catch {}
+    if (seen) { $('#welcome').classList.remove('intro-mode'); $('#intro-watch').classList.remove('hidden'); $('#intro-skip').classList.add('hidden'); }
+  } catch { $('#welcome').classList.remove('intro-mode'); $('#intro-skip').classList.add('hidden'); }
+}
+$('#intro-play').addEventListener('click', async () => { introPlaying = true; introReacted.clear(); $('#intro-play').classList.add('hidden'); $('#intro-video').controls = true; try { await $('#intro-video').play(); } catch { introPlaying = false; $('#intro-play').classList.remove('hidden'); } });
+$('#intro-skip').addEventListener('click', finishIntro);
+$('#intro-watch').addEventListener('click', () => { $('#welcome').classList.add('intro-mode'); $('#intro-play').classList.remove('hidden'); $('#intro-video').controls = false; $('#intro-video').currentTime = 0; $('#intro-bubble').textContent = 'Ready when you are.'; $('#intro-caption').textContent = ''; introReacted.clear(); });
 // where a note sits: a timecode for video, "Image N" for an image post, nothing for the caption
 const place = t => t === null || t === undefined ? '—' : document.body.classList.contains('layout-images') ? `Image ${Math.round(t)}` : tc(t);
 const clock = t => { const s = Math.max(0, Math.round(t || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
@@ -442,6 +471,7 @@ $('#checking-sound')?.addEventListener('click', () => $('#mute').click());
 
 /* ---------------- start ---------------- */
 async function init(){
+  await loadIntro();
   config = await (await fetch('/api/config')).json();
   setProvider(config.provider);
   $('#product').value = config.example.product; $('#sources').value = config.example.sources; $('#messages').value = config.example.key_messages;

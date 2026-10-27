@@ -128,4 +128,24 @@
 
 /* "by Dasho" byline: the real Dasho lockup in one black, small and quiet */
 .brand-byline{display:inline-flex;align-items:center;gap:4px}
+
+/* Welcome intro player */
+#welcome.intro-mode{display:block;max-width:920px;margin:48px auto 0}
+#welcome.intro-mode .welcome-copy,#welcome.intro-mode .entry-actions{display:none}
+#welcome.intro-mode .welcome-preview{display:grid;grid-template-columns:minmax(0,1fr) 240px;grid-template-areas:"video mascot" "caption mascot" "label mascot" "skip mascot";gap:12px 32px;align-items:center}
+#welcome.intro-mode .flow-video{grid-area:video;position:relative;aspect-ratio:1/1;overflow:hidden;border-radius:var(--r-media);background:#111}
+#intro-video{display:block;width:100%;height:100%;object-fit:cover;border:0;border-radius:var(--r-media)}
+.intro-play{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;color:#fff;font-size:20px;font-weight:600;text-align:center;padding:24px}
+.intro-play::before{content:"▶";display:grid;place-items:center;width:72px;height:72px;margin:0 auto 16px;border:2px solid #fff;border-radius:50%;font-size:32px}
+#welcome.intro-mode .intro-mascot{grid-area:mascot;display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin:0}
+#welcome.intro-mode .intro-mascot .mascot{width:120px;height:120px;margin:0}
+#welcome.intro-mode .intro-mascot .bubble{display:block;width:auto;max-width:100%;margin:0;padding:12px 16px;border:1px solid var(--rule);border-radius:var(--r-control);background:var(--white);font-size:16px;line-height:24px;text-align:left}
+.intro-caption{grid-area:caption;min-height:24px;margin:0;font-size:16px;line-height:24px}
+.intro-ai-label{grid-area:label;margin:0;font-size:13px!important;line-height:16px!important}
+.intro-skip,.intro-watch{grid-area:skip;justify-self:start;padding:0;color:var(--muted);font-size:13px;text-decoration:underline}
+#welcome:not(.intro-mode) .intro-play,#welcome:not(.intro-mode) #intro-skip,#welcome:not(.intro-mode) .intro-caption,#welcome:not(.intro-mode) .intro-ai-label{display:none}
+#welcome:not(.intro-mode) #welcome-video{display:none}
+@media(max-width:980px){#welcome.intro-mode{margin:16px auto 0}.entry.intro-mode{display:block}.entry.intro-mode .welcome-preview{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"video" "mascot" "caption" "label" "skip";gap:12px}.entry.intro-mode .welcome-preview>.flow-video{display:block;order:initial;width:100%;aspect-ratio:1/1}.entry.intro-mode .welcome-preview>.intro-mascot{display:flex;order:initial;flex-direction:row;align-items:center;justify-content:flex-start;width:100%;margin:0}.entry.intro-mode .welcome-preview>.intro-mascot .mascot{display:block;width:92px;height:92px;flex:none}.entry.intro-mode .intro-caption,.entry.intro-mode .intro-ai-label{display:block}.entry.intro-mode .intro-skip{display:inline-block}}
+@media(max-width:420px){#welcome.intro-mode .flow-video{aspect-ratio:1/1}.entry.intro-mode .welcome-preview>.intro-mascot{gap:12px}.entry.intro-mode .intro-mascot .bubble{min-width:0}}
+@media(prefers-reduced-motion:reduce){.intro-play::before{animation:none}}
 .brand-byline .brand-dasho{height:14px;width:auto;opacity:.72;display:block}
