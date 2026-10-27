@@ -226,14 +226,15 @@ body.entry-mode .details{display:none}
 @media(max-width:700px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.flow-screen{margin:4vh auto 0;min-height:0}.flow-screen h2{font-size:26px}.flow-screen .verdict{font-size:48px}.flow-screen .quote{font-size:20px}.flow-video{margin:12px 0}.details .grid{display:block}}
 
 .flow-screen{max-width:640px;margin:96px auto 0;min-height:0;font-size:16px;line-height:1.5}
-#checking-screen{max-width:720px}
+#checking-screen{max-width:840px}
 .flow-screen h2{font-size:32px;line-height:1.1;margin-bottom:20px}
 .flow-screen .verdict{font-size:48px;line-height:1.02}
 .flow-screen .quote{font-size:20px;line-height:1.4}
 .flow-screen .small,.flow-screen label{font-size:13px}
 .flow-screen .primary-action,.entry>.btn{min-height:48px;border-radius:12px;margin-top:24px}
 .flow-screen .live-step{border:0;padding:5px 0}
-.checking-layout{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);gap:32px;align-items:start}
+.checking-layout{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:24px;align-items:start}
+.checking-main{min-width:0}
 .flow-video{max-width:none;margin:0}
 .flow-mascot{font-size:16px}.flow-mascot img{width:100px;height:100px}
 .masthead h1{font:600 16px/1.2 system-ui,sans-serif}
@@ -249,7 +250,11 @@ body.entry-mode .status{display:none}
 #new-check{display:block!important;color:var(--muted);font-size:13px}
 #provider{display:none!important}
 .stage-actions{display:flex;align-items:center;gap:18px;margin-top:22px;padding:12px 0 calc(12px + env(safe-area-inset-bottom))}
-.stage-actions .primary-action{flex:1;margin-top:0}
+.stage-actions .primary-action{flex:none;min-width:200px;width:auto;margin-top:0}
+.flow-screen>.primary-action{display:block;width:auto;min-width:200px;margin-left:0}
+.flow-reaction{display:table;padding:12px 18px;background:var(--white);border-radius:18px;margin:0!important;font-size:16px;line-height:1.35}
+.flow-mascot{align-items:flex-start;flex-direction:column;gap:8px}
+.flow-mascot img{width:100px;height:100px}
 @media(max-width:700px){
  .page{padding:48px 20px calc(24px + env(safe-area-inset-bottom))}
  .flow-screen{margin:0 auto;max-width:640px;padding-bottom:20px}
@@ -260,7 +265,10 @@ body.entry-mode .status{display:none}
  .welcome-sisiw{width:160px;height:160px}
  .entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}
  .checking-layout{grid-template-columns:1fr;gap:18px}
+ .checking-mascot{grid-row:2;display:flex;align-items:center;gap:12px}
+ .checking-mascot img{width:72px;height:72px}
  .flow-video{margin:0}
+ .stage-actions .primary-action,.flow-screen>.primary-action{width:100%;min-width:0}
  .stage-actions{position:sticky;bottom:0;margin-left:-20px;margin-right:-20px;padding:12px 20px calc(12px + env(safe-area-inset-bottom));background:var(--paper)}
 }
 </style>
@@ -269,7 +277,7 @@ body.entry-mode .status{display:none}
 <div class="page">
   <header class="masthead">
     <h1>Dasho Claim Check</h1>
-    <div class="meta small"><span id="provider" class="muted hidden">Loading</span><button type="button" class="link small hidden" id="replay">Replay recorded run</button><button type="button" class="link small hidden" id="new-check">New check</button></div>
+    <div class="meta small"><span id="provider" class="muted hidden">Loading</span><button type="button" class="link small hidden" id="new-check">New check</button></div>
   </header>
   <p class="status muted" id="status">Upload a creator video to review it before it posts.</p>
 
@@ -285,11 +293,11 @@ body.entry-mode .status{display:none}
   <section class="facts hidden" id="facts-screen"><p class="small muted">STEP 1 OF 3</p><h2>Product facts</h2><p>What should we check against?</p><h3 id="facts-product"></h3><ul id="facts-list"></ul><p class="small muted" id="facts-context"></p><button type="button" class="btn" id="start-check">Start claim check</button><p class="small muted">Checks use brand-provided facts. Confirm their accuracy before continuing.</p></section>
 
   <main id="flow" class="hidden">
-    <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div id="live-steps"><p class="live-step">Listening to speech…</p><p class="live-step">Comparing claims with product facts…</p><p class="live-step">Checking the paid-partnership label…</p></div><div class="flow-video" id="flow-video"></div></div><button class="quiet" id="event-details" type="button">Details</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
-    <section class="flow-screen hidden" id="results-screen"><p class="small muted">CHECK COMPLETE</p><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><span id="result-reaction">Sisiw says: Let’s fix those claims.</span></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review claims</button></section>
+    <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="checking-main"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step">Listening to speech…</p><p class="live-step">Comparing claims with product facts…</p><p class="live-step">Checking the paid-partnership label…</p></div></div><aside class="checking-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="checking-reaction">“Let me take a look.”</p></aside></div><button class="quiet" id="event-details" type="button">Details</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
+    <section class="flow-screen hidden" id="results-screen"><p class="small muted">CHECK COMPLETE</p><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review claims</button></section>
     <section class="flow-screen hidden" id="claim-screen"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="quiet" type="button" id="see-source">See source</button><div class="source-panel hidden" id="claim-source"></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Next</button> <button class="quiet" id="back-claim" type="button">Back</button></div></section>
     <section class="flow-screen hidden" id="disclosure-screen"><p class="small muted">DISCLOSURE CHECK</p><h2 id="disclosure-title"></h2><p id="disclosure-copy"></p><button class="btn primary-action" id="to-decision">Continue</button></section>
-    <section class="flow-screen hidden" id="decision-screen"><p class="small muted">FINAL REVIEW</p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><span>Sisiw the Judge</span></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div class="stage-actions"><button class="btn primary-action" id="human-approve">Approve the post</button><br><button class="quiet" id="human-changes">Request changes</button></div><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
+    <section class="flow-screen hidden" id="decision-screen"><p class="small muted">FINAL REVIEW</p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction">“Your call, human.”</p></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div class="stage-actions"><button class="btn primary-action" id="human-approve">Approve the post</button><br><button class="quiet" id="human-changes">Request changes</button></div><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
     <section class="flow-screen hidden" id="done-screen"><h2 id="done-title"></h2><p id="done-copy"></p><button class="btn primary-action" id="check-another">Check another post</button></section>
   </main>
 
@@ -446,7 +454,7 @@ async function init(){
   $('#product').value = config.example.product; $('#sources').value = config.example.sources; $('#messages').value = config.example.key_messages;
   if (!config.needs_video) $('#video-hint').textContent = 'optional offline (fictional Ledgerly AI script)';
   const replay = await fetch('/api/replay', {method: 'HEAD'});
-  if (replay.ok) $('#replay').classList.remove('hidden');
+  if (replay.ok) $('#welcome-replay').classList.remove('hidden');
   if (params.get('auto') === 'run') { document.body.classList.remove('entry-mode'); $('#setup').classList.remove('hidden'); $('#form').requestSubmit(); }
   else if (params.get('auto') === 'replay' && replay.ok) replayRun();
   else document.body.classList.add('entry-mode');
@@ -494,8 +502,8 @@ function showDisclosure(){
 }
 function showDecision(){
   const fails=flowClaims.filter(n=>n.kind==='claim');
-  $('#decision-summary').textContent=fails.length?`${fails.length} claims need changes. Suggested lines are ready to share.`:'No claims need changes.';
-  $('#human-approve').disabled=!!(fails.length||S.replay); $('#human-changes').disabled=S.replay; $('#human-changes').classList.toggle('primary-action', !!fails.length); $('#human-changes').classList.toggle('btn', !!fails.length); $('#human-approve').classList.toggle('plain', !!fails.length); $('#decision-block').textContent=fails.length?`${fails.length} claims still need changes`:'';
+  $('#decision-summary').textContent=fails.length?`${fails.length} ${fails.length===1?'claim needs':'claims need'} changes. Suggested lines are ready to share.`:'No claims need changes.';
+  $('#human-approve').disabled=!!(fails.length||S.replay); $('#human-changes').disabled=S.replay; $('#human-changes').classList.toggle('primary-action', !!fails.length); $('#human-changes').classList.toggle('btn', !!fails.length); $('#human-approve').classList.toggle('plain', !!fails.length); $('#decision-block').textContent=fails.length?`${fails.length} ${fails.length===1?'claim still needs':'claims still need'} changes`:'';
   $('#flow-note').textContent=S.replay?'Approval is off in a replay.':'AI review complete. Approval requires a named human.';
   showScreen('decision-screen');
 }
@@ -533,7 +541,6 @@ function setProvider(p, recorded){
   const kind = recorded ? 'Recorded run' : p.name === 'meta' ? 'Meta Model API' : 'Muse Spark Open';
   $('#provider').textContent = `${kind}: ${p.label.replace(/^[^·]*·\s*/, '')}`;
 }
-$('#replay').addEventListener('click', () => replayRun());
 $('#new-check').addEventListener('click', () => location.href = location.pathname);
 
 function begin(videoUrl, replay){
