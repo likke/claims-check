@@ -78,6 +78,15 @@ def test_config_and_validation(client):
     assert page.status_code == 200 and "Dasho Claim Check" in page.text
 
 
+def test_new_sample_screens_and_presets_are_present(client):
+    page = client.get("/")
+    assert page.status_code == 200
+    for label in ("Try the sample", "Choose another sample", "Product facts", "Start claim check"):
+        assert label in page.text
+    for sample in ("LunaDerm Barrier Serum", "TsekPay", "Ledgerly AI"):
+        assert sample in page.text
+
+
 def test_fda_pack_through_the_api(client):
     review_id = start(client, pack="FDA beauty", supplement="on")
     name, result = read_sse(client, review_id)[-1]

@@ -159,6 +159,20 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 
 /* setup */
 .setup{margin-bottom:28px}
+.entry{max-width:720px;margin:10vh auto 0;text-align:left}
+.entry h1{font-size:40px;line-height:1.12;max-width:560px}
+.entry p{max-width:560px;margin:16px 0;color:var(--muted)}
+.entry-actions{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:28px}
+.entry .btn{min-height:52px;background:#191919;color:#fff;border-color:#191919;border-radius:10px;padding:12px 22px}
+.sample-list{display:grid;gap:10px;margin:22px 0}
+.sample-option{display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.sample-option[aria-pressed="true"]{border-color:#191919}
+.facts{max-width:720px;margin:8vh auto 0}
+.facts ul{padding-left:22px;line-height:1.7}
+.facts li{margin:6px 0}
+.quiet{background:none;border:0;padding:8px 0;text-decoration:underline;cursor:pointer;color:var(--ink)}
+body.entry-mode .grid,body.entry-mode #approve-bar,body.entry-mode>.page>.rule{display:none}
+@media(max-width:980px){.entry,.facts{margin:6vh auto 0}.entry h1{font-size:32px}}
 .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-top:14px}
 .full{grid-column:1/-1}
 
@@ -200,7 +214,17 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
   </header>
   <p class="status muted" id="status">Upload a creator video to review it before it posts.</p>
 
-  <section class="setup" id="setup">
+  <section class="entry" id="welcome">
+    <h1>Check a creator post before it goes live.</h1>
+    <p>Review product claims, check disclosures, and decide what happens next.</p>
+    <div class="entry-actions"><button type="button" class="btn" id="try-sample">Try the sample</button><button type="button" class="quiet" id="choose-sample">Choose another sample</button><button type="button" class="quiet" id="upload-link">Upload your own post</button></div>
+    <p class="small">Fictional sample data · No account required for demo</p>
+  </section>
+  <section class="entry hidden" id="sample-picker"><h2>Choose a sample</h2><p>Three fictional brands. Three common claim risks.</p>
+    <div class="sample-list" id="sample-list"></div><div class="entry-actions"><button type="button" class="btn" id="load-sample">Load sample</button></div></section>
+  <section class="facts hidden" id="facts-screen"><p class="small muted">STEP 1 OF 3</p><h2>Product facts</h2><p>What should we check against?</p><h3 id="facts-product"></h3><ul id="facts-list"></ul><p class="small muted" id="facts-context"></p><button type="button" class="btn" id="start-check">Start claim check</button><p class="small muted">Checks use brand-provided facts. Confirm their accuracy before continuing.</p></section>
+
+  <section class="setup hidden" id="setup">
     <div class="rule"></div>
     <form id="form" class="setup-grid">
       <div class="full"><label for="video">Creator video <span class="small muted" id="video-hint">15 to 90 seconds</span></label><input type="file" id="video" name="video" accept="video/mp4,video/quicktime,video/x-m4v,video/webm,.mp4,.mov,.m4v,.webm"></div>
@@ -353,9 +377,33 @@ async function init(){
   if (!config.needs_video) $('#video-hint').textContent = 'optional offline (fictional Ledgerly AI script)';
   const replay = await fetch('/api/replay', {method: 'HEAD'});
   if (replay.ok) $('#replay').classList.remove('hidden');
-  if (params.get('auto') === 'run') $('#form').requestSubmit();
-  if (params.get('auto') === 'replay' && replay.ok) replayRun();
+  if (params.get('auto') === 'run') { document.body.classList.remove('entry-mode'); $('#setup').classList.remove('hidden'); $('#form').requestSubmit(); }
+  else if (params.get('auto') === 'replay' && replay.ok) replayRun();
+  else document.body.classList.add('entry-mode');
 }
+const PRESETS = [
+  {name:'LunaDerm Barrier Serum', category:'Skincare', pack:'FDA beauty', facts:['Contains 5% niacinamide and panthenol.','Helps skin feel moisturized with daily use.','Intended for daily facial use according to label instructions.','Patch test before first use; stop using if irritation occurs.'], caption:'#ad Trying LunaDerm Barrier Serum in my daily routine.', messages:['Daily facial use','Moisturizing'], sources:'Contains 5% niacinamide and panthenol.\nHelps skin feel moisturized with daily use.\nIntended for daily facial use according to label instructions.\nPatch test before first use; stop using if irritation occurs.'},
+  {name:'TsekPay', category:'Fintech', pack:'Tech claims', facts:['Businesses can generate PHP payment links.','The dashboard displays pending, successful, and failed payment statuses received from its payment provider.','Payments are processed by a third-party provider.','Fees and payout times vary by provider and merchant plan.'], caption:'A simpler way to manage payments for your negosyo.', messages:['Payment links','Payment status dashboard'], sources:'Businesses can generate PHP payment links.\nThe dashboard displays pending, successful, and failed payment statuses received from its payment provider.\nPayments are processed by a third-party provider.\nFees and payout times vary by provider and merchant plan.'},
+  {name:'Ledgerly AI', category:'AI software', facts:['Extracts supplier names, invoice dates, and totals from uploaded PDF invoices.','Flags unusual charges for human review.','A named reviewer makes the final invoice approval decision.','The fictional sample configuration contains 12 Philippine bank integrations.'], caption:'#ad Ledgerly AI helps teams review invoices.', messages:['Extracts invoice details','Flags unusual charges'], sources:'Extracts supplier names, invoice dates, and totals from uploaded PDF invoices.\nFlags unusual charges for human review.\nA named reviewer makes the final invoice approval decision.\nThe fictional sample configuration contains 12 Philippine bank integrations.'}
+];
+let selectedPreset = PRESETS[2];
+function showFacts(preset){
+  selectedPreset = preset; document.body.classList.remove('entry-mode');
+  $('#welcome').classList.add('hidden'); $('#sample-picker').classList.add('hidden'); $('#facts-screen').classList.remove('hidden');
+  $('#facts-product').textContent = preset.name; $('#facts-list').innerHTML = preset.facts.map(f => `<li>${esc(f)}</li>`).join('');
+  $('#facts-context').textContent = `${preset.category} · Recorded sample`; $('#product').value = preset.name; $('#pack').value = preset.pack || 'Tech claims';
+  $('#sources').value = preset.sources; $('#messages').value = preset.messages.join('\n'); $('#caption').value = preset.caption;
+}
+$('#try-sample').addEventListener('click', () => showFacts(PRESETS[2]));
+$('#choose-sample').addEventListener('click', () => { $('#welcome').classList.add('hidden'); $('#sample-picker').classList.remove('hidden'); document.body.classList.remove('entry-mode'); });
+$('#upload-link').addEventListener('click', () => { document.body.classList.remove('entry-mode'); $('#welcome').classList.add('hidden'); $('#setup').classList.remove('hidden'); $('#video').focus(); });
+$('#sample-list').innerHTML = PRESETS.map((p,i) => `<button type="button" class="sample-option" data-preset="${i}" aria-pressed="${p===selectedPreset}"><span><b>${esc(p.name)}</b><br><span class="small muted">${esc(p.category)}</span></span><span class="small muted">${i===0?'Acne cure and safety claims':i===1?'Fees, guarantees, and disclosure':'Product promises and unsupported guarantees'}</span></button>`).join('');
+$('#sample-list').addEventListener('click', e => { const b=e.target.closest('[data-preset]'); if(!b)return; selectedPreset=PRESETS[+b.dataset.preset]; $('#sample-list').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); });
+$('#load-sample').addEventListener('click', () => showFacts(selectedPreset));
+$('#start-check').addEventListener('click', () => {
+  $('#facts-screen').classList.add('hidden');
+  $('#setup').classList.remove('hidden'); document.body.classList.remove('entry-mode'); $('#form').requestSubmit();
+});
 function setProvider(p, recorded){
   if (!recorded && p.name === 'fixture') { $('#provider').textContent = 'Offline demo, no AI model: Ledgerly AI is a made-up product'; return; }
   const kind = recorded ? 'Recorded run' : p.name === 'meta' ? 'Meta Model API' : 'Muse Spark Open';
