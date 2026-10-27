@@ -427,10 +427,10 @@ function showStampImprint(el){
 $('#mute').addEventListener('click', () => {
   soundMuted = !soundMuted;
   $('#mute').textContent = soundMuted ? 'Sound off' : 'Sound on';
-  $('#checking-sound').textContent = $('#mute').textContent;
+  if ($('#checking-sound')) $('#checking-sound').textContent = $('#mute').textContent;
   $('#mute').setAttribute('aria-pressed', String(soundMuted));
 });
-$('#checking-sound').addEventListener('click', () => $('#mute').click());
+$('#checking-sound')?.addEventListener('click', () => $('#mute').click());
 
 /* ---------------- start ---------------- */
 async function init(){
