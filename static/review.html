@@ -6,7 +6,6 @@
 <link rel="preload" as="image" href="/static/mascot/popcorn.webp">
 <script>for (const frame of ['hide-1-jump','hide-2-duck','hide-3-shell','hide-4-peek','prop-magnifier','prop-redcard','prop-facepalm','prop-clipboard','confused','party','stamp-1-windup','stamp-2-slam','popcorn']) { const img = new Image(); img.src = `/static/mascot/${frame}.webp`; }</script>
 <title>Dasho Claim Check · Review</title>
-<link rel="stylesheet" href="/static/design-system.css">
 <style>
 /*
   Design rules (round 4):
@@ -257,6 +256,7 @@ body.entry-mode .details{display:none}
 @media(max-width:760px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.flow-screen{margin:0 auto;max-width:100%;padding-bottom:20px}.entry{margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:20px}.entry>div:first-child{display:contents}.entry h1{font-size:32px;max-width:13ch;margin:8px 0;order:2}.entry>div:first-child>.small{order:1}.entry>div:first-child>p:not(.small){order:3}.welcome-preview{order:0;display:contents}.welcome-preview>.flow-video{display:none}.welcome-preview>.flow-mascot{order:1;justify-content:center;width:100%}.welcome-preview>.small{display:none}.welcome-preview .welcome-sisiw{width:120px;height:120px}.entry-actions{display:flex;flex-direction:column;align-items:stretch;order:4}.entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}.checking-layout,.claim-stage{grid-template-columns:minmax(0,1fr);gap:18px}.checking-layout>.flow-video{grid-row:1}.checking-mascot{grid-row:2;display:flex;flex-direction:row;align-items:center;justify-content:flex-start}.checking-mascot img{width:72px;height:72px;flex:none}.checking-main{display:contents}#live-steps{grid-row:3}.disclosure-proof{grid-template-columns:1fr}.disclosure-proof #disclosure-copy,.disclosure-proof #replay-disclosure,.disclosure-proof .flow-stamp{grid-column:1;grid-row:auto}.disclosure-proof .flow-stamp{justify-self:start;margin:8px 0}.flow-screen .verdict{font-size:32px}.flow-screen .quote{font-size:20px}.stage-actions{position:static;margin:18px 0 0;padding:12px 0}.stage-actions .primary-action{width:100%;min-width:0}.flow-video{margin:12px 0}.flow-mascot img{width:72px;height:72px}}
 @media(prefers-reduced-motion:reduce){.flow-screen,.welcome-sisiw,.flow-mascot img{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="/static/design-system.css">
 </head>
 <body>
 <div class="page">
@@ -277,11 +277,11 @@ body.entry-mode .details{display:none}
   <section class="facts hidden" id="facts-screen"><p class="small muted">STEP 1 OF 3</p><h2>Product facts</h2><p>What should we check against?</p><h3 id="facts-product"></h3><ul id="facts-list"></ul><p class="small muted" id="facts-context"></p><button type="button" class="btn" id="start-check">Start claim check</button><p class="small muted">Checks use brand-provided facts. Confirm their accuracy before continuing.</p></section>
 
   <main id="flow" class="hidden">
-    <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="checking-main"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step">Listening to speech…</p><p class="live-step">Comparing claims with product facts…</p><p class="live-step">Checking the paid-partnership label…</p></div></div><aside class="checking-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="checking-reaction">“Let me take a look.”</p></aside></div><button class="quiet" id="event-details" type="button">Details</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
+    <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="checking-main"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step">Listening to speech…</p><p class="live-step">Comparing claims with product facts…</p><p class="live-step">Checking the paid-partnership label…</p></div></div><aside class="checking-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="checking-reaction">“Let me take a look.”</p><button class="quiet" id="checking-sound" type="button">Sound on</button></aside></div><button class="quiet" id="event-details" type="button">Details</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
     <section class="flow-screen hidden" id="results-screen"><p class="small muted">CHECK COMPLETE</p><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img id="result-mascot" src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review claims</button></section>
-    <section class="flow-screen hidden" id="claim-screen"><p class="small muted" id="claim-count"></p><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Sisiw examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><div id="claim-content"></div><button class="quiet" type="button" id="see-source">See source</button><div class="source-panel hidden" id="claim-source"></div></div></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Next</button> <button class="quiet" id="back-claim" type="button">Back</button></div></section>
+    <section class="flow-screen hidden" id="claim-screen"><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Sisiw examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="quiet" type="button" id="see-source">See source</button><div class="source-panel hidden" id="claim-source"></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Add to change request</button><button class="quiet" id="back-claim" type="button">Back</button></div></div></div></section>
     <section class="flow-screen hidden" id="disclosure-screen"><p class="small muted">PARTNERSHIP DISCLOSURE</p><h2 id="disclosure-title"></h2><div class="disclosure-proof"><p id="disclosure-copy"></p><button class="quiet" id="replay-disclosure" type="button">Replay this moment</button><span class="flow-stamp hidden" id="disclosure-passed">PASSED</span></div><div class="flow-mascot"><img src="/static/mascot/cool.webp" alt="Sisiw found the partnership label"><p class="flow-reaction">Found it.</p></div><button class="btn primary-action" id="to-decision">Continue to decision</button></section>
-    <section class="flow-screen hidden" id="decision-screen"><p class="small muted">FINAL REVIEW</p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction">“Your call, human.”</p></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div class="stage-actions"><button class="btn primary-action" id="human-approve">Approve the post</button><br><button class="quiet" id="human-changes">Request changes</button></div><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
+    <section class="flow-screen hidden" id="decision-screen"><p class="small muted">FINAL REVIEW</p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Sisiw the Judge"><p class="flow-reaction">“Your call, human.”</p></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><div class="stage-actions"><button class="btn primary-action" id="human-approve">Approve the post</button><button class="quiet" id="human-changes">Request changes</button></div><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
     <section class="flow-screen hidden" id="done-screen"><h2 id="done-title"></h2><p id="done-copy"></p><div class="flow-mascot"><img id="done-mascot" src="/static/mascot/party.webp" alt="Sisiw celebrating"><p class="flow-reaction">I’ve sent the changes back!</p></div><button class="btn primary-action" id="check-another">Check another post</button></section>
   </main>
 
@@ -428,8 +428,10 @@ function showStampImprint(el){
 $('#mute').addEventListener('click', () => {
   soundMuted = !soundMuted;
   $('#mute').textContent = soundMuted ? 'Sound off' : 'Sound on';
+  $('#checking-sound').textContent = $('#mute').textContent;
   $('#mute').setAttribute('aria-pressed', String(soundMuted));
 });
+$('#checking-sound').addEventListener('click', () => $('#mute').click());
 
 /* ---------------- start ---------------- */
 async function init(){
@@ -460,10 +462,10 @@ function showResults(){
   flowClaims = S.notes.filter(n => n.kind === 'claim'); flowIndex=0;
   const flagged=flowClaims.filter(n=>n.kind==='claim').length, checked=S.notes.filter(n=>n.kind==='claim'||n.kind==='verified').length;
   $('#verdict').textContent = flagged ? `${flagged===1?'One line needs':'Several lines need'} a closer look.` : 'No issues found in this check.';
-  $('#result-counts').innerHTML = `<span class="result-count-chip">${flagged} to review</span><br>${checked} ${checked===1?'claim':'claims'} checked, ${flagged} ${flagged===1?'needs':'need'} attention, ${S.notes.some(n=>n.kind==='disclosure')?'paid partnership found':'disclosure needs attention'}`;
+  $('#result-counts').innerHTML = `<span class="result-count-chip">${flagged} to review</span><span>${checked} ${checked===1?'claim':'claims'} checked, ${flagged} ${flagged===1?'needs':'need'} attention, ${S.notes.some(n=>n.kind==='disclosure')?'paid partnership found':'disclosure needs attention'}</span>`;
   $('#result-reaction').textContent = flagged ? 'I caught something.' : 'Everything looks good.';
   $('#review-claims').textContent = flagged ? 'Review that line' : 'Review disclosure';
-  $('#review-time').textContent = `Reviewed in ${clock(S.lastT)}`;
+  $('#results-screen>.small').textContent = `CHECK COMPLETE IN ${clock(S.lastT)}`;
   $('#verdict').classList.remove('result-reveal'); void $('#verdict').offsetWidth; $('#verdict').classList.add('result-reveal');
   $('#result-mascot').src='/static/mascot/confused.webp'; setTimeout(()=>{if($('#results-screen').classList.contains('hidden'))return;$('#result-mascot').src='/static/mascot/popcorn.webp';},650);
   showScreen('results-screen');
@@ -496,8 +498,8 @@ function showDecision(){
   approve.disabled=!!(fails.length||S.replay); changes.disabled=false;
   approve.classList.toggle('primary-action',!fails.length); approve.classList.toggle('plain',!!fails.length);
   changes.classList.toggle('primary-action',!!fails.length); changes.classList.toggle('btn',!!fails.length); changes.classList.toggle('quiet',!fails.length);
-  $('#decision-block').textContent=fails.length?`${fails.length} ${fails.length===1?'claim still needs':'claims still need'} changes`:(S.replay?'Approval is off in a replay.':'');
-  $('#flow-note').textContent=S.replay?'Approval is off in a replay.':'AI review complete. Approval requires a named human.';
+  $('#decision-block').textContent='';
+  $('#flow-note').textContent=fails.length?'Request changes while any claim still needs a fix.':(S.replay?'Approval is off in a replay.':'Approval requires a named human.');
   showScreen('decision-screen');
 }
 function recordDecision(decision){
