@@ -471,6 +471,10 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
 @media(max-width:760px){#checking-screen .checking-layout{grid-template-columns:minmax(0,1fr)!important}#checking-screen .theater{padding:12px 12px 0;border-radius:20px}#checking-screen .couch-stage{height:136px;margin-top:-16px}#couch{height:152px}.couch-bubble{left:auto;right:4px;top:4px;max-width:150px;font-size:14px;padding:8px 12px}.couch-bubble::before{display:none}#checking-screen #live-steps{grid-column:1!important;grid-row:2!important}}
 
 @media(min-width:761px){#checking-screen .theater #flow-video{max-width:600px;margin:0 auto!important}#checking-screen .couch-stage{height:180px}#couch{height:204px}}
+
+/* round 8b */
+#checking-screen #player{pointer-events:none}
+@media(max-width:760px){#checking-screen .couch-stage{justify-content:flex-start;padding-left:8px}.couch-bubble{left:auto!important;right:4px!important;top:24px!important;max-width:calc(100% - 184px)!important;min-width:120px}}
 </style>
 </head>
 <body>
@@ -699,6 +703,7 @@ const PRESETS = [
 let selectedPreset = PRESETS[2];
 let flowClaims = [], flowIndex = 0;
 function showScreen(id){
+  const pl=document.getElementById('player'); if(pl){ const chk=id==='checking-screen'; pl.controls=!chk; pl.loop=chk; if(chk){pl.muted=true; if(pl.paused&&pl.ended){pl.currentTime=0;} pl.play().catch(()=>{});} }
   $('#flow').classList.remove('hidden');
   document.querySelectorAll('.flow-screen').forEach(x => x.classList.toggle('hidden', x.id !== id));
   $('#details').classList.toggle('hidden', !['results-screen','claim-screen'].includes(id));
@@ -835,7 +840,7 @@ function begin(videoUrl, replay){
   if (videoUrl) { p.src = videoUrl; p.classList.remove('hidden'); $('#novideo').classList.add('hidden'); p.muted = replay ? soundMuted : (params.has('auto') || p.muted); }
   else { p.classList.add('hidden'); p.removeAttribute('src'); $('#novideo').classList.remove('hidden'); $('#novideo').textContent = 'Offline demo: no video file. Ledgerly AI is a made-up product.'; }
   updateReaction(0);
-  $$('#live-steps .live-step').forEach((x,i)=>{x.classList.toggle('is-active',i===0);x.classList.remove('is-done');});
+  S.stepDone=[false,false,false]; $$('#live-steps .live-step').forEach((x,i)=>{x.classList.toggle('is-active',i===0);x.classList.remove('is-done');});
   $('#run-label').textContent = `${replay ? 'Recorded sample' : config.provider.name === 'fixture' ? 'Sample check' : 'Live AI check'}, Reviewing ${clock(S.lastT)}`;
   showScreen('checking-screen'); moveVideo();
   status();
@@ -1071,7 +1076,7 @@ function log(time, event, detail, guard){
 /* ---------------- events ---------------- */
 function apply(e){
   if (e.t) { S.lastT = +e.t; status(); }
-  if (S.running) { const steps=$$('#live-steps .live-step'); const index=e.kind==='transcribed'?1:e.tool==='judge_claim'||e.tool==='extract_claims'||e.tool==='rewrite_line'?2:e.tool==='check_disclosure'?3:-1; if(index>=0) steps.forEach((x,i)=>{x.classList.toggle('is-done',i<index);x.classList.toggle('is-active',i===index);}); }
+  if (S.running) { const steps=$$('#live-steps .live-step'); S.stepDone=S.stepDone||[false,false,false]; if(e.kind==='transcribed') S.stepDone[0]=true; if(e.tool==='check_disclosure') S.stepDone[2]=true; if(e.tool==='judge_claim'||e.tool==='extract_claims'||e.tool==='rewrite_line') S.stepDone[0]=true; const act=S.stepDone.findIndex(d=>!d); steps.forEach((x,i)=>{x.classList.toggle('is-done',!!S.stepDone[i]);x.classList.toggle('is-active',i===act);}); }
   if (e.kind === 'art') { showArt(e); return; }
   if (e.kind === 'media_info') {
     applyMedia(e, e.video_url);
@@ -1333,9 +1338,9 @@ init();
 (function(){
   const LINES={point:['Are you seeing this?','Wait. Did you hear that?'],magnifier:['Where is the proof?','Show me the source.'],shock:['They did NOT just say that.'],redcard:['No paid label. Red card.'],thumbs:['That one checks out.']};
   let last='back', lastNote=null;
-  const order=[]; const SEQ=['point','shock','magnifier','point'];
+  let discAt=0; const order=[]; const SEQ=['point','shock','magnifier','point'];
   function pick(note){
-    if(!note){ const end=document.getElementById('player'); const ended=S.videoEnded||(end&&end.ended); const miss=S.notes.some(n=>n.kind==='nodisclosure'); return (ended&&miss)?'redcard':'back'; }
+    if(!note){ const miss=S.notes.some(n=>n.kind==='nodisclosure'); if(miss&&!discAt) discAt=Date.now(); return (discAt&&Date.now()-discAt<6000)?'redcard':'back'; }
     if(note.kind==='nodisclosure') return 'redcard';
     if(note.kind==='verified'||note.kind==='disclosure'||note.claim?.status==='pass') return 'thumbs';
     if(!order.includes(note.n)) order.push(note.n);
@@ -1349,6 +1354,7 @@ init();
     const key=note?note.n:null;
     const k2=key===null&&f==='redcard'?'end':key; if(k2!==lastNote){ lastNote=k2; if(f==='back'){ b.classList.remove('show'); } else { const L=LINES[f]; b.textContent=L[((note&&note.n)||0)%L.length]; b.classList.add('show'); } }
   };
+  setInterval(()=>{ try{ const sc=document.getElementById('checking-screen'); if(sc&&!sc.classList.contains('hidden')){ const pl=document.getElementById('player'); couchUpdate(pl?pl.currentTime:NaN); } }catch(e){} },500);
   if(typeof updateReaction==='function'){ const _u=updateReaction; updateReaction=function(time,imageMode){ _u(time,imageMode); try{couchUpdate(time)}catch(e){} }; }
 })();
 </script>
