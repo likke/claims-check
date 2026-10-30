@@ -452,6 +452,25 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
 .keptpill{display:inline-block;font-size:14px;font-weight:600;color:var(--ink);background:var(--line);border-radius:999px;padding:2px 10px;margin-right:8px;line-height:1.4}
 .dl-reason{font-size:17px;color:var(--ink)}
 .claim-stage-content .stage-actions.hidden{display:none!important}
+
+/* round 8: couch theater on the checking screen */
+#checking-screen .mascot-wrap{display:none!important}
+#checking-screen .checking-layout{grid-template-columns:minmax(0,1fr) 280px!important;grid-template-rows:auto!important;align-items:start}
+#checking-screen .checking-layout::after{display:none!important}
+#checking-screen .theater{grid-column:1;grid-row:1;background:#171717;border-radius:24px;padding:24px 24px 0;overflow:hidden}
+#checking-screen .theater #flow-video{grid-row:auto!important;margin:0!important;border-radius:12px;overflow:hidden}
+#checking-screen .couch-stage{position:relative;display:flex;justify-content:center;margin-top:-28px;height:200px}
+#couch{width:auto;height:228px;display:block;transform-origin:50% 100%}
+#couch.turn{animation:couch-turn .32s ease-out}
+@keyframes couch-turn{0%{transform:translateY(8px) scale(.97)}100%{transform:none}}
+.couch-bubble{position:absolute;left:calc(50% + 120px);top:40px;max-width:220px;background:#fff;color:var(--ink);font-size:17px;font-weight:600;line-height:1.35;border-radius:16px;padding:12px 16px;margin:0;opacity:0;transform:translateY(6px);transition:opacity .2s ease-out,transform .2s ease-out;pointer-events:none}
+.couch-bubble::before{content:"";position:absolute;left:-8px;top:20px;width:16px;height:16px;background:#fff;transform:rotate(45deg)}
+.couch-bubble.show{opacity:1;transform:none}
+#checking-screen #live-steps{grid-column:2!important;grid-row:1!important;padding-top:8px}
+@media(prefers-reduced-motion:reduce){#couch.turn{animation:none}.couch-bubble{transition:none}}
+@media(max-width:760px){#checking-screen .checking-layout{grid-template-columns:minmax(0,1fr)!important}#checking-screen .theater{padding:12px 12px 0;border-radius:20px}#checking-screen .couch-stage{height:136px;margin-top:-16px}#couch{height:152px}.couch-bubble{left:auto;right:4px;top:4px;max-width:150px;font-size:14px;padding:8px 12px}.couch-bubble::before{display:none}#checking-screen #live-steps{grid-column:1!important;grid-row:2!important}}
+
+@media(min-width:761px){#checking-screen .theater #flow-video{max-width:600px;margin:0 auto!important}#checking-screen .couch-stage{height:180px}#couch{height:204px}}
 </style>
 </head>
 <body>
@@ -473,7 +492,7 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
   <section class="facts hidden" id="facts-screen"><h2>Product facts</h2><p>What should we check against?</p><h3 id="facts-product"></h3><ul id="facts-list"></ul><p class="small muted" id="facts-context"></p><button type="button" class="btn" id="start-check">Start claim check</button><p class="small muted">Checks use brand-provided facts. Confirm their accuracy before continuing.</p></section>
 
   <main id="flow" class="hidden">
-  <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step is-active"><span class="step-icon" aria-hidden="true"></span>Listening to speech…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Comparing claims with product facts…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Checking the paid-partnership label…</p></div></div><button class="btn primary-action hidden" id="see-results">See results</button></section>
+  <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="theater"><div class="flow-video" id="flow-video"></div><div class="couch-stage"><p class="couch-bubble" id="couch-bubble" aria-live="polite"></p><img id="couch" src="/static/mascot/couch/couch-back.webp" alt="Chicky watching the video from a sofa" width="474" height="454"></div></div><div id="live-steps"><p class="live-step is-active"><span class="step-icon" aria-hidden="true"></span>Listening to speech…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Comparing claims with product facts…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Checking the paid-partnership label…</p></div></div><button class="btn primary-action hidden" id="see-results">See results</button></section>
     <section class="flow-screen hidden" id="results-screen"><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="result-card hidden" id="result-card"><canvas id="result-thumb" width="320" height="180" aria-hidden="true"></canvas><div><p class="claim-label">Chicky flagged</p><ul class="flag-list" id="result-lines"></ul></div></div><div class="flow-mascot"><img id="result-mascot" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review the lines</button><button class="btn tertiary" id="details-results" type="button">Review details and event log</button></section>
     <section class="flow-screen hidden" id="claim-screen"><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Chicky examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="btn tertiary" id="details-claim" type="button">Review details and event log</button><button class="btn tertiary" type="button" id="see-source"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>See source</button><div class="source-panel hidden" id="claim-source"></div><div class="keep-box hidden" id="keep-box"><label for="keep-reason">Why keep this line?</label><input type="text" id="keep-reason" placeholder="For example: the brand has a study"><p class="keep-error hidden" id="keep-error">Add a reason to keep this line</p><div class="keep-actions"><button class="btn secondary" id="keep-confirm" type="button">Keep with this reason</button><button class="btn tertiary" id="keep-cancel" type="button">Cancel</button></div></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Ask for this fix</button><button class="btn secondary" id="keep-claim" type="button">Keep this line</button><button class="btn tertiary" id="back-claim" type="button">Back</button></div></div></div></section>
     <section class="flow-screen hidden" id="disclosure-screen"><h2 id="disclosure-title"></h2><div class="disclosure-proof"><p id="disclosure-copy"></p><button class="btn tertiary" id="replay-disclosure" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 11a8 8 0 1 1 2 6M4 4v7h7"/><path d="m10 8 5 4-5 4z"/></svg>Replay this moment</button><span class="flow-stamp hidden" id="disclosure-passed">PASSED</span></div><div class="flow-mascot"><img id="disclosure-mascot" src="/static/mascot/cool.webp" alt="Chicky the Judge"><p class="flow-reaction" id="disclosure-reaction">Found it.</p></div><button class="btn primary-action" id="to-decision">Continue to decision</button></section>
@@ -1307,6 +1326,30 @@ init();
   btn.addEventListener('click',async()=>{const c=await makeCard();c.toBlob(async b=>{const f=new File([b],'chicky-verdict.png',{type:'image/png'});
     const mobile=matchMedia('(pointer:coarse)').matches; if(mobile&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Chicky’s verdict'});return}catch(e){}}
     const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='chicky-verdict.png';a.click();document.getElementById('share-note').textContent='Verdict card saved as an image.';},'image/png');});
+})();
+</script>
+
+<script>
+(function(){
+  const LINES={point:['Are you seeing this?','Wait. Did you hear that?'],magnifier:['Where is the proof?','Show me the source.'],shock:['They did NOT just say that.'],redcard:['No paid label. Red card.'],thumbs:['That one checks out.']};
+  let last='back', lastNote=null;
+  const order=[]; const SEQ=['point','shock','magnifier','point'];
+  function pick(note){
+    if(!note){ const end=document.getElementById('player'); const ended=S.videoEnded||(end&&end.ended); const miss=S.notes.some(n=>n.kind==='nodisclosure'); return (ended&&miss)?'redcard':'back'; }
+    if(note.kind==='nodisclosure') return 'redcard';
+    if(note.kind==='verified'||note.kind==='disclosure'||note.claim?.status==='pass') return 'thumbs';
+    if(!order.includes(note.n)) order.push(note.n);
+    return SEQ[order.indexOf(note.n)%SEQ.length];
+  }
+  window.couchUpdate=function(time){
+    const img=document.getElementById('couch'), b=document.getElementById('couch-bubble'); if(!img||!b) return;
+    const note=window.ReviewReactions?ReviewReactions.activeReactionAt(S.notes,time):null;
+    const f=pick(note);
+    if(f!==last){ img.src='/static/mascot/couch/couch-'+f+'.webp'; img.classList.remove('turn'); void img.offsetWidth; if(f!=='back') img.classList.add('turn'); last=f; }
+    const key=note?note.n:null;
+    const k2=key===null&&f==='redcard'?'end':key; if(k2!==lastNote){ lastNote=k2; if(f==='back'){ b.classList.remove('show'); } else { const L=LINES[f]; b.textContent=L[((note&&note.n)||0)%L.length]; b.classList.add('show'); } }
+  };
+  if(typeof updateReaction==='function'){ const _u=updateReaction; updateReaction=function(time,imageMode){ _u(time,imageMode); try{couchUpdate(time)}catch(e){} }; }
 })();
 </script>
 </body>
