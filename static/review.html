@@ -1021,6 +1021,7 @@ function updateApprove(){
 }
 function finish(r){
   S.running = false; S.done = true;
+  $$('#live-steps .live-step').forEach(x=>{x.classList.add('is-done');x.classList.remove('is-active');});
   if (S.replay) { S.replayLoopPending = true; if ($('#player').ended) { S.replayLooped = true; $('#player').currentTime = 0; $('#player').play().catch(() => $('#watch-video').classList.remove('hidden')); } }
   S.reactions = r.reactions || {};
   (r.sources || []).forEach(c => S.sources[c.id] = c);
