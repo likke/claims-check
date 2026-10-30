@@ -1,7 +1,7 @@
 {
  "video": "/static/intro/intro-staging.mp4",
  "poster": "/static/intro/intro-poster.jpg",
- "ai_label": "AI avatar and voice: staging preview",
+ "ai_label": "AI avatar and AI voice",
  "cues": [
   {
    "start": 0.0,
