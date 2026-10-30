@@ -2,7 +2,7 @@
 
 # Claims Check (by Dasho)
 
-Meet **Sisiw the Judge** (SEE-seew; Tagalog for chick, and slang for "easy"). Sisiw watches the clip with you, reacts at every flagged second, and stamps PASSED on claims that hold up. A named person still makes the final call.
+Meet **Chicky the Judge**, a chick who watches the clip with you, reacts at every flagged second, and stamps PASSED on claims that hold up. A named person still makes the final call.
 
 A brand team checks a creator's 15 to 90 second video, or an image or carousel post, **before it posts**. An agent built on Meta's Muse models:
 

@@ -94,15 +94,15 @@
   {
    "start": 42.41,
    "end": 43.79,
-   "caption": "Meet Sisiw the Judge.",
+   "caption": "Meet Chicky the Judge.",
    "react": 43.89,
    "frame": "party",
-   "bubble": "That's me! SEE-seew!"
+   "bubble": "That's me, Chicky!"
   },
   {
    "start": 44.45,
    "end": 50.93,
-   "caption": "Sisiw watches every creator video, flags the risky claim, shows the proof, and suggests a fix.",
+   "caption": "Chicky watches every creator video, flags the risky claim, shows the proof, and suggests a fix.",
    "react": 51.03,
    "frame": "prop-magnifier",
    "bubble": "Every second. Every claim."
@@ -110,7 +110,7 @@
   {
    "start": 51.58,
    "end": 54.14,
-   "caption": "But Sisiw never approves. You do.",
+   "caption": "But Chicky never approves. You do.",
    "react": 54.24,
    "frame": "cool",
    "bubble": "Your call, human."
@@ -118,7 +118,7 @@
   {
    "start": 54.79,
    "end": 59.07,
-   "caption": "Try a sample, or upload your own. Sisiw will guide you.",
+   "caption": "Try a sample, or upload your own. Chicky will guide you.",
    "react": 59.17,
    "frame": "popcorn",
    "bubble": "Ready when you are."

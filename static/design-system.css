@@ -17,14 +17,14 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .masthead h1{font:600 20px/1.2 system-ui,sans-serif}
 .brand{display:flex;align-items:center;gap:10px}
 .brand-name{display:flex;gap:4px}
-.brand-check{color:var(--orange)}
-.brand-chick{display:none}
+.brand-check{color:var(--ink);text-decoration:line-through;text-decoration-color:#F72422;text-decoration-thickness:2px}
+.brand-chick{font:20px 'Permanent Marker',cursive;color:#F72422;display:inline-block;transform:rotate(-4deg)}
 .brand-byline{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
 .brand-dasho{width:52px;height:14px;object-fit:contain;opacity:.75}
 .status{margin:0}
 .meta{display:flex;align-items:center}
 .flow-screen,.entry,.facts,.setup{max-width:1120px;margin:48px auto 0}
-.flow-screen{font-size:16px;line-height:1.5;animation:screen-in 280ms var(--ease) both}
+.flow-screen{position:relative;font-size:16px;line-height:1.5;animation:screen-in 280ms var(--ease) both}
 .flow-screen h2,.entry h2,.facts h2{font-size:32px;line-height:1.2;font-weight:600;margin:0}
 .flow-screen h2+p{margin-top:12px}
 .flow-screen h3,.facts h3{font-size:20px;font-weight:600}
@@ -57,8 +57,9 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .intro-play:focus-visible{outline-offset:-6px}
 .welcome-preview .mascot-wrap,.intro-mascot{display:flex;align-items:center;gap:16px;margin-top:16px}
 .mascot{width:140px;height:140px;object-fit:contain;flex:none}
-.welcome-sisiw{animation:peek 360ms var(--ease) 120ms both}
+.welcome-chicky{animation:peek 360ms var(--ease) 120ms both}
 .bubble,.flow-reaction{position:relative;padding:12px 16px;margin:0;background:var(--card);border:1px solid var(--hairline);border-radius:var(--r-card);font-size:16px;line-height:1.45;text-align:left}
+.bubble{width:auto;min-width:160px;max-width:280px;white-space:normal;overflow-wrap:normal;}
 .bubble:before,.flow-reaction:before{content:"";position:absolute;width:12px;height:12px;left:-7px;top:22px;background:var(--card);border:1px solid var(--hairline);transform:rotate(45deg);z-index:-1}
 .intro-caption,.intro-ai-label,.intro-skip{display:none}
 #welcome.intro-mode .intro-caption,#welcome.intro-mode .intro-ai-label,#welcome.intro-mode .intro-skip{display:block}
@@ -88,7 +89,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .sample-desc{font-size:13px}
 .sample-check{width:22px;height:22px;stroke:var(--orange);stroke-width:2;fill:none;opacity:0}
 .sample-option[aria-pressed="true"] .sample-check{opacity:1}
-.facts{max-width:720px}
+.facts{max-width:640px}
+.facts>.btn{width:100%}
+#sample-picker{display:grid;grid-template-columns:minmax(0,640px);justify-content:center;gap:0}
+#sample-picker h2,#sample-picker>p{grid-column:1}
+#sample-picker .sample-list,#sample-picker .entry-actions{grid-column:1;width:100%}
+#sample-picker .entry-actions>.btn{width:100%}
 .facts ul{padding-left:22px}
 .facts li{margin:8px 0}
 .facts>.btn{margin-top:18px}
@@ -207,7 +213,7 @@ details.details>summary:after{content:"⌄";margin-left:8px;color:var(--muted)}
 #human-approve{order:1}
 .confetti{position:absolute;pointer-events:none;left:50%;top:0;width:1px;height:1px}
 #done-screen{position:relative;overflow:visible}
-#done-screen .confetti i{position:absolute;top:4px;width:8px;height:14px;border-radius:2px;background:var(--orange);animation:confetti 1s ease-out both}
+#done-screen .confetti i{position:absolute;top:4px;width:8px;height:14px;border-radius:2px;background:var(--orange);animation:confetti 1.2s ease-out both}
 #done-screen .confetti i:nth-child(1){left:-140px;background:var(--red);animation-delay:0ms}
 #done-screen .confetti i:nth-child(2){left:-100px;background:var(--orange);animation-delay:30ms}
 #done-screen .confetti i:nth-child(3){left:-60px;background:var(--green);animation-delay:60ms}
@@ -270,6 +276,7 @@ to{opacity:1}
 @media(max-width:980px){.page{width:calc(100% - 40px);padding-bottom:32px}
 .flow-screen,.entry,.facts,.setup{margin-top:24px}
 .entry{grid-template-columns:minmax(0,1fr);grid-template-areas:"copy" "preview" "actions";gap:18px}
+#sample-picker{grid-template-columns:minmax(0,640px);margin-left:auto;margin-right:auto}
 .entry h1{font-size:32px;line-height:1.2;max-width:14ch}
 .entry p{font-size:16px}
 .welcome-preview .mascot-wrap{gap:12px}
