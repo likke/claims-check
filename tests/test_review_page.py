@@ -69,7 +69,7 @@ def test_replay_passed_imprints_match_passed_claims_and_found_disclosures():
 def test_replay_video_and_approval_controls_are_wired():
     page = PAGE.read_text()
     assert "startReplayVideo();" in page
-    assert 'id="watch-video">Watch with Chicky</button>' in page
+    assert 'Tap to watch with Chicky</button>' in page
     assert "replayLoopPending" in page and "replayLooped" in page
     assert "Human review summary" in page
 

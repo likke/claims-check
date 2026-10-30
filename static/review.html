@@ -475,6 +475,18 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
 /* round 8b */
 #checking-screen #player{pointer-events:none}
 @media(max-width:760px){#checking-screen .couch-stage{justify-content:flex-start;padding-left:8px}.couch-bubble{left:auto!important;right:4px!important;top:24px!important;max-width:calc(100% - 184px)!important;min-width:120px}}
+
+/* round 8c */
+#watch-video:not(.hidden){position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 22px;border-radius:999px;background:#fff;color:var(--ink);font-size:17px;font-weight:600;border:0;cursor:pointer}
+#watch-video svg{width:16px;height:16px;fill:var(--ink);flex:none}
+
+#watch-video:not(.hidden){white-space:nowrap;max-width:calc(100% - 24px)}
+@media(max-width:760px){#watch-video:not(.hidden){font-size:14px;min-height:44px;padding:0 16px}}
+
+#watch-video:not(.hidden){width:auto!important;height:auto!important;min-width:0!important;aspect-ratio:auto!important;border-radius:999px!important;padding:12px 20px!important;line-height:1.2!important;font-size:17px!important;text-align:left}
+@media(max-width:760px){#watch-video:not(.hidden){font-size:14px!important;padding:10px 16px!important}}
+
+#watch-video:not(.hidden){inset:auto!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important}
 </style>
 </head>
 <body>
@@ -523,7 +535,7 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
     <div class="left">
       <div class="vcol">
       <div class="m-video">
-        <div class="watch-layout"><div class="video" id="stage"><video id="player" playsinline preload="auto" controls class="hidden"></video><button type="button" class="watch-video hidden" id="watch-video">Watch with Chicky</button><div class="novideo" id="novideo">No video yet.</div><div class="lbox" id="lbox"><span id="lbox-tag"></span></div></div>
+        <div class="watch-layout"><div class="video" id="stage"><video id="player" playsinline preload="auto" controls class="hidden"></video><button type="button" class="watch-video hidden" id="watch-video"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 2l11 6-11 6z"/></svg>Tap to watch with Chicky</button><div class="novideo" id="novideo">No video yet.</div><div class="lbox" id="lbox"><span id="lbox-tag"></span></div></div>
           <aside class="mascot-wrap" aria-label="Chicky the Judge"><button type="button" class="bubble" id="reaction-bubble" aria-label="Open this review note"></button>
             <img class="mascot watching" id="mascot" src="/static/mascot/popcorn.webp" alt="Chicky the Judge, an orange chick in an eggshell">
             <button type="button" class="mute" id="mute" aria-label="Toggle sound" aria-pressed="false" data-sound-label="Sound on"><svg class="speaker-on" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4z"/><path d="M16 9a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12"/></svg><svg class="speaker-off" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4z"/><path d="m17 9 5 6m0-6-5 6"/></svg><span class="visually-hidden">Sound on</span></button><p class="mascot-name">Chicky the Judge</p><p class="mascot-caption" title="Chicky"></p>
@@ -880,9 +892,12 @@ async function replayRun(){
   showArt(run.art || {});
   startReplayVideo();
   const speed = +(params.get('speed') || 3), stop = +(params.get('stop') || 0);
-  let last = 0;
+  let last = 0, due = Date.now();
+  S.replayStart = Date.now();
   for (const event of run.trace) {
-    await new Promise(r => setTimeout(r, Math.min(2600, Math.max(160, (event.t - last) * 1000 / speed))));
+    due += Math.min(2600, Math.max(160, (event.t - last) * 1000 / speed));
+    // wall-clock schedule: if the tab was throttled, the loop catches up instead of waiting a full timer per step
+    while (Date.now() < due) await new Promise(r => setTimeout(r, Math.min(250, due - Date.now())));
     last = event.t;
     if (event.kind === 'start' && !event.duration) event.duration = run.duration;
     apply(event);
@@ -1354,7 +1369,8 @@ init();
     const key=note?note.n:null;
     const k2=key===null&&f==='redcard'?'end':key; if(k2!==lastNote){ lastNote=k2; if(f==='back'){ b.classList.remove('show'); } else { const L=LINES[f]; b.textContent=L[((note&&note.n)||0)%L.length]; b.classList.add('show'); } }
   };
-  setInterval(()=>{ try{ const sc=document.getElementById('checking-screen'); if(sc&&!sc.classList.contains('hidden')){ const pl=document.getElementById('player'); couchUpdate(pl?pl.currentTime:NaN); } }catch(e){} },500);
+  document.addEventListener('click',ev=>{ const th=ev.target.closest&&ev.target.closest('#checking-screen .theater'); if(!th) return; const pl=document.getElementById('player'); if(pl&&pl.paused){ pl.muted=true; pl.play().then(()=>{const w=document.getElementById('watch-video'); if(w) w.classList.add('hidden');}).catch(()=>{}); } });
+  setInterval(()=>{ try{ const sc=document.getElementById('checking-screen'); if(sc&&!sc.classList.contains('hidden')){ const pl=document.getElementById('player'); const playing=pl&&!pl.paused&&pl.readyState>2; const dur=(pl&&pl.duration)||S.duration||25; const vt=playing?pl.currentTime:(((Date.now()-(S.replayStart||Date.now()))/1000)%dur); couchUpdate(vt); } }catch(e){} },500);
   if(typeof updateReaction==='function'){ const _u=updateReaction; updateReaction=function(time,imageMode){ _u(time,imageMode); try{couchUpdate(time)}catch(e){} }; }
 })();
 </script>
