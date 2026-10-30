@@ -1,14 +1,20 @@
-# Claims Check UI v3 — round fix report
+# Round 4 design implementation report
 
-1. **Masthead wordmark** — Restored the red `#F72422` marker strike on ink “Check” and the red handwritten “Chick” beside it; “Claims”, “by”, and the Dasho lockup remain in place.
-2. **Checking speech bubbles** — Bubbles now wrap normally with a 160px minimum and 280px maximum width. The mascot and bubble remain side by side on desktop and mobile, with the bubble tail aimed toward the mascot.
-3. **Results chips** — Zero-valued “needs a fix” and “passed” chips are omitted.
-4. **Skipped intro control** — “Watch intro” uses the tertiary button treatment and a play icon.
-5. **Sample picker and Product facts** — Both use a centered column capped at 640px, with the cards/facts and a full-column primary action; the layout stays one column on mobile.
-6. **Done confetti** — Positioned the flow screen as the confetti containing block so the burst is visible with the screen, and set its CSS animation to 1.2 seconds. The reduced-motion rule continues to disable animation when requested.
-7. **Mascot rename** — Replaced the former mascot name and pronunciation hints with “Chicky”, including page copy, labels, intro cues, README, CSS names, and the name-pinning test string.
-8. **Visual constraints** — Confirmed the design system has no edge-border rails or box shadows and uses only 13/16/20/26/32/48px font sizes.
+1. **Typography:** Loaded Poppins (600, 700) and Inter (400, 500) from Google Fonts. Headings use Poppins and body copy uses Inter at 17px. Flow typography uses the six DESIGN.md sizes: 14, 17, 20, 26, 34, and 48px. Removed serif font rules.
+2. **Eyebrows and check time:** Removed uppercase eyebrow labels from welcome, product facts, results, disclosure, and decision. The completed check time now appears as a muted sentence-case “Checked in …” line.
+3. **Flow layout:** Centered welcome, sample picker, facts, upload, checking, results, disclosure, decision, and done within a 720px column. The claim screen uses a 7/12 video and 5/12 content split and stacks on mobile. Welcome keeps the headline and lead with the intro video and Chicky beside them on desktop, with Chicky overlapping the video corner.
+4. **Sample picker and details control:** Kept the sample order as heading, subtitle, cards, then “Load sample.” Removed the details/event-log control from the picker and facts screens. It is available as a tertiary action from results and claim screens only.
+5. **Chicky:** Set the mascot to 160px on desktop and 112px on mobile. Speech bubbles use a tail, 180px minimum width, 17px text, and normal word wrapping.
+6. **Results and decision:** Results use a 34px verdict, show only non-zero count chips, and lead with “Review the lines.” Decision presents the labelled reviewer name field before side-by-side “Request changes” (primary) and “Approve” (secondary) buttons, stacked on mobile.
+7. **Interaction and constraints:** Removed underlines from action controls, used the orange 3px focus ring, kept box shadows out, and limited the speech-bubble tail border to 1px.
+8. **Updated tests:** Updated the existing stylesheet assertions and computed body-font assertion in `tests/test_review_page.py` to DESIGN.md’s type scale, 17px body value, and 500 font weight. No assertions were removed.
 
-Files changed: `static/review.html`, `static/design-system.css`, `static/intro/cues.json`, `README.md`, `tests/test_review_page.py`, and this report.
+## Validation
 
-Validation: the requested pytest command could not run because `.venv/bin/python` is absent in this worktree. System `python3 -m pytest -q` also could not collect tests because `fastapi` is not installed. A focused CSS/name check passed: no forbidden edge rails or shadows, font sizes are within the required scale, confetti duration is 1.2s, and no former mascot name or pronunciation hints remain outside mascot asset paths.
+- `PATH="$HOME/.local/opt/node-v24.21.0/bin:$PATH" .venv/bin/python -m pytest -q .` could not start: `.venv/bin/python` does not exist in this worktree.
+- `python3 -m pytest -q .` attempted collection but stopped with four `ModuleNotFoundError: No module named 'fastapi'` errors. No tests ran.
+- Static DESIGN.md checks passed and printed `static DESIGN.md checks passed: [14, 17, 20, 26, 34, 48]`. `node --check /tmp/review-inline.js` completed with no output (success). The full project suite remains unverified until the worktree venv and its dependencies are available.
+
+## Remaining risk
+
+The Google Fonts request needs network access in the browser. Full browser layout and no-horizontal-scroll behavior could not be confirmed here because the project test environment is unavailable.

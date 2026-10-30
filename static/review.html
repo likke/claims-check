@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="/static/brand/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 <script>for (const frame of ['hide-1-jump','hide-2-duck','hide-3-shell','hide-4-peek','prop-magnifier','prop-redcard','prop-facepalm','prop-clipboard','confused','party','stamp-1-windup','stamp-2-slam','popcorn']) { const img = new Image(); img.src = `/static/mascot/${frame}.webp`; }</script>
 <title>Claims Check by Dasho</title>
 <style>
@@ -22,14 +22,14 @@
 :root{--paper:#f5f3ee;--ink:#171717;--muted:#5e5b55;--rule:#d8d3c8;--blue:#2f5da8;--red:#b42318;--olive:#7a8460;--white:#fffdf9}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
-h1,h2,h3{font-family:Newsreader,Georgia,serif;font-weight:600;margin:0;letter-spacing:-0.005em}
-h1{font-size:32px;line-height:1.1}
-h2{font-size:32px;line-height:1.15}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.55 Inter,sans-serif;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:Poppins,sans-serif;font-weight:600;margin:0;letter-spacing:-0.005em}
+h1{font-size:34px;line-height:1.1}
+h2{font-size:34px;line-height:1.15}
 h3{font-size:20px;line-height:1.25}
 p{margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
-.small{font-size:13px}.muted{color:var(--muted)}
+.small{font-size:14px}.muted{color:var(--muted)}
 .hidden{display:none!important}
 .rule{height:1px;background:var(--rule);width:100%}
 a,.link{color:var(--blue);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
@@ -54,22 +54,22 @@ label{display:block;font-weight:600;margin-bottom:4px}
 .watch-video{position:absolute;z-index:4;inset:0;display:flex;align-items:center;justify-content:center;background:#1119;color:white;font-size:20px}
 .lbox{position:absolute;border:2px solid var(--blue);border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none}
 .lbox.on{opacity:1}
-.lbox span{position:absolute;left:-2px;bottom:100%;margin-bottom:4px;background:var(--blue);color:var(--white);font-size:13px;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.lbox span{position:absolute;left:-2px;bottom:100%;margin-bottom:4px;background:var(--blue);color:var(--white);font-size:14px;padding:1px 8px;border-radius:999px;white-space:nowrap}
 .vcol{width:100%;margin:0 auto}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
 .gallery figure{margin:0;padding:4px;border:2px solid transparent;border-radius:12px;cursor:pointer}
 .gallery figure.on{border-color:var(--blue)}
 .gallery img{display:block;width:100%;border-radius:12px}
-.gallery figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+.gallery figcaption{font-size:14px;color:var(--muted);margin-top:4px}
 body.layout-images .m-ruler,body.layout-images #stage{display:none}
-.origin{font-size:13px;color:var(--muted)}
-.unverified{font-size:13px;color:var(--red);font-weight:600}
+.origin{font-size:14px;color:var(--muted)}
+.unverified{font-size:14px;color:var(--red);font-weight:600}
 body.layout-vertical .grid{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
 body.layout-square .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--arn,1.7778))}
 .novideo{aspect-ratio:var(--ar,16/9);display:flex;align-items:center;justify-content:center;color:#d8d3c8;padding:24px;text-align:center}
 .watch-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:36px;align-items:start}
-.mascot-name{margin:6px 0 0;font-weight:600;font-size:16px}
+.mascot-name{margin:6px 0 0;font-weight:600;font-size:17px}
 .mascot-wrap{position:relative;width:230px;max-width:100%;justify-self:center;text-align:center}
 .mascot-wrap .mascot{margin:0 auto}
 .mascot{display:block;width:160px;height:160px;object-fit:contain;transform-origin:50% 90%}
@@ -88,20 +88,20 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 @keyframes mascot-wobble{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-16deg) scale(1.12,.9)}50%{transform:rotate(13deg) scale(.92,1.1)}75%{transform:rotate(-7deg)}}
 @keyframes mascot-pop{0%{transform:scale(.6)}65%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes mascot-shell{50%{transform:translateX(5px) rotate(4deg)}}
-.bubble{position:static;display:block;width:100%;min-height:76px;margin:0 0 10px;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;text-align:left;font-size:16px;line-height:24px;cursor:pointer}
+.bubble{position:static;display:block;width:100%;min-height:76px;margin:0 0 10px;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;text-align:left;font-size:17px;line-height:24px;cursor:pointer}
 .bubble:empty{display:block;visibility:hidden}
-.mute{display:block;margin:4px auto 0;padding:0;font-size:13px;background:none;border:0;border-radius:999px;cursor:pointer}
-.mascot-caption{font-size:13px;color:var(--muted);margin-top:3px}
+.mute{display:block;margin:4px auto 0;padding:0;font-size:14px;background:none;border:0;border-radius:999px;cursor:pointer}
+.mascot-caption{font-size:14px;color:var(--muted);margin-top:3px}
 
 /* timecode ruler */
 .ruler{position:relative;margin-top:14px;padding-top:34px;user-select:none}
 .ticks{position:relative;height:34px;cursor:pointer}
 .tick{position:absolute;bottom:0;width:1px;height:8px;background:var(--muted)}
 .tick.major{height:14px;background:var(--ink)}
-.tick span{position:absolute;bottom:18px;left:0;transform:translateX(-50%);font-size:13px;color:var(--muted)}
+.tick span{position:absolute;bottom:18px;left:0;transform:translateX(-50%);font-size:14px;color:var(--muted)}
 .base{position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--ink)}
 .pin{position:absolute;top:0;z-index:2;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:0;cursor:pointer}
-.pin b{width:24px;height:24px;border-radius:12px;background:var(--blue);color:var(--white);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.pin b{width:24px;height:24px;border-radius:12px;background:var(--blue);color:var(--white);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center}
 .pin i{width:1px;height:44px;background:var(--blue)}
 .pin.red b{background:var(--red)}.pin.red i{background:var(--red)}
 .pin.drop{animation:drop .45s ease-out}
@@ -112,46 +112,46 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 
 /* event log */
 .log{margin-top:36px}
-.log h2{font-size:20px;margin-bottom:10px;font-family:Newsreader,Georgia,serif}
+.log h2{font-size:20px;margin-bottom:10px;font-family:Poppins,sans-serif}
 .logrow{display:grid;grid-template-columns:72px minmax(0,190px) minmax(0,1fr);gap:16px;padding:7px 0;align-items:baseline}
-.logrow.head{color:var(--muted);font-size:13px;padding-top:0}
+.logrow.head{color:var(--muted);font-size:14px;padding-top:0}
 .logrow .tc{font-variant-numeric:tabular-nums}
 .logrow.new{animation:fade .35s ease}
-.logrow .guard{color:var(--muted);font-size:13px}
+.logrow .guard{color:var(--muted);font-size:14px}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* notes */
 .notes h2{margin-bottom:14px}
 .note{display:grid;grid-template-columns:34px 64px minmax(0,1fr);gap:4px 12px;padding:18px 0;animation:fade .35s ease}
-.note .n{font-family:Newsreader,Georgia,serif;font-size:20px;line-height:1.25}
+.note .n{font-family:Poppins,sans-serif;font-size:20px;line-height:1.25}
 .note .tc{padding-top:3px}
 .note .body{display:flex;flex-direction:column;gap:8px;min-width:0}
-.quote{font-family:Newsreader,Georgia,serif;font-size:20px;line-height:1.35}
+.quote{font-family:Poppins,sans-serif;font-size:20px;line-height:1.35}
 .label{font-weight:600}
 .issue{color:var(--ink)}
 .ok-line{color:var(--muted)}
 .revs{display:flex;flex-direction:column;gap:10px;margin-top:4px}
-.rev .head{font-size:13px;color:var(--muted)}
+.rev .head{font-size:14px;color:var(--muted)}
 .struck{color:var(--red);text-decoration:line-through;text-decoration-thickness:1.5px}
-.why{font-size:13px;color:var(--red)}
+.why{font-size:14px;color:var(--red)}
 .suggested{display:inline;text-decoration:underline;text-decoration-skip-ink:none;text-decoration-color:var(--olive);text-decoration-thickness:2px;text-underline-offset:5px}
-.suggested-tag{font-size:13px;color:var(--olive);font-weight:600;margin-left:10px;white-space:nowrap}
+.suggested-tag{font-size:14px;color:var(--olive);font-weight:600;margin-left:10px;white-space:nowrap}
 .rev.swap{animation:swap .6s ease}
 @keyframes swap{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 .struck.turn{animation:turnred .6s ease}
 @keyframes turnred{from{color:var(--ink);text-decoration-color:transparent}to{color:var(--red)}}
-.source{font-size:13px;color:var(--muted)}
+.source{font-size:14px;color:var(--muted)}
 .source b{color:var(--ink);font-weight:600}
 .decide{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
-.decided{font-size:13px;color:var(--muted)}
+.decided{font-size:14px;color:var(--muted)}
 .note{position:relative}
-.stamp-imprint{position:static;display:block;width:max-content;margin:8px 0 10px 4px;color:#a51e16;font:600 20px/1 system-ui,sans-serif;letter-spacing:2px;transform:rotate(-8deg);filter:url(#ink-edge);pointer-events:none}
+.stamp-imprint{position:static;display:block;width:max-content;margin:8px 0 10px 4px;color:#a51e16;font:600 20px/1 Inter,sans-serif;letter-spacing:2px;transform:rotate(-8deg);filter:url(#ink-edge);pointer-events:none}
 .stamp-imprint.pop{animation:stamp-land .34s cubic-bezier(.2,1.4,.5,1) both}
 @keyframes stamp-land{from{opacity:0;transform:rotate(-8deg) scale(1.45)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
 .page.stamp-shake{animation:page-shake .22s ease-out}
 @keyframes page-shake{25%{transform:translateX(-3px)}55%{transform:translateX(3px)}80%{transform:translateX(-1px)}}
 .approve{position:relative}
-.approval-imprint{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);color:#a51e16;border:3px solid #a51e16;padding:6px 14px;font:600 32px/1 system-ui,sans-serif;letter-spacing:3px;filter:url(#ink-edge);pointer-events:none;white-space:nowrap}
+.approval-imprint{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);color:#a51e16;border:3px solid #a51e16;padding:6px 14px;font:700 34px/1.15 Poppins,sans-serif;letter-spacing:3px;filter:url(#ink-edge);pointer-events:none;white-space:nowrap}
 .approval-imprint.pop{animation:stamp-land .34s cubic-bezier(.2,1.4,.5,1) both}
 .stamp-redcard{animation:mascot-pop .35s ease-out}
 @media(prefers-reduced-motion:reduce){.stamp-imprint.pop,.approval-imprint.pop,.page.stamp-shake{animation:none}}
@@ -163,7 +163,7 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 /* setup */
 .setup{margin-bottom:28px}
 .entry{max-width:720px;margin:10vh auto 0;text-align:left}
-.entry h1{font-size:32px;line-height:1.12;max-width:560px}
+.entry h1{font-size:34px;line-height:1.12;max-width:560px}
 .entry p{max-width:560px;margin:16px 0;color:var(--muted)}
 .entry-actions{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:28px}
 .entry .btn{min-height:52px;background:#191919;color:#fff;border-color:#191919;border-radius:10px;padding:12px 22px}
@@ -176,13 +176,13 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 .quiet{background:none;border:0;padding:8px 0;text-decoration:underline;cursor:pointer;color:var(--ink)}
 body.entry-mode .grid,body.entry-mode #approve-bar,body.entry-mode>.page>.rule{display:none}
 body.entry-mode .details{display:none}
-@media(max-width:980px){.entry,.facts{margin:6vh auto 0}.entry h1{font-size:32px}}
+@media(max-width:980px){.entry,.facts{margin:6vh auto 0}.entry h1{font-size:34px}}
 .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-top:14px}
 .full{grid-column:1/-1}
 
 @media (max-width:980px){
   .page{padding:18px 16px 32px}
-  h1{font-size:32px}
+  h1{font-size:34px}
   h2{font-size:20px}
   .grid{grid-template-columns:1fr;gap:28px}
   .left,.right{display:contents}
@@ -211,14 +211,14 @@ body.entry-mode .details{display:none}
 </style>
 <style>
 /* Staged review screens */
-.flow-screen{max-width:1120px;margin:32px auto 0;min-height:0;font-size:16px;line-height:1.5}
-.masthead h1{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:20px;line-height:1.25;font-weight:700}
-.masthead{height:72px;align-items:center}.brand{display:flex;align-items:center;gap:8px;white-space:nowrap}.brand-name{display:flex;align-items:center;gap:4px}.brand-check{text-decoration:line-through;text-decoration-color:var(--flagged);text-decoration-thickness:2px}.brand-chick{font:20px 'Permanent Marker',cursive;color:var(--flagged);display:inline-block;transform:rotate(-4deg)}.brand-byline{font:400 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--muted)}
+.flow-screen{max-width:1120px;margin:32px auto 0;min-height:0;font-size:17px;line-height:1.5}
+.masthead h1{font-family:Inter,sans-serif;font-size:20px;line-height:1.25;font-weight:700}
+.masthead{height:72px;align-items:center}.brand{display:flex;align-items:center;gap:8px;white-space:nowrap}.brand-name{display:flex;align-items:center;gap:4px}.brand-check{text-decoration:line-through;text-decoration-color:var(--flagged);text-decoration-thickness:2px}.brand-chick{font:20px Poppins,sans-serif;color:var(--flagged);display:inline-block;transform:rotate(-4deg)}.brand-byline{font:500 14px/1.4 Inter,sans-serif;color:var(--muted)}
 .status{display:none}
-.flow-screen h2{font-size:32px;line-height:1.1;margin:0 0 16px}
+.flow-screen h2{font-size:34px;line-height:1.1;margin:0 0 16px}
 .flow-screen h3{font-size:20px}.flow-screen .verdict{font-size:48px;font-weight:700;line-height:1.05;max-width:800px}
 .flow-screen .quote{font-size:26px;line-height:1.3;margin:16px 0}
-.flow-screen .small,.flow-screen label{font-size:13px}
+.flow-screen .small,.flow-screen label{font-size:14px}
 .flow-screen .primary-action,.entry>.btn{min-height:52px;border-radius:12px;margin-top:24px}
 .flow-screen .live-step{padding:12px 16px;border:1px solid var(--rule);border-radius:12px;background:var(--white)}
 .checking-layout{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:32px;align-items:start}
@@ -227,7 +227,7 @@ body.entry-mode .details{display:none}
 .checking-mascot{display:flex;align-items:center;flex-direction:column;gap:8px;min-width:0}
 .checking-mascot img{width:112px;height:112px;object-fit:contain}
 #flow:not(.hidden)~.details .mascot-wrap{display:none}
-.flow-reaction{display:block;max-width:100%;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;margin:0!important;font-size:16px;line-height:1.35}
+.flow-reaction{display:block;max-width:100%;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;margin:0!important;font-size:17px;line-height:1.35}
 .disclosure-proof{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:center}
 .disclosure-proof #disclosure-copy{grid-column:1}
 .disclosure-proof #replay-disclosure{grid-column:1;justify-self:start}
@@ -237,7 +237,7 @@ body.entry-mode .details{display:none}
 .welcome-logo{display:block;width:160px;max-width:100%;height:auto;margin:0 0 16px}
 .entry h1{grid-area:copy;font-size:48px;line-height:1.08;max-width:12ch;margin:16px 0}
 .entry p{font-size:20px;max-width:540px;margin:12px 0;color:var(--ink)}
-.entry .small{font-size:16px;color:var(--muted)}
+.entry .small{font-size:17px;color:var(--muted)}
 .welcome-chicky{display:block;width:120px;height:120px;object-fit:contain;margin:8px 0 0}
 .welcome-bubble{display:table!important;padding:12px 16px;background:var(--white);border:1px solid var(--rule);border-radius:12px;margin:0 0 16px!important}
 .welcome-preview{grid-area:preview;min-width:0}.welcome-preview .flow-video{margin:0}.welcome-preview .mascot-wrap{width:auto;display:flex;align-items:center;gap:12px;margin-top:12px}
@@ -245,25 +245,38 @@ body.entry-mode .details{display:none}
 .welcome-preview .mascot{width:92px;height:92px;flex:none}.welcome-preview .bubble{min-height:0;width:auto;margin:0}
 .entry-actions{grid-area:actions;display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .welcome-links{display:flex;justify-content:flex-start;gap:18px;flex-wrap:wrap;margin-top:14px}
-.welcome-links .quiet{font-size:16px}.flow-screen>.primary-action{display:block;width:auto;min-width:200px;margin-left:0}
+.welcome-links .quiet{font-size:17px}.flow-screen>.primary-action{display:block;width:auto;min-width:200px;margin-left:0}
 .stage-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px;padding:12px 0 calc(12px + env(safe-area-inset-bottom))}
 .stage-actions .primary-action{flex:none;min-width:200px;width:auto;margin-top:0}
 .source-panel{margin-top:14px;padding:16px;border:1px solid var(--rule);border-radius:12px;background:var(--white)}
 .claim-stage{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:32px;align-items:start}
-.play-time{font-size:13px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--white);cursor:pointer}
-.claim-label{font-size:13px!important;color:var(--muted);margin:14px 0 0!important}
+.play-time{font-size:14px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--white);cursor:pointer}
+.claim-label{font-size:14px!important;color:var(--muted);margin:14px 0 0!important}
 .suggested{background:#f0efdf;padding:2px 5px;text-decoration:none;border-radius:3px}
 .result-reveal{animation:result-reveal 280ms ease-out both}
 @keyframes result-reveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .result-count-chip{display:inline-block;margin-top:8px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--white);opacity:0;animation:fade .2s ease 150ms forwards}
 .claim-stage-media{min-width:0}.claim-stage-content{min-width:0}.claim-stage-content .flow-video{margin:0 0 14px}
 .disclosure-proof,.decision-card,.result-card{margin:20px 0;padding:24px;border:1px solid var(--rule);border-radius:16px;background:var(--white)}
-.flow-stamp{display:inline-flex;margin:16px 0;color:var(--olive);border:2px solid currentColor;border-radius:6px;padding:6px 12px;font-size:16px;font-weight:700;letter-spacing:.08em;transform:rotate(-5deg)}
-#approval-imprint-flow{position:static;transform:rotate(-6deg);margin:18px 0;border:3px solid #a51e16;padding:8px 16px;font-size:32px;filter:none}
-@media(max-width:760px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.brand{align-items:flex-start;flex-direction:column;gap:0}.masthead{height:72px}.flow-screen{margin:0 auto;max-width:100%;padding-bottom:20px}.entry{margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:20px}.entry>div:first-child{display:contents}.welcome-logo{order:0;margin:0 auto;width:160px}.entry h1{font-size:32px;max-width:13ch;margin:8px 0;order:2}.entry>div:first-child>.small{order:1}.entry>div:first-child>p:not(.small){order:3}.welcome-preview{order:0;display:contents}.welcome-preview>.flow-video{display:none}.welcome-preview>.flow-mascot{order:1;justify-content:center;width:100%}.welcome-preview>.flow-mascot img{display:none}.welcome-preview>.small{display:none}.entry-actions{display:flex;flex-direction:column;align-items:stretch;order:4}.entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}.checking-layout,.claim-stage{grid-template-columns:minmax(0,1fr);gap:18px}.checking-layout>.flow-video{grid-row:1}.checking-mascot{grid-row:2;display:flex;flex-direction:row;align-items:center;justify-content:flex-start}.checking-mascot img{width:72px;height:72px;flex:none}.checking-main{display:contents}#live-steps{grid-row:3}.disclosure-proof{grid-template-columns:1fr}.disclosure-proof #disclosure-copy,.disclosure-proof #replay-disclosure,.disclosure-proof .flow-stamp{grid-column:1;grid-row:auto}.disclosure-proof .flow-stamp{justify-self:start;margin:8px 0}.flow-screen .verdict{font-size:32px}.flow-screen .quote{font-size:20px}.stage-actions{position:static;margin:18px 0 0;padding:12px 0}.stage-actions .primary-action{width:100%;min-width:0}.flow-video{margin:12px 0}.flow-mascot img{width:72px;height:72px}}
+.flow-stamp{display:inline-flex;margin:16px 0;color:var(--olive);border:2px solid currentColor;border-radius:6px;padding:6px 12px;font-size:17px;font-weight:700;letter-spacing:.08em;transform:rotate(-5deg)}
+#approval-imprint-flow{position:static;transform:rotate(-6deg);margin:18px 0;border:3px solid #a51e16;padding:8px 16px;font-size:34px;filter:none}
+@media(max-width:760px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.brand{align-items:flex-start;flex-direction:column;gap:0}.masthead{height:72px}.flow-screen{margin:0 auto;max-width:100%;padding-bottom:20px}.entry{margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:20px}.entry>div:first-child{display:contents}.welcome-logo{order:0;margin:0 auto;width:160px}.entry h1{font-size:34px;max-width:13ch;margin:8px 0;order:2}.entry>div:first-child>.small{order:1}.entry>div:first-child>p:not(.small){order:3}.welcome-preview{order:0;display:contents}.welcome-preview>.flow-video{display:none}.welcome-preview>.flow-mascot{order:1;justify-content:center;width:100%}.welcome-preview>.flow-mascot img{display:none}.welcome-preview>.small{display:none}.entry-actions{display:flex;flex-direction:column;align-items:stretch;order:4}.entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}.checking-layout,.claim-stage{grid-template-columns:minmax(0,1fr);gap:18px}.checking-layout>.flow-video{grid-row:1}.checking-mascot{grid-row:2;display:flex;flex-direction:row;align-items:center;justify-content:flex-start}.checking-mascot img{width:72px;height:72px;flex:none}.checking-main{display:contents}#live-steps{grid-row:3}.disclosure-proof{grid-template-columns:1fr}.disclosure-proof #disclosure-copy,.disclosure-proof #replay-disclosure,.disclosure-proof .flow-stamp{grid-column:1;grid-row:auto}.disclosure-proof .flow-stamp{justify-self:start;margin:8px 0}.flow-screen .verdict{font-size:34px}.flow-screen .quote{font-size:20px}.stage-actions{position:static;margin:18px 0 0;padding:12px 0}.stage-actions .primary-action{width:100%;min-width:0}.flow-video{margin:12px 0}.flow-mascot img{width:72px;height:72px}}
 @media(prefers-reduced-motion:reduce){.flow-screen,.welcome-chicky,.flow-mascot img{animation:none!important;transition:none!important}}
 </style>
 <link rel="stylesheet" href="/static/design-system.css">
+<style>
+:root{--paper:#F7F6F3;--ink:#171717;--muted:#5F636B;--rule:#E4E1DA;--white:#fff}
+body{font:400 17px/1.55 Inter,sans-serif}h1,h2,h3,.masthead h1{font-family:Poppins,sans-serif;font-weight:700}
+.flow-screen,.entry,.facts,.setup{max-width:720px;margin:32px auto 0}.entry{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"copy preview" "actions preview"}
+.flow-screen h2,.entry h2,.facts h2{font-size:34px;line-height:1.15}.flow-screen h3,.facts h3{font-size:26px}.entry h1{font-size:48px}.flow-screen .verdict{font-size:34px;line-height:1.15;max-width:100%}
+body,.flow-screen,.flow-screen p,.entry p,.facts p{font-size:17px}.small,.flow-screen .small,.flow-screen label,.entry .small{font-size:14px;line-height:1.4}
+.claim-stage{grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:24px}.flow-mascot img,.welcome-chicky{width:160px;height:160px}.welcome-preview .mascot-wrap{position:relative;align-items:flex-end;margin-top:-40px;padding-left:90px}.welcome-preview .mascot-wrap .mascot{position:absolute;left:0;bottom:0;width:160px;height:160px;z-index:1}.welcome-preview .mascot-wrap .bubble{margin-left:70px}
+.flow-reaction,.bubble,.welcome-bubble{font-size:17px;line-height:1.5;min-width:180px;white-space:normal;overflow-wrap:normal;position:relative}.bubble:after,.flow-reaction:after,.welcome-bubble:after{content:"";position:absolute;left:-8px;top:22px;width:14px;height:14px;background:#fff;border:0;clip-path:polygon(0 0,100% 0,100% 100%);transform:rotate(45deg)}
+.btn{min-height:56px;border-radius:999px}.btn.secondary{background:#fff;color:var(--ink);border:1.5px solid var(--ink)}a,.link,.quiet,.suggested{text-decoration:none}.result-count-chip,.chip,.play-time{font-size:14px}
+.stage-actions #human-changes{order:0}.stage-actions #human-approve{order:1}#details>summary{width:max-content;min-height:44px;margin:16px auto;color:var(--muted);font-size:14px;cursor:pointer}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #FEA214;outline-offset:2px}
+@media(max-width:760px){.flow-screen,.entry,.facts,.setup{max-width:100%;margin:0 auto}.entry{display:flex}.entry h1{font-size:34px}.welcome-preview>.flow-video{display:block}.welcome-preview>.flow-mascot{justify-content:flex-start}.welcome-preview>.flow-mascot img{display:block}.welcome-preview .mascot-wrap{margin-top:0;padding-left:0;align-items:center}.welcome-preview .mascot-wrap .mascot{position:static;width:112px;height:112px}.welcome-preview .mascot-wrap .bubble{margin-left:0}.welcome-chicky,.flow-mascot img{width:112px;height:112px}.claim-stage,.checking-layout{grid-template-columns:minmax(0,1fr)}.stage-actions{display:grid;grid-template-columns:1fr}.stage-actions button{width:100%;min-width:0}.page{padding-left:16px;padding-right:16px}}
+</style>
 </head>
 <body>
 <div class="page">
@@ -273,7 +286,7 @@ body.entry-mode .details{display:none}
   </header>
   <p class="status muted" id="status"></p>
 
-  <section class="entry intro-mode" id="welcome"><div class="welcome-copy"><p class="small muted">YOUR PRE-POST CHECK</p><h1>Catch the claim before it goes live.</h1><p>Catch risky creator claims before they post. Built on Meta's Muse models, and a human always decides.</p></div>
+  <section class="entry intro-mode" id="welcome"><div class="welcome-copy"><h1>Catch the claim before it goes live.</h1><p>Catch risky creator claims before they post. Built on Meta's Muse models, and a human always decides.</p></div>
     <div class="welcome-preview"><div class="flow-video" id="welcome-video"><video id="intro-video" playsinline preload="none"></video><button type="button" class="intro-play" id="intro-play"><span class="play-chip">▶ Watch intro</span></button></div><div class="mascot-wrap intro-mascot" aria-label="Chicky the Judge"><img class="mascot welcome-chicky" id="intro-chicky" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><button type="button" class="bubble" id="intro-bubble">Ready when you are.</button></div><p class="intro-caption" id="intro-caption" aria-live="polite"></p><p class="intro-ai-label small muted" id="intro-ai-label"></p><button type="button" class="btn tertiary intro-skip" id="intro-skip"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Skip intro</button><video class="hidden" id="sample-preview" muted playsinline preload="metadata"></video></div>
     <div class="entry-actions"><button type="button" class="btn" id="try-sample">Try the sample video</button>
     <nav class="welcome-links"><button type="button" class="option-tile" id="choose-sample"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9h8M8 13h5"/></svg><span>Choose a sample<span class="visually-hidden">Choose another sample</span></span></button><button type="button" class="option-tile" id="upload-link"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg><span>Upload your own</span></button><button type="button" class="option-tile" id="welcome-replay"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/></svg><span>Replay a real 1956 ad</span></button><button type="button" class="btn tertiary intro-watch hidden" id="intro-watch"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 10 6-10 6z"/></svg>Watch intro</button></nav>
@@ -281,14 +294,14 @@ body.entry-mode .details{display:none}
   </section>
   <section class="entry hidden" id="sample-picker"><h2>Choose a sample</h2><p>Three fictional brands. Three common claim risks.</p>
     <div class="sample-list" id="sample-list"></div><div class="entry-actions"><button type="button" class="btn" id="load-sample">Load sample</button></div></section>
-  <section class="facts hidden" id="facts-screen"><p class="small muted">STEP 1 OF 3</p><h2>Product facts</h2><p>What should we check against?</p><h3 id="facts-product"></h3><ul id="facts-list"></ul><p class="small muted" id="facts-context"></p><button type="button" class="btn" id="start-check">Start claim check</button><p class="small muted">Checks use brand-provided facts. Confirm their accuracy before continuing.</p></section>
+  <section class="facts hidden" id="facts-screen"><h2>Product facts</h2><p>What should we check against?</p><h3 id="facts-product"></h3><ul id="facts-list"></ul><p class="small muted" id="facts-context"></p><button type="button" class="btn" id="start-check">Start claim check</button><p class="small muted">Checks use brand-provided facts. Confirm their accuracy before continuing.</p></section>
 
   <main id="flow" class="hidden">
-  <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step is-active"><span class="step-icon" aria-hidden="true"></span>Listening to speech…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Comparing claims with product facts…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Checking the paid-partnership label…</p></div></div><button class="btn secondary" id="event-details" type="button">Show what the agent did</button><button class="btn primary-action hidden" id="see-results">See results</button></section>
-    <section class="flow-screen hidden" id="results-screen"><p class="small muted">CHECK COMPLETE</p><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img id="result-mascot" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review claims</button></section>
-    <section class="flow-screen hidden" id="claim-screen"><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Chicky examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="btn tertiary" type="button" id="see-source"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>See source</button><div class="source-panel hidden" id="claim-source"></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Add to change request</button><button class="btn secondary" id="back-claim" type="button">Back</button></div></div></div></section>
-    <section class="flow-screen hidden" id="disclosure-screen"><p class="small muted">PARTNERSHIP DISCLOSURE</p><h2 id="disclosure-title"></h2><div class="disclosure-proof"><p id="disclosure-copy"></p><button class="btn tertiary" id="replay-disclosure" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 11a8 8 0 1 1 2 6M4 4v7h7"/><path d="m10 8 5 4-5 4z"/></svg>Replay this moment</button><span class="flow-stamp hidden" id="disclosure-passed">PASSED</span></div><div class="flow-mascot"><img src="/static/mascot/cool.webp" alt="Chicky found the partnership label"><p class="flow-reaction">Found it.</p></div><button class="btn primary-action" id="to-decision">Continue to decision</button></section>
-    <section class="flow-screen hidden" id="decision-screen"><p class="small muted">FINAL REVIEW</p><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction">“Your call, human.”</p></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><div class="stage-actions"><button class="btn secondary" id="human-approve">Approve the post</button><button class="btn" id="human-changes">Request changes</button></div><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
+  <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step is-active"><span class="step-icon" aria-hidden="true"></span>Listening to speech…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Comparing claims with product facts…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Checking the paid-partnership label…</p></div></div><button class="btn primary-action hidden" id="see-results">See results</button></section>
+    <section class="flow-screen hidden" id="results-screen"><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img id="result-mascot" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review the lines</button><button class="btn tertiary" id="details-results" type="button">Review details and event log</button></section>
+    <section class="flow-screen hidden" id="claim-screen"><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Chicky examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="btn tertiary" id="details-claim" type="button">Review details and event log</button><button class="btn tertiary" type="button" id="see-source"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>See source</button><div class="source-panel hidden" id="claim-source"></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Add to change request</button><button class="btn secondary" id="back-claim" type="button">Back</button></div></div></div></section>
+    <section class="flow-screen hidden" id="disclosure-screen"><h2 id="disclosure-title"></h2><div class="disclosure-proof"><p id="disclosure-copy"></p><button class="btn tertiary" id="replay-disclosure" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 11a8 8 0 1 1 2 6M4 4v7h7"/><path d="m10 8 5 4-5 4z"/></svg>Replay this moment</button><span class="flow-stamp hidden" id="disclosure-passed">PASSED</span></div><div class="flow-mascot"><img src="/static/mascot/cool.webp" alt="Chicky found the partnership label"><p class="flow-reaction">Found it.</p></div><button class="btn primary-action" id="to-decision">Continue to decision</button></section>
+    <section class="flow-screen hidden" id="decision-screen"><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction">“Your call, human.”</p></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><div class="stage-actions"><button class="btn" id="human-changes">Request changes</button><button class="btn secondary" id="human-approve">Approve</button></div><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
     <section class="flow-screen hidden" id="done-screen"><h2 id="done-title"></h2><p id="done-copy"></p><div class="confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="flow-mascot"><img id="done-mascot" src="/static/mascot/party.webp" alt="Chicky celebrating"><p class="flow-reaction">I’ve sent the changes back!</p></div><button class="btn primary-action" id="check-another">Check another post</button></section>
   </main>
 
@@ -493,7 +506,7 @@ let flowClaims = [], flowIndex = 0;
 function showScreen(id){
   $('#flow').classList.remove('hidden');
   document.querySelectorAll('.flow-screen').forEach(x => x.classList.toggle('hidden', x.id !== id));
-  $('#details').classList.toggle('hidden', id === 'checking-screen');
+  $('#details').classList.toggle('hidden', !['results-screen','claim-screen'].includes(id));
 }
 function moveVideo(target='flow-video'){ const box=$(`#${target}`), stage=$('#stage'), wrap=$('.mascot-wrap'); if(box && stage && !box.contains(stage)) box.appendChild(stage); if(wrap){ const parent=target==='flow-video'?$('.checking-layout'):$('#details .m-video'); if(parent && wrap.parentElement!==parent) parent.appendChild(wrap); } }
 function showResults(){
@@ -504,7 +517,7 @@ function showResults(){
   $('#result-counts').innerHTML = `${flagged ? `<span class="result-count-chip fail">${flagged} ${flagged===1?'needs':'need'} a fix</span>` : ''}${passed ? `<span class="result-count-chip pass">${passed} passed</span>` : ''}`;
   $('#result-reaction').textContent = flagged ? 'I caught something.' : 'Everything looks good.';
   $('#review-claims').textContent = flagged ? 'Review that line' : 'Review disclosure';
-  $('#results-screen>.small').textContent = `CHECK COMPLETE IN ${clock(S.lastT)}`;
+  $('#review-time').textContent = `Checked in ${clock(S.lastT)}`;
   $('#verdict').classList.remove('result-reveal'); void $('#verdict').offsetWidth; $('#verdict').classList.add('result-reveal');
   $('#result-mascot').src='/static/mascot/confused.webp'; setTimeout(()=>{if($('#results-screen').classList.contains('hidden'))return;$('#result-mascot').src='/static/mascot/popcorn.webp';},650);
   showScreen('results-screen');
@@ -559,7 +572,7 @@ $('#next-claim').onclick=()=>{flowIndex++;renderFlowClaim();}; $('#back-claim').
 $('#see-source').onclick=()=>$('#claim-source').classList.toggle('hidden'); $('#to-decision').onclick=showDecision;
 $('#human-approve').onclick=()=>recordDecision('approved'); $('#human-changes').onclick=()=>recordDecision('changes_requested');
 $('#check-another').onclick=()=>location.href=location.pathname;
-$('#event-details').onclick=()=>{$('#details').classList.remove('hidden');$('#details').open=true;$('#details').scrollIntoView({behavior:REDUCED?'auto':'smooth'});};
+for(const id of ['details-results','details-claim']) $('#'+id).onclick=()=>{$('#details').classList.remove('hidden');$('#details').open=true;$('#details').scrollIntoView({behavior:REDUCED?'auto':'smooth'});};
 function showFacts(preset){
   selectedPreset = preset; document.body.classList.remove('entry-mode');
   $('#welcome').classList.add('hidden'); $('#sample-picker').classList.add('hidden'); $('#facts-screen').classList.remove('hidden');

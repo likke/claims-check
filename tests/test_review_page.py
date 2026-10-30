@@ -80,11 +80,11 @@ def test_stylesheet_has_no_edge_bars_shadows_or_gradients():
     assert not re.search(r"border-(left|right|top|bottom)-width", sheet)
     assert not re.search(r"box-shadow\s*:(?!\s*none)", sheet)
     assert "gradient" not in sheet
-    assert ".flow-screen .verdict{font-size:48px;font-weight:700" in sheet
+    assert ".flow-screen .verdict{font-size:34px" in sheet
     sizes = {int(v) for v in re.findall(r"(?:font-size|font)\s*:[^;]*?(\d+)px", sheet)}
-    assert sizes <= {13, 16, 20, 26, 32, 48}, sizes
+    assert sizes <= {14, 17, 20, 26, 34, 48}, sizes
     weights = {int(v) for v in re.findall(r"font-weight\s*:\s*(\d+)", sheet)}
-    assert weights <= {400, 600, 700}, weights
+    assert weights <= {400, 500, 600, 700}, weights
 
 
 def _free_port():
@@ -156,7 +156,7 @@ def test_computed_styles_have_no_edge_bars_in_a_real_browser(tmp_path):
                 assert js("plain('The line matches S3.')") == "The line matches the product sources."
                 assert re.search(r"Reviewed in \d+:\d\d", visible)
                 assert report["bad"] == [], report["bad"][:5]
-                assert report["body"] == "16px"
+                assert report["body"] == "17px"
                 assert report["scroll"] <= report["width"], f"horizontal scroll at {width}px"
     finally:
         chrome.terminate()
