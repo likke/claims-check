@@ -1,0 +1,1440 @@
+{
+  "id": "4acea30ae137",
+  "created_at": "2026-10-30T17:56:57+00:00",
+  "provider": {
+    "name": "meta",
+    "label": "Meta cloud · muse-spark-1.3 + muse-voice-transcribe-1.0",
+    "model": "muse-spark-1.3",
+    "asr_model": "muse-voice-transcribe-1.0",
+    "base_url": "https://api.meta.ai/v1"
+  },
+  "pack": "Tech claims",
+  "inputs": {
+    "product": "Kent cigarettes",
+    "pack": "Tech claims",
+    "supplement": false,
+    "sources": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes (US National Cancer Institute, \"Light\" Cigarettes and Cancer Risk).\nLight cigarettes do not reduce the health risks of smoking (US National Cancer Institute).\nThe only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely (US National Cancer Institute).\nThe principal recommendation for any smoker interested in reducing future disease risks is to quit smoking (US National Cancer Institute, Monograph 13, 2001).\n",
+    "key_messages": [
+      "Disclose that the spokesperson is paid"
+    ],
+    "caption": ""
+  },
+  "product": "Kent cigarettes",
+  "supplement": false,
+  "duration": 25.04,
+  "timing": "estimated",
+  "transcript": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 1.68,
+      "text": "Hi, this is Jonathan Blake.",
+      "estimated": true
+    },
+    {
+      "index": 1,
+      "start": 1.68,
+      "end": 10.76,
+      "text": "Say, if you smoke smoke a lot, I suggest that you take the Kent carton test and just see for yourself what a difference Kents can make.",
+      "estimated": true
+    },
+    {
+      "index": 2,
+      "start": 10.76,
+      "end": 13.45,
+      "text": "You switch to Kent and smoke one carton.",
+      "estimated": true
+    },
+    {
+      "index": 3,
+      "start": 13.45,
+      "end": 16.47,
+      "text": "Now, I don't mean just a pack or two.",
+      "estimated": true
+    },
+    {
+      "index": 4,
+      "start": 16.47,
+      "end": 17.48,
+      "text": "But a carton.",
+      "estimated": true
+    },
+    {
+      "index": 5,
+      "start": 17.48,
+      "end": 20.84,
+      "text": "You'll find that Kent's micronite filter gives you high filtration.",
+      "estimated": true
+    },
+    {
+      "index": 6,
+      "start": 20.84,
+      "end": 23.87,
+      "text": "High filtration to help you keep your smoking moderate.",
+      "estimated": true
+    },
+    {
+      "index": 7,
+      "start": 23.87,
+      "end": 24.54,
+      "text": "And that",
+      "estimated": true
+    }
+  ],
+  "frames": [
+    {
+      "time": 1.0,
+      "text": "KENT"
+    },
+    {
+      "time": 2.5,
+      "text": "KENT"
+    },
+    {
+      "time": 4.0,
+      "text": "KENT"
+    },
+    {
+      "time": 10.85,
+      "text": "KENT"
+    },
+    {
+      "time": 17.71,
+      "text": "MICRONITE FILTER HIGH FILTRATION"
+    },
+    {
+      "time": 24.56,
+      "text": "KENT"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C1",
+      "quote": "Kent's micronite filter gives you high filtration.",
+      "start": 18.49,
+      "end": 20.84,
+      "estimated": true,
+      "origin": "speech",
+      "kind": "capability",
+      "status": "fail",
+      "suggested_line": null,
+      "rounds": [
+        {
+          "round": 0,
+          "line": "Kent's micronite filter gives you high filtration.",
+          "verdict": "fail",
+          "judgement": "not_supported",
+          "reason": "the product sources do not mention a micronite filter or high filtration.",
+          "chunk_id": "R1",
+          "evidence": "An absolute claim such as guarantees, 100 percent, zero or all needs a source that states the same absolute.",
+          "evidence_origin": "Rule pack: Tech claims",
+          "citation_verified": true,
+          "checks": []
+        },
+        {
+          "round": 1,
+          "line": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes.",
+          "verdict": "fail",
+          "cited_chunks": [
+            "S1"
+          ],
+          "what_changed": "Replaced unsupported high filtration claim with sourced no-risk-reduction finding.",
+          "previous_failure": "the product sources do not mention a micronite filter or high filtration.",
+          "judgement": "rejected_by_code",
+          "reason": "The rewrite drops the creator's topic: it shares no key word with the original line (kent's, micronite, filter, gives, high, filtration).",
+          "chunk_id": null,
+          "evidence": ""
+        },
+        {
+          "round": 2,
+          "line": "Kent's micronite filter is a change in cigarette design that has not lowered the risk of disease caused by cigarettes.",
+          "verdict": "fail",
+          "cited_chunks": [
+            "S1"
+          ],
+          "what_changed": "Kept Kent's filter topic and replaced high filtration with the sourced no-lowered-risk finding.",
+          "previous_failure": "The rewrite drops the creator's topic: it shares no key word with the original line (kent's, micronite, filter, gives, high, filtration).",
+          "judgement": "not_supported",
+          "reason": "the product sources do not mention Kent's micronite filter anywhere.",
+          "chunk_id": "S1",
+          "evidence": "changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+          "evidence_origin": "pasted",
+          "citation_verified": true,
+          "checks": [],
+          "keeps_point": false
+        }
+      ],
+      "needs_human_review": false,
+      "evidence": {
+        "chunk_id": "S1",
+        "quote": "changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+        "origin": "pasted"
+      },
+      "reaction": ""
+    },
+    {
+      "id": "C2",
+      "quote": "High filtration to help you keep your smoking moderate.",
+      "start": 20.84,
+      "end": 23.87,
+      "estimated": true,
+      "origin": "speech",
+      "kind": "health",
+      "status": "fail",
+      "suggested_line": null,
+      "rounds": [
+        {
+          "round": 0,
+          "line": "High filtration to help you keep your smoking moderate.",
+          "verdict": "fail",
+          "judgement": "contradicted",
+          "reason": "the product sources state that the only guaranteed way to reduce risk is to stop smoking completely rather than keep smoking moderate.",
+          "chunk_id": "S3",
+          "evidence": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely",
+          "evidence_origin": "pasted",
+          "citation_verified": true,
+          "checks": []
+        },
+        {
+          "round": 1,
+          "line": "Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely",
+          "verdict": "fail",
+          "cited_chunks": [
+            "S2",
+            "S3"
+          ],
+          "what_changed": "Replaced moderate-smoking benefit with sources' no-risk-reduction and stop-completely statement.",
+          "previous_failure": "the product sources state that the only guaranteed way to reduce risk is to stop smoking completely rather than keep smoking moderate.",
+          "judgement": "lost_point",
+          "reason": "The rewrite no longer makes the creator's point. It drops the original product benefit about high filtration helping moderation and replaces it with a warning to stop smoking completely.",
+          "chunk_id": "S3",
+          "evidence": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely",
+          "evidence_origin": "pasted",
+          "citation_verified": true,
+          "checks": [],
+          "keeps_point": false
+        },
+        {
+          "round": 2,
+          "line": "Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely",
+          "verdict": "fail",
+          "cited_chunks": [
+            "S2",
+            "S3"
+          ],
+          "what_changed": "Replaced unsupported moderation benefit with source-supported risk statement",
+          "previous_failure": "The rewrite no longer makes the creator's point. It drops the original product benefit about high filtration helping moderation and replaces it with a warning to stop smoking completely.",
+          "judgement": "lost_point",
+          "reason": "The rewrite no longer makes the creator's point. The rewrite replaces the original filtration benefit with a cessation warning and no longer claims the product helps keep smoking moderate.",
+          "chunk_id": "S3",
+          "evidence": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely",
+          "evidence_origin": "pasted",
+          "citation_verified": true,
+          "checks": [],
+          "keeps_point": false
+        }
+      ],
+      "needs_human_review": false,
+      "evidence": {
+        "chunk_id": "S3",
+        "quote": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely",
+        "origin": "pasted"
+      },
+      "reaction": ""
+    },
+    {
+      "id": "C3",
+      "quote": "MICRONITE FILTER",
+      "start": 17.71,
+      "end": 17.71,
+      "estimated": false,
+      "origin": "on_screen",
+      "kind": "capability",
+      "status": "fixed",
+      "suggested_line": "MICRONITE FILTER DESIGN CHANGES HAVE NOT LOWERED RISK",
+      "rounds": [
+        {
+          "round": 0,
+          "line": "MICRONITE FILTER",
+          "verdict": "fail",
+          "judgement": "not_supported",
+          "reason": "the product sources do not mention a Micronite filter.",
+          "chunk_id": "R1",
+          "evidence": "An absolute claim such as guarantees, 100 percent, zero or all needs a source that states the same absolute.",
+          "evidence_origin": "Rule pack: Tech claims",
+          "citation_verified": true,
+          "checks": []
+        },
+        {
+          "round": 1,
+          "line": "CHANGES IN CIGARETTE DESIGN HAVE NOT LOWERED RISK",
+          "verdict": "fail",
+          "cited_chunks": [
+            "S1"
+          ],
+          "what_changed": "Replaced unsupported Micronite name with sourced design-risk wording.",
+          "previous_failure": "the product sources do not mention a Micronite filter.",
+          "judgement": "rejected_by_code",
+          "reason": "The rewrite drops the creator's topic: it shares no key word with the original line (micronite, filter).",
+          "chunk_id": null,
+          "evidence": ""
+        },
+        {
+          "round": 2,
+          "line": "MICRONITE FILTER DESIGN CHANGES HAVE NOT LOWERED RISK",
+          "verdict": "pass",
+          "cited_chunks": [
+            "S1"
+          ],
+          "what_changed": "Kept Micronite Filter topic and added sourced no-lowered-risk limit.",
+          "previous_failure": "The rewrite drops the creator's topic: it shares no key word with the original line (micronite, filter).",
+          "judgement": "supported",
+          "reason": "the product sources state that changes in cigarette design have not lowered the risk of disease caused by cigarettes.",
+          "chunk_id": "S1",
+          "evidence": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+          "evidence_origin": "pasted",
+          "citation_verified": true,
+          "checks": [],
+          "keeps_point": true
+        }
+      ],
+      "needs_human_review": false,
+      "evidence": {
+        "chunk_id": "S1",
+        "quote": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+        "origin": "pasted"
+      },
+      "reaction": ""
+    },
+    {
+      "id": "C4",
+      "quote": "HIGH FILTRATION",
+      "start": 17.71,
+      "end": 17.71,
+      "estimated": false,
+      "origin": "on_screen",
+      "kind": "capability",
+      "status": "fail",
+      "suggested_line": null,
+      "rounds": [
+        {
+          "round": 0,
+          "line": "HIGH FILTRATION",
+          "verdict": "fail",
+          "judgement": "not_supported",
+          "reason": "The product sources do not state that the product has high filtration.",
+          "chunk_id": "R1",
+          "evidence": "An absolute claim such as guarantees, 100 percent, zero or all needs a source that states the same absolute.",
+          "evidence_origin": "Rule pack: Tech claims",
+          "citation_verified": true,
+          "checks": []
+        },
+        {
+          "round": 1,
+          "line": "DESIGN CHANGES HAVE NOT LOWERED RISK",
+          "verdict": "fail",
+          "cited_chunks": [
+            "S1"
+          ],
+          "what_changed": "Replaced unsupported high claim with sourced no-lower-risk wording.",
+          "previous_failure": "The product sources do not state that the product has high filtration.",
+          "judgement": "rejected_by_code",
+          "reason": "The rewrite drops the creator's topic: it shares no key word with the original line (high, filtration).",
+          "chunk_id": null,
+          "evidence": ""
+        },
+        {
+          "round": 2,
+          "line": "HIGH FILTRATION HAS NOT LOWERED RISK",
+          "verdict": "fail",
+          "cited_chunks": [
+            "S1"
+          ],
+          "what_changed": "Kept filtration topic and added that it has not lowered risk.",
+          "previous_failure": "The rewrite drops the creator's topic: it shares no key word with the original line (high, filtration).",
+          "judgement": "not_supported",
+          "reason": "The product sources never state the product has high filtration, only that design changes have not lowered risk.",
+          "chunk_id": "S1",
+          "evidence": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+          "evidence_origin": "pasted",
+          "citation_verified": true,
+          "checks": [],
+          "keeps_point": true
+        }
+      ],
+      "needs_human_review": false,
+      "evidence": {
+        "chunk_id": "S1",
+        "quote": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+        "origin": "pasted"
+      },
+      "reaction": ""
+    }
+  ],
+  "reactions": {},
+  "language": {
+    "detected": "english",
+    "verified": true,
+    "how": "model reads english"
+  },
+  "disclosure": {
+    "disclosed": false,
+    "spoken": {
+      "found": false,
+      "quote": "",
+      "time": null,
+      "how": "not found"
+    },
+    "on_screen": {
+      "found": false,
+      "text": "",
+      "time": null,
+      "how": "not found"
+    },
+    "caption": {
+      "found": false,
+      "quote": "",
+      "how": "no caption given"
+    },
+    "frame_text": [
+      {
+        "frame_time": 1.0,
+        "text": "KENT"
+      },
+      {
+        "frame_time": 2.5,
+        "text": "KENT"
+      },
+      {
+        "frame_time": 4.0,
+        "text": "KENT"
+      },
+      {
+        "frame_time": 10.85,
+        "text": "KENT"
+      },
+      {
+        "frame_time": 17.71,
+        "text": "MICRONITE FILTER HIGH FILTRATION"
+      },
+      {
+        "frame_time": 24.56,
+        "text": "KENT"
+      }
+    ],
+    "notes": [],
+    "required_disclaimer": null,
+    "reaction": ""
+  },
+  "coverage": {
+    "messages": [
+      {
+        "message": "Disclose that the spokesperson is paid",
+        "status": "missing",
+        "quote": "",
+        "time": null,
+        "note": "",
+        "reaction": ""
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "S1",
+      "text": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes (US National Cancer Institute, \"Light\" Cigarettes and Cancer Risk).",
+      "origin": "pasted"
+    },
+    {
+      "id": "S2",
+      "text": "Light cigarettes do not reduce the health risks of smoking (US National Cancer Institute).",
+      "origin": "pasted"
+    },
+    {
+      "id": "S3",
+      "text": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely (US National Cancer Institute).",
+      "origin": "pasted"
+    },
+    {
+      "id": "S4",
+      "text": "The principal recommendation for any smoker interested in reducing future disease risks is to quit smoking (US National Cancer Institute, Monograph 13, 2001).",
+      "origin": "pasted"
+    },
+    {
+      "id": "R1",
+      "text": "An absolute claim such as guarantees, 100 percent, zero or all needs a source that states the same absolute.",
+      "origin": "Rule pack: Tech claims"
+    }
+  ],
+  "fetched_urls": {},
+  "agent": {
+    "actions": 20,
+    "cap": 20,
+    "cap_hit": true,
+    "plan_calls": 6,
+    "planner_modes": {
+      "native_tools": 6
+    },
+    "guard_actions": 0,
+    "finished_by": "guard",
+    "summary": ""
+  },
+  "usage": {
+    "model_calls": 27,
+    "asr_calls": 1,
+    "tokens": 103538,
+    "by_task": {
+      "transcribe": 1,
+      "plan": 6,
+      "extract_claims": 1,
+      "check_disclosure": 1,
+      "check_coverage": 1,
+      "judge_claim": 9,
+      "rewrite_line": 8,
+      "rewrite_line_retry": 1
+    }
+  },
+  "trace": [
+    {
+      "seq": 1,
+      "t": 6.43,
+      "kind": "transcribed",
+      "summary": "Speech transcribed: 1 turn, timing asr",
+      "model_calls": 1,
+      "text": "Hi, this is Jonathan Blake. Say, if you smoke smoke a lot, I suggest that you take the Kent carton test and just see for yourself what a difference Kents can make. You switch to Kent and smoke one carton. Now, I don't mean just a pack or two. But a carton. You'll find that Kent's micronite filter gives you high filtration. High filtration to help you keep your smoking moderate. And that"
+    },
+    {
+      "seq": 2,
+      "t": 6.43,
+      "kind": "start",
+      "summary": "8 sentences, 6 frames, 5 source chunks, 0 URLs, pack Tech claims",
+      "provider": {
+        "name": "meta",
+        "label": "Meta cloud · muse-spark-1.3 + muse-voice-transcribe-1.0",
+        "model": "muse-spark-1.3",
+        "asr_model": "muse-voice-transcribe-1.0",
+        "base_url": "https://api.meta.ai/v1"
+      },
+      "duration": 25.04,
+      "transcript": [
+        {
+          "index": 0,
+          "start": 0.0,
+          "end": 1.68,
+          "text": "Hi, this is Jonathan Blake.",
+          "estimated": true
+        },
+        {
+          "index": 1,
+          "start": 1.68,
+          "end": 10.76,
+          "text": "Say, if you smoke smoke a lot, I suggest that you take the Kent carton test and just see for yourself what a difference Kents can make.",
+          "estimated": true
+        },
+        {
+          "index": 2,
+          "start": 10.76,
+          "end": 13.45,
+          "text": "You switch to Kent and smoke one carton.",
+          "estimated": true
+        },
+        {
+          "index": 3,
+          "start": 13.45,
+          "end": 16.47,
+          "text": "Now, I don't mean just a pack or two.",
+          "estimated": true
+        },
+        {
+          "index": 4,
+          "start": 16.47,
+          "end": 17.48,
+          "text": "But a carton.",
+          "estimated": true
+        },
+        {
+          "index": 5,
+          "start": 17.48,
+          "end": 20.84,
+          "text": "You'll find that Kent's micronite filter gives you high filtration.",
+          "estimated": true
+        },
+        {
+          "index": 6,
+          "start": 20.84,
+          "end": 23.87,
+          "text": "High filtration to help you keep your smoking moderate.",
+          "estimated": true
+        },
+        {
+          "index": 7,
+          "start": 23.87,
+          "end": 24.54,
+          "text": "And that",
+          "estimated": true
+        }
+      ],
+      "frame_times": [
+        1.0,
+        2.5,
+        4.0,
+        10.85,
+        17.71,
+        24.56
+      ],
+      "product": "Kent cigarettes"
+    },
+    {
+      "seq": 3,
+      "t": 8.25,
+      "kind": "plan",
+      "mode": "native_tools",
+      "reasoning": "Starting your claim check — pulling claims, disclosure, and coverage in one go.",
+      "actions": [
+        {
+          "tool": "extract_claims",
+          "args": {}
+        },
+        {
+          "tool": "check_disclosure",
+          "args": {}
+        },
+        {
+          "tool": "check_coverage",
+          "args": {}
+        }
+      ],
+      "summary": "extract_claims, check_disclosure, check_coverage",
+      "duration_ms": 1819
+    },
+    {
+      "seq": 4,
+      "t": 22.6,
+      "kind": "action",
+      "by": "agent",
+      "step": 1,
+      "tool": "extract_claims",
+      "args": {},
+      "input_summary": "",
+      "observation": {
+        "language": {
+          "detected": "english",
+          "verified": true,
+          "how": "model reads english"
+        },
+        "claims": [
+          {
+            "id": "C1",
+            "quote": "Kent's micronite filter gives you high filtration.",
+            "origin": "speech",
+            "start": 18.49,
+            "estimated": true,
+            "needs_human_review": false
+          },
+          {
+            "id": "C2",
+            "quote": "High filtration to help you keep your smoking moderate.",
+            "origin": "speech",
+            "start": 20.84,
+            "estimated": true,
+            "needs_human_review": false
+          },
+          {
+            "id": "C3",
+            "quote": "MICRONITE FILTER",
+            "origin": "on_screen",
+            "start": 17.71,
+            "estimated": false,
+            "needs_human_review": false
+          },
+          {
+            "id": "C4",
+            "quote": "HIGH FILTRATION",
+            "origin": "on_screen",
+            "start": 17.71,
+            "estimated": false,
+            "needs_human_review": false
+          }
+        ],
+        "rejected": []
+      },
+      "summary": "4 claims: C1 \"Kent's micronite filter gives you high filtration.\"; C2 \"High filtration to help you keep your smoking moderate.\"; C3 \"MICRONITE FILTER\"; C4 \"HIGH FILTRATION\"",
+      "error": false,
+      "note": "",
+      "duration_ms": 14346,
+      "model_calls": 1
+    },
+    {
+      "seq": 5,
+      "t": 28.84,
+      "kind": "action",
+      "by": "agent",
+      "step": 2,
+      "tool": "check_disclosure",
+      "args": {},
+      "input_summary": "",
+      "observation": {
+        "disclosed": false,
+        "spoken": {
+          "found": false,
+          "quote": "",
+          "time": null,
+          "how": "not found"
+        },
+        "on_screen": {
+          "found": false,
+          "text": "",
+          "time": null,
+          "how": "not found"
+        },
+        "caption": {
+          "found": false,
+          "quote": "",
+          "how": "no caption given"
+        },
+        "notes": [],
+        "required_disclaimer": null,
+        "frames_read": 6
+      },
+      "summary": "Disclosure MISSING",
+      "error": false,
+      "note": "",
+      "duration_ms": 6246,
+      "model_calls": 1
+    },
+    {
+      "seq": 6,
+      "t": 34.47,
+      "kind": "action",
+      "by": "agent",
+      "step": 3,
+      "tool": "check_coverage",
+      "args": {},
+      "input_summary": "",
+      "observation": {
+        "messages": [
+          {
+            "message": "Disclose that the spokesperson is paid",
+            "status": "missing",
+            "quote": "",
+            "time": null,
+            "note": ""
+          }
+        ]
+      },
+      "summary": "\"Disclose that the spokesperson is paid\": missing",
+      "error": false,
+      "note": "",
+      "duration_ms": 5625,
+      "model_calls": 1
+    },
+    {
+      "seq": 7,
+      "t": 36.7,
+      "kind": "plan",
+      "mode": "native_tools",
+      "reasoning": "Judging your four claims now — checking each line.",
+      "actions": [
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C1",
+            "target": "original"
+          }
+        },
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C2",
+            "target": "original"
+          }
+        },
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C3",
+            "target": "original"
+          }
+        },
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C4",
+            "target": "original"
+          }
+        }
+      ],
+      "summary": "judge_claim, judge_claim, judge_claim, judge_claim",
+      "duration_ms": 2233
+    },
+    {
+      "seq": 8,
+      "t": 45.86,
+      "kind": "action",
+      "by": "agent",
+      "step": 4,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C1",
+        "target": "original"
+      },
+      "input_summary": "{\"claim_id\": \"C1\", \"target\": \"original\"}",
+      "observation": {
+        "claim_id": "C1",
+        "target": "original",
+        "verdict": "fail",
+        "judgement": "not_supported",
+        "reason": "the product sources do not mention a micronite filter or high filtration.",
+        "chunk_id": "R1",
+        "evidence": "An absolute claim such as guarantees, 100 percent, zero or all needs a source that states the same absolute.",
+        "evidence_origin": "Rule pack: Tech claims",
+        "line": "Kent's micronite filter gives you high filtration.",
+        "keeps_point": null,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": "rewrite"
+      },
+      "summary": "C1 original: FAIL (not_supported) · cites R1. the product sources do not mention a micronite filter or high filtration.",
+      "error": false,
+      "note": "",
+      "duration_ms": 9156,
+      "model_calls": 1
+    },
+    {
+      "seq": 9,
+      "t": 63.0,
+      "kind": "action",
+      "by": "agent",
+      "step": 5,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C2",
+        "target": "original"
+      },
+      "input_summary": "{\"claim_id\": \"C2\", \"target\": \"original\"}",
+      "observation": {
+        "claim_id": "C2",
+        "target": "original",
+        "verdict": "fail",
+        "judgement": "contradicted",
+        "reason": "the product sources state that the only guaranteed way to reduce risk is to stop smoking completely rather than keep smoking moderate.",
+        "chunk_id": "S3",
+        "evidence": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely",
+        "evidence_origin": "pasted",
+        "line": "High filtration to help you keep your smoking moderate.",
+        "keeps_point": null,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": "rewrite"
+      },
+      "summary": "C2 original: FAIL (contradicted) · cites S3. the product sources state that the only guaranteed way to reduce risk is to stop smoking completely rather than keep smoking moderate.",
+      "error": false,
+      "note": "",
+      "duration_ms": 17140,
+      "model_calls": 1
+    },
+    {
+      "seq": 10,
+      "t": 73.9,
+      "kind": "action",
+      "by": "agent",
+      "step": 6,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C3",
+        "target": "original"
+      },
+      "input_summary": "{\"claim_id\": \"C3\", \"target\": \"original\"}",
+      "observation": {
+        "claim_id": "C3",
+        "target": "original",
+        "verdict": "fail",
+        "judgement": "not_supported",
+        "reason": "the product sources do not mention a Micronite filter.",
+        "chunk_id": "R1",
+        "evidence": "An absolute claim such as guarantees, 100 percent, zero or all needs a source that states the same absolute.",
+        "evidence_origin": "Rule pack: Tech claims",
+        "line": "MICRONITE FILTER",
+        "keeps_point": null,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": "rewrite"
+      },
+      "summary": "C3 original: FAIL (not_supported) · cites R1. the product sources do not mention a Micronite filter.",
+      "error": false,
+      "note": "",
+      "duration_ms": 10896,
+      "model_calls": 1
+    },
+    {
+      "seq": 11,
+      "t": 79.95,
+      "kind": "action",
+      "by": "agent",
+      "step": 7,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C4",
+        "target": "original"
+      },
+      "input_summary": "{\"claim_id\": \"C4\", \"target\": \"original\"}",
+      "observation": {
+        "claim_id": "C4",
+        "target": "original",
+        "verdict": "fail",
+        "judgement": "not_supported",
+        "reason": "The product sources do not state that the product has high filtration.",
+        "chunk_id": "R1",
+        "evidence": "An absolute claim such as guarantees, 100 percent, zero or all needs a source that states the same absolute.",
+        "evidence_origin": "Rule pack: Tech claims",
+        "line": "HIGH FILTRATION",
+        "keeps_point": null,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": "rewrite"
+      },
+      "summary": "C4 original: FAIL (not_supported) · cites R1. The product sources do not state that the product has high filtration.",
+      "error": false,
+      "note": "",
+      "duration_ms": 6055,
+      "model_calls": 1
+    },
+    {
+      "seq": 12,
+      "t": 81.41,
+      "kind": "plan",
+      "mode": "native_tools",
+      "reasoning": "Fixing those four failed claims with safer rewrites.",
+      "actions": [
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C1"
+          }
+        },
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C2"
+          }
+        },
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C3"
+          }
+        },
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C4"
+          }
+        }
+      ],
+      "summary": "rewrite_line, rewrite_line, rewrite_line, rewrite_line",
+      "duration_ms": 1455
+    },
+    {
+      "seq": 13,
+      "t": 102.58,
+      "kind": "action",
+      "by": "agent",
+      "step": 8,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C1"
+      },
+      "input_summary": "{\"claim_id\": \"C1\"}",
+      "observation": {
+        "claim_id": "C1",
+        "round": 1,
+        "line": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes.",
+        "cited_chunks": [
+          "S1"
+        ],
+        "code_check": "rejected: The rewrite drops the creator's topic: it shares no key word with the original line (kent's, micronite, filter, gives, high, filtration).",
+        "next": "rewrite"
+      },
+      "summary": "C1 rewrite 1: \"Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes.\" — rejected by code: The rewrite drops the creator's topic: it shares no key word with the original line (kent's, micronite, filter, gives, high, filtration).",
+      "error": false,
+      "note": "",
+      "duration_ms": 21178,
+      "model_calls": 1
+    },
+    {
+      "seq": 14,
+      "t": 122.76,
+      "kind": "action",
+      "by": "agent",
+      "step": 9,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C2"
+      },
+      "input_summary": "{\"claim_id\": \"C2\"}",
+      "observation": {
+        "claim_id": "C2",
+        "round": 1,
+        "line": "Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely",
+        "cited_chunks": [
+          "S2",
+          "S3"
+        ],
+        "code_check": "passed",
+        "next": "judge_rewrite"
+      },
+      "summary": "C2 rewrite 1: \"Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely\"",
+      "error": false,
+      "note": "",
+      "duration_ms": 20171,
+      "model_calls": 1
+    },
+    {
+      "seq": 15,
+      "t": 142.46,
+      "kind": "action",
+      "by": "agent",
+      "step": 10,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C3"
+      },
+      "input_summary": "{\"claim_id\": \"C3\"}",
+      "observation": {
+        "claim_id": "C3",
+        "round": 1,
+        "line": "CHANGES IN CIGARETTE DESIGN HAVE NOT LOWERED RISK",
+        "cited_chunks": [
+          "S1"
+        ],
+        "code_check": "rejected: The rewrite drops the creator's topic: it shares no key word with the original line (micronite, filter).",
+        "next": "rewrite"
+      },
+      "summary": "C3 rewrite 1: \"CHANGES IN CIGARETTE DESIGN HAVE NOT LOWERED RISK\" — rejected by code: The rewrite drops the creator's topic: it shares no key word with the original line (micronite, filter).",
+      "error": false,
+      "note": "",
+      "duration_ms": 19706,
+      "model_calls": 1
+    },
+    {
+      "seq": 16,
+      "t": 169.13,
+      "kind": "action",
+      "by": "agent",
+      "step": 11,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C4"
+      },
+      "input_summary": "{\"claim_id\": \"C4\"}",
+      "observation": {
+        "claim_id": "C4",
+        "round": 1,
+        "line": "DESIGN CHANGES HAVE NOT LOWERED RISK",
+        "cited_chunks": [
+          "S1"
+        ],
+        "code_check": "rejected: The rewrite drops the creator's topic: it shares no key word with the original line (high, filtration).",
+        "next": "rewrite"
+      },
+      "summary": "C4 rewrite 1: \"DESIGN CHANGES HAVE NOT LOWERED RISK\" — rejected by code: The rewrite drops the creator's topic: it shares no key word with the original line (high, filtration).",
+      "error": false,
+      "note": "",
+      "duration_ms": 26662,
+      "model_calls": 1
+    },
+    {
+      "seq": 17,
+      "t": 172.42,
+      "kind": "plan",
+      "mode": "native_tools",
+      "reasoning": "Fixing those filter lines to keep your words but stay truthful.",
+      "actions": [
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C1"
+          }
+        },
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C2",
+            "target": "rewrite"
+          }
+        },
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C3"
+          }
+        },
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C4"
+          }
+        }
+      ],
+      "summary": "rewrite_line, judge_claim, rewrite_line, rewrite_line",
+      "duration_ms": 3294
+    },
+    {
+      "seq": 18,
+      "t": 191.92,
+      "kind": "action",
+      "by": "agent",
+      "step": 12,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C1"
+      },
+      "input_summary": "{\"claim_id\": \"C1\"}",
+      "observation": {
+        "claim_id": "C1",
+        "round": 2,
+        "line": "Kent's micronite filter is a change in cigarette design that has not lowered the risk of disease caused by cigarettes.",
+        "cited_chunks": [
+          "S1"
+        ],
+        "code_check": "passed",
+        "next": "judge_rewrite"
+      },
+      "summary": "C1 rewrite 2: \"Kent's micronite filter is a change in cigarette design that has not lowered the risk of disease caused by cigarettes.\"",
+      "error": false,
+      "note": "",
+      "duration_ms": 19504,
+      "model_calls": 1
+    },
+    {
+      "seq": 19,
+      "t": 206.33,
+      "kind": "action",
+      "by": "agent",
+      "step": 13,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C2",
+        "target": "rewrite"
+      },
+      "input_summary": "{\"claim_id\": \"C2\", \"target\": \"rewrite\"}",
+      "observation": {
+        "claim_id": "C2",
+        "target": "rewrite 1",
+        "verdict": "fail",
+        "judgement": "lost_point",
+        "reason": "The rewrite no longer makes the creator's point. It drops the original product benefit about high filtration helping moderation and replaces it with a warning to stop smoking completely.",
+        "chunk_id": "S3",
+        "evidence": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely",
+        "evidence_origin": "pasted",
+        "line": "Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely",
+        "keeps_point": false,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": "rewrite"
+      },
+      "summary": "C2 rewrite 1: FAIL (lost_point) · cites S3. The rewrite no longer makes the creator's point. It drops the original product benefit about high filtration helping moderation and replaces it with a warning to stop smoking completely.",
+      "error": false,
+      "note": "",
+      "duration_ms": 14401,
+      "model_calls": 1
+    },
+    {
+      "seq": 20,
+      "t": 228.12,
+      "kind": "action",
+      "by": "agent",
+      "step": 14,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C3"
+      },
+      "input_summary": "{\"claim_id\": \"C3\"}",
+      "observation": {
+        "claim_id": "C3",
+        "round": 2,
+        "line": "MICRONITE FILTER DESIGN CHANGES HAVE NOT LOWERED RISK",
+        "cited_chunks": [
+          "S1"
+        ],
+        "code_check": "passed",
+        "next": "judge_rewrite"
+      },
+      "summary": "C3 rewrite 2: \"MICRONITE FILTER DESIGN CHANGES HAVE NOT LOWERED RISK\"",
+      "error": false,
+      "note": "",
+      "duration_ms": 21792,
+      "model_calls": 1
+    },
+    {
+      "seq": 21,
+      "t": 242.83,
+      "kind": "action",
+      "by": "agent",
+      "step": 15,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C4"
+      },
+      "input_summary": "{\"claim_id\": \"C4\"}",
+      "observation": {
+        "claim_id": "C4",
+        "round": 2,
+        "line": "HIGH FILTRATION HAS NOT LOWERED RISK",
+        "cited_chunks": [
+          "S1"
+        ],
+        "code_check": "passed",
+        "next": "judge_rewrite"
+      },
+      "summary": "C4 rewrite 2: \"HIGH FILTRATION HAS NOT LOWERED RISK\"",
+      "error": false,
+      "note": "",
+      "duration_ms": 14715,
+      "model_calls": 1
+    },
+    {
+      "seq": 22,
+      "t": 244.9,
+      "kind": "plan",
+      "mode": "native_tools",
+      "reasoning": "Almost done — queuing the last fixes and re-checks.",
+      "actions": [
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C1",
+            "target": "rewrite"
+          }
+        },
+        {
+          "tool": "rewrite_line",
+          "args": {
+            "claim_id": "C2"
+          }
+        },
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C3",
+            "target": "rewrite"
+          }
+        },
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C4",
+            "target": "rewrite"
+          }
+        }
+      ],
+      "summary": "judge_claim, rewrite_line, judge_claim, judge_claim",
+      "duration_ms": 2063
+    },
+    {
+      "seq": 23,
+      "t": 263.3,
+      "kind": "action",
+      "by": "agent",
+      "step": 16,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C1",
+        "target": "rewrite"
+      },
+      "input_summary": "{\"claim_id\": \"C1\", \"target\": \"rewrite\"}",
+      "observation": {
+        "claim_id": "C1",
+        "target": "rewrite 2",
+        "verdict": "fail",
+        "judgement": "not_supported",
+        "reason": "the product sources do not mention Kent's micronite filter anywhere.",
+        "chunk_id": "S1",
+        "evidence": "changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+        "evidence_origin": "pasted",
+        "line": "Kent's micronite filter is a change in cigarette design that has not lowered the risk of disease caused by cigarettes.",
+        "keeps_point": false,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": null
+      },
+      "summary": "C1 rewrite 2: FAIL (not_supported) · cites S1. the product sources do not mention Kent's micronite filter anywhere.",
+      "error": false,
+      "note": "",
+      "duration_ms": 18402,
+      "model_calls": 1
+    },
+    {
+      "seq": 24,
+      "t": 302.87,
+      "kind": "action",
+      "by": "agent",
+      "step": 17,
+      "tool": "rewrite_line",
+      "args": {
+        "claim_id": "C2"
+      },
+      "input_summary": "{\"claim_id\": \"C2\"}",
+      "observation": {
+        "claim_id": "C2",
+        "round": 2,
+        "line": "Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely",
+        "cited_chunks": [
+          "S2",
+          "S3"
+        ],
+        "code_check": "passed",
+        "next": "judge_rewrite"
+      },
+      "summary": "C2 rewrite 2: \"Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely\"",
+      "error": false,
+      "note": "",
+      "duration_ms": 39573,
+      "model_calls": 2
+    },
+    {
+      "seq": 25,
+      "t": 330.37,
+      "kind": "action",
+      "by": "agent",
+      "step": 18,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C3",
+        "target": "rewrite"
+      },
+      "input_summary": "{\"claim_id\": \"C3\", \"target\": \"rewrite\"}",
+      "observation": {
+        "claim_id": "C3",
+        "target": "rewrite 2",
+        "verdict": "pass",
+        "judgement": "supported",
+        "reason": "the product sources state that changes in cigarette design have not lowered the risk of disease caused by cigarettes.",
+        "chunk_id": "S1",
+        "evidence": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+        "evidence_origin": "pasted",
+        "line": "MICRONITE FILTER DESIGN CHANGES HAVE NOT LOWERED RISK",
+        "keeps_point": true,
+        "claim_status": "fixed",
+        "suggested_line": "MICRONITE FILTER DESIGN CHANGES HAVE NOT LOWERED RISK",
+        "next": null
+      },
+      "summary": "C3 rewrite 2: PASS (supported) · cites S1. the product sources state that changes in cigarette design have not lowered the risk of disease caused by cigarettes.",
+      "error": false,
+      "note": "",
+      "duration_ms": 27491,
+      "model_calls": 1
+    },
+    {
+      "seq": 26,
+      "t": 348.42,
+      "kind": "action",
+      "by": "agent",
+      "step": 19,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C4",
+        "target": "rewrite"
+      },
+      "input_summary": "{\"claim_id\": \"C4\", \"target\": \"rewrite\"}",
+      "observation": {
+        "claim_id": "C4",
+        "target": "rewrite 2",
+        "verdict": "fail",
+        "judgement": "not_supported",
+        "reason": "The product sources never state the product has high filtration, only that design changes have not lowered risk.",
+        "chunk_id": "S1",
+        "evidence": "Studies have shown that changes in cigarette design have not lowered the risk of disease caused by cigarettes",
+        "evidence_origin": "pasted",
+        "line": "HIGH FILTRATION HAS NOT LOWERED RISK",
+        "keeps_point": true,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": null
+      },
+      "summary": "C4 rewrite 2: FAIL (not_supported) · cites S1. The product sources never state the product has high filtration, only that design changes have not lowered risk.",
+      "error": false,
+      "note": "",
+      "duration_ms": 18057,
+      "model_calls": 1
+    },
+    {
+      "seq": 27,
+      "t": 350.76,
+      "kind": "plan",
+      "mode": "native_tools",
+      "reasoning": "Final verification — judging the last rewrite now.",
+      "actions": [
+        {
+          "tool": "judge_claim",
+          "args": {
+            "claim_id": "C2",
+            "target": "rewrite"
+          }
+        }
+      ],
+      "summary": "judge_claim",
+      "duration_ms": 2340
+    },
+    {
+      "seq": 28,
+      "t": 366.08,
+      "kind": "action",
+      "by": "agent",
+      "step": 20,
+      "tool": "judge_claim",
+      "args": {
+        "claim_id": "C2",
+        "target": "rewrite"
+      },
+      "input_summary": "{\"claim_id\": \"C2\", \"target\": \"rewrite\"}",
+      "observation": {
+        "claim_id": "C2",
+        "target": "rewrite 2",
+        "verdict": "fail",
+        "judgement": "lost_point",
+        "reason": "The rewrite no longer makes the creator's point. The rewrite replaces the original filtration benefit with a cessation warning and no longer claims the product helps keep smoking moderate.",
+        "chunk_id": "S3",
+        "evidence": "The only guaranteed way to reduce the risk to your health, as well as the risk to others, is to stop smoking completely",
+        "evidence_origin": "pasted",
+        "line": "Light cigarettes do not reduce health risks, the only guaranteed way to reduce risk is to stop smoking completely",
+        "keeps_point": false,
+        "claim_status": "fail",
+        "suggested_line": null,
+        "next": null
+      },
+      "summary": "C2 rewrite 2: FAIL (lost_point) · cites S3. The rewrite no longer makes the creator's point. The rewrite replaces the original filtration benefit with a cessation warning and no longer claims the product helps keep smoking moderate.",
+      "error": false,
+      "note": "",
+      "duration_ms": 15315,
+      "model_calls": 1
+    },
+    {
+      "seq": 29,
+      "t": 366.08,
+      "kind": "cap_reached",
+      "summary": "Action cap of 20 reached; 0 open items go to the guard",
+      "dropped": [],
+      "open_work": []
+    },
+    {
+      "seq": 30,
+      "t": 366.08,
+      "kind": "guard",
+      "summary": "Guard check: nothing left open",
+      "open_work": []
+    },
+    {
+      "seq": 31,
+      "t": 366.08,
+      "kind": "finish",
+      "by": "guard",
+      "summary": "Finished by guard (the agent did not call finish)"
+    }
+  ],
+  "approval": {
+    "status": "awaiting human review",
+    "note": "The agent never approves. A named reviewer decides."
+  },
+  "caption": "",
+  "post_kind": "video"
+}

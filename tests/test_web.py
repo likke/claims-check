@@ -104,8 +104,8 @@ def test_replay_serves_the_recorded_live_run(client):
 def test_replay_carries_the_recorded_inputs_and_clip(client):
     run = client.get("/api/replay").json()
     inputs = run["inputs"]
-    assert inputs["product"] == "Dasho" and inputs["key_messages"] == ["Named approver before posting"]
-    assert "named human approver" in inputs["sources"] and "Ledgerly" not in inputs["sources"]
+    assert inputs["product"] == "Kent cigarettes" and inputs["key_messages"] == ["Disclose that the spokesperson is paid"]
+    assert "National Cancer Institute" in inputs["sources"] and "Ledgerly" not in inputs["sources"]
     assert run["video_url"] == "/api/replay/video"
     clip = client.get(run["video_url"])
     assert clip.status_code == 200 and clip.headers["content-type"] == "video/mp4"
@@ -160,6 +160,9 @@ def test_ask_prompt_carries_only_review_data():
 
 
 def test_label_box_only_comes_with_the_configured_test_clip(client, tmp_path, monkeypatch):
+    box = {"x": 0.178, "y": 0.736, "w": 0.644, "h": 0.139, "time": 1.0, "source": "caption layout in demo/make_test_video.sh"}
+    (tmp_path / "with.json").write_text(json.dumps({"run": "demo/live-run-2026-10-27.json", "clip": "demo/live-check.mp4", "label_box": box}))
+    monkeypatch.setenv("REPLAY_CONFIG", str(tmp_path / "with.json"))
     assert client.get("/api/replay").json()["label_box"]["source"].startswith("caption layout")
     (tmp_path / "replay.json").write_text(json.dumps({"run": "demo/live-run-2026-10-27.json", "clip": "demo/live-check.mp4"}))
     monkeypatch.setenv("REPLAY_CONFIG", str(tmp_path / "replay.json"))

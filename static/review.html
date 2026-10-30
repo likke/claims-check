@@ -586,7 +586,7 @@ $('#new-check').addEventListener('click', () => location.href = location.pathnam
 function begin(videoUrl, replay){
   S = fresh(); S.running = true; S.replay = replay;
   $('#welcome').classList.add('hidden'); $('#sample-picker').classList.add('hidden'); $('#facts-screen').classList.add('hidden');
-  $('#reaction-bubble').textContent = 'Let me take a look.'; $('#mascot').className = 'mascot watching'; $('#mascot').src = '/static/mascot/popcorn.webp';
+  $('#reaction-bubble').textContent = 'Let me take a look.'; if($('#intro-bubble')) $('#intro-bubble').textContent = 'Let me take a look.'; $('#mascot').className = 'mascot watching'; $('#mascot').src = '/static/mascot/popcorn.webp';
   $('#setup').classList.add('hidden'); $('#new-check').classList.remove('hidden');
   $('#notes').innerHTML = ''; $('#log').innerHTML = ''; $('#ticks').innerHTML = '';
   $('#approve').disabled = true; $('#request-changes').disabled = true; $('#approval-imprint').classList.add('hidden'); $('#approve-note').textContent = 'Decide each claim note first.';
