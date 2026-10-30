@@ -5,121 +5,121 @@
  "cues": [
   {
    "start": 0.0,
-   "end": 3.12,
+   "end": 3.2,
    "caption": "Hi! I'm Fleire. And this is Kutis Glow.",
-   "react": 3.22,
+   "react": 3.3,
    "frame": "popcorn",
    "bubble": "Ooh, what's this?"
   },
   {
-   "start": 3.98,
-   "end": 6.66,
+   "start": 4.05,
+   "end": 6.11,
    "caption": "Isang inom lang, gumaling na ang acne ko!",
-   "react": 6.76,
+   "react": 6.21,
    "frame": "hide-3-shell",
    "bubble": "A cure claim! Hiding!"
   },
   {
-   "start": 7.87,
-   "end": 10.99,
+   "start": 7.3,
+   "end": 10.3,
    "caption": "One hundred percent guaranteed. Walang side effects.",
-   "react": 11.09,
+   "react": 10.4,
    "frame": "prop-facepalm",
    "bubble": "Guaranteed? Says who?"
   },
   {
-   "start": 12.18,
-   "end": 13.28,
+   "start": 11.61,
+   "end": 12.76,
    "caption": "Doctors recommend it.",
-   "react": 13.38,
+   "react": 12.86,
    "frame": "prop-magnifier",
    "bubble": "Which doctors? No source."
   },
   {
-   "start": 14.55,
-   "end": 16.01,
+   "start": 13.97,
+   "end": 15.67,
    "caption": "And no, this is not sponsored.",
-   "react": 16.11,
+   "react": 15.77,
    "frame": "prop-redcard",
    "bubble": "Paid post, no label. Red card!"
   },
   {
-   "start": 17.19,
-   "end": 18.98,
+   "start": 16.92,
+   "end": 18.76,
    "caption": "Okay, okay. None of that is true.",
-   "react": 19.08,
+   "react": 18.86,
    "frame": "hide-4-peek",
    "bubble": "Phew."
   },
   {
-   "start": 19.66,
-   "end": 24.44,
+   "start": 19.45,
+   "end": 26.11,
    "caption": "That's the problem. When a creator says this, the brand gets the FDA notice.",
-   "react": 24.54,
+   "react": 26.21,
    "frame": "prop-clipboard",
    "bubble": "I keep the receipts."
   },
   {
-   "start": 25.29,
-   "end": 27.92,
+   "start": 26.91,
+   "end": 30.38,
    "caption": "Brand teams can't watch every creator video.",
-   "react": 28.02,
+   "react": 30.48,
    "frame": "confused",
    "bubble": "So many videos!"
   },
   {
-   "start": 28.58,
-   "end": 31.23,
+   "start": 31.0,
+   "end": 33.92,
    "caption": "So we built Claims Check on Meta's Muse models.",
-   "react": 31.33,
+   "react": 34.02,
    "frame": "cool",
    "bubble": "Built on Muse!"
   },
   {
-   "start": 31.89,
-   "end": 34.09,
+   "start": 34.63,
+   "end": 37.14,
    "caption": "Muse Voice Transcribe hears the Taglish.",
-   "react": 34.19,
+   "react": 37.24,
    "frame": "prop-clipboard",
    "bubble": "I hear every word."
   },
   {
-   "start": 34.73,
-   "end": 38.29,
+   "start": 37.76,
+   "end": 41.77,
    "caption": "Muse Spark checks every claim against the brand's product facts.",
-   "react": 38.39,
+   "react": 41.87,
    "frame": "prop-magnifier",
    "bubble": "Checked against the facts."
   },
   {
-   "start": 38.95,
-   "end": 40.43,
+   "start": 42.41,
+   "end": 43.79,
    "caption": "Meet Sisiw the Judge.",
-   "react": 40.53,
+   "react": 43.89,
    "frame": "party",
    "bubble": "That's me! SEE-seew!"
   },
   {
-   "start": 41.19,
-   "end": 48.12,
+   "start": 44.45,
+   "end": 50.93,
    "caption": "Sisiw watches every creator video, flags the risky claim, shows the proof, and suggests a fix.",
-   "react": 48.22,
+   "react": 51.03,
    "frame": "prop-magnifier",
    "bubble": "Every second. Every claim."
   },
   {
-   "start": 48.79,
-   "end": 50.85,
+   "start": 51.58,
+   "end": 54.14,
    "caption": "But Sisiw never approves. You do.",
-   "react": 50.95,
+   "react": 54.24,
    "frame": "cool",
    "bubble": "Your call, human."
   },
   {
-   "start": 51.49,
-   "end": 55.26,
+   "start": 54.79,
+   "end": 59.07,
    "caption": "Try a sample, or upload your own. Sisiw will guide you.",
-   "react": 55.36,
+   "react": 59.17,
    "frame": "popcorn",
    "bubble": "Ready when you are."
   }
