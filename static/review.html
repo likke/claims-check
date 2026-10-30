@@ -340,7 +340,11 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
 .masthead #new-check{position:static!important;flex:none;min-height:44px}
 @media(max-width:760px){.masthead .brand-name{font-size:17px}.masthead .brand-byline{font-size:14px}.masthead .brand-dasho{width:44px;height:auto}}
 
-@media(max-width:760px){.masthead #new-check{width:44px;height:44px;min-width:44px;padding:0!important;gap:0!important;font-size:0!important;display:inline-flex;align-items:center;justify-content:center;border-radius:999px}.masthead #new-check::before{content:"";width:16px;height:16px;background:linear-gradient(#171717,#171717) center/16px 2px no-repeat,linear-gradient(#171717,#171717) center/2px 16px no-repeat}}
+
+
+.masthead .brand{flex-direction:column!important;align-items:flex-start!important;gap:2px!important}
+.masthead .brand-byline{font-size:14px;line-height:1;color:var(--muted,#5F636B);padding-left:1px}
+.masthead #new-check{display:inline-flex;align-items:center;justify-content:center;padding:0 18px!important;font-size:14px!important;font-weight:600}
 </style>
 </head>
 <body>
