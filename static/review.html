@@ -19,7 +19,7 @@
   1px rules are separate elements, never a border on one edge;
   corners 0 to 6px in the legacy shell.
 */
-:root{--paper:#f5f3ee;--ink:#171717;--muted:#5e5b55;--rule:#d8d3c8;--blue:#2f5da8;--red:#b42318;--olive:#7a8460;--white:#fffdf9}
+:root{--paper:#F7F6F3;--ink:#171717;--muted:#5F636B;--rule:#E4E1DA;--line:#E4E1DA;--blue:#2f5da8;--red:#F72422;--marker:#F72422;--marker-soft:#FDE8E8;--chick:#FEA214;--chick-soft:#FFF1D6;--pass:#1F8A5B;--pass-soft:#E3F4EC;--olive:#7a8460;--white:#FFFFFF}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.55 Inter,sans-serif;font-variant-numeric:tabular-nums}
@@ -67,7 +67,7 @@ body.layout-images .m-ruler,body.layout-images #stage{display:none}
 body.layout-vertical .grid{grid-template-columns:minmax(0,.4fr) minmax(0,.6fr)}
 body.layout-square .grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--arn,1.7778))}
-.novideo{aspect-ratio:var(--ar,16/9);display:flex;align-items:center;justify-content:center;color:#d8d3c8;padding:24px;text-align:center}
+.novideo{aspect-ratio:var(--ar,16/9);display:flex;align-items:center;justify-content:center;color:var(--rule);padding:24px;text-align:center}
 .watch-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:36px;align-items:start}
 .mascot-name{margin:6px 0 0;font-weight:600;font-size:17px}
 .mascot-wrap{position:relative;width:230px;max-width:100%;justify-self:center;text-align:center}
@@ -145,13 +145,13 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 .decide{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
 .decided{font-size:14px;color:var(--muted)}
 .note{position:relative}
-.stamp-imprint{position:static;display:block;width:max-content;margin:8px 0 10px 4px;color:#a51e16;font:600 20px/1 Inter,sans-serif;letter-spacing:2px;transform:rotate(-8deg);filter:url(#ink-edge);pointer-events:none}
+.stamp-imprint{position:static;display:block;width:max-content;margin:8px 0 10px 4px;color:var(--marker);font:600 20px/1 Inter,sans-serif;letter-spacing:2px;transform:rotate(-8deg);filter:url(#ink-edge);pointer-events:none}
 .stamp-imprint.pop{animation:stamp-land .34s cubic-bezier(.2,1.4,.5,1) both}
 @keyframes stamp-land{from{opacity:0;transform:rotate(-8deg) scale(1.45)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
 .page.stamp-shake{animation:page-shake .22s ease-out}
 @keyframes page-shake{25%{transform:translateX(-3px)}55%{transform:translateX(3px)}80%{transform:translateX(-1px)}}
 .approve{position:relative}
-.approval-imprint{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);color:#a51e16;border:3px solid #a51e16;padding:6px 14px;font:700 34px/1.15 Poppins,sans-serif;letter-spacing:3px;filter:url(#ink-edge);pointer-events:none;white-space:nowrap}
+.approval-imprint{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);color:var(--marker);border:3px solid var(--marker);padding:6px 14px;font:700 34px/1.15 Poppins,sans-serif;letter-spacing:3px;filter:url(#ink-edge);pointer-events:none;white-space:nowrap}
 .approval-imprint.pop{animation:stamp-land .34s cubic-bezier(.2,1.4,.5,1) both}
 .stamp-redcard{animation:mascot-pop .35s ease-out}
 @media(prefers-reduced-motion:reduce){.stamp-imprint.pop,.approval-imprint.pop,.page.stamp-shake{animation:none}}
@@ -166,10 +166,10 @@ body.layout-vertical .vcol,body.layout-square .vcol{max-width:calc(80vh * var(--
 .entry h1{font-size:34px;line-height:1.12;max-width:560px}
 .entry p{max-width:560px;margin:16px 0;color:var(--muted)}
 .entry-actions{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:28px}
-.entry .btn{min-height:52px;background:#191919;color:#fff;border-color:#191919;border-radius:10px;padding:12px 22px}
+.entry .btn{min-height:52px;background:var(--ink);color:#fff;border-color:var(--ink);border-radius:10px;padding:12px 22px}
 .sample-list{display:grid;gap:10px;margin:22px 0}
 .sample-option{display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;padding:14px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}
-.sample-option[aria-pressed="true"]{border-color:#191919}
+.sample-option[aria-pressed="true"]{border-color:var(--ink)}
 .facts{max-width:720px;margin:8vh auto 0}
 .facts ul{padding-left:22px;line-height:1.7}
 .facts li{margin:6px 0}
@@ -267,14 +267,14 @@ body:has(#sample-picker:not(.hidden)) #details,body:has(#facts-screen:not(.hidde
 .claim-stage{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:32px;align-items:start}
 .play-time{font-size:14px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--white);cursor:pointer}
 .claim-label{font-size:14px!important;color:var(--muted);margin:14px 0 0!important}
-.suggested{background:#f0efdf;padding:2px 5px;text-decoration:none;border-radius:3px}
+.suggested{background:var(--pass-soft);padding:2px 5px;text-decoration:none;border-radius:3px}
 .result-reveal{animation:result-reveal 280ms ease-out both}
 @keyframes result-reveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .result-count-chip{display:inline-block;margin-top:8px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--white);opacity:0;animation:fade .2s ease 150ms forwards}
 .claim-stage-media{min-width:0}.claim-stage-content{min-width:0}.claim-stage-content .flow-video{margin:0 0 14px}
 .disclosure-proof,.decision-card,.result-card{margin:20px 0;padding:24px;border:1px solid var(--rule);border-radius:16px;background:var(--white)}
 .flow-stamp{display:inline-flex;margin:16px 0;color:var(--olive);border:2px solid currentColor;border-radius:6px;padding:6px 12px;font-size:17px;font-weight:700;letter-spacing:.08em;transform:rotate(-5deg)}
-#approval-imprint-flow{position:static;transform:rotate(-6deg);margin:18px 0;border:3px solid #a51e16;padding:8px 16px;font-size:34px;filter:none}
+#approval-imprint-flow{position:static;transform:rotate(-6deg);margin:18px 0;border:3px solid var(--marker);padding:8px 16px;font-size:34px;filter:none}
 @media(max-width:760px){.page{padding:20px 20px calc(24px + env(safe-area-inset-bottom))}.brand{align-items:flex-start;flex-direction:column;gap:0}.masthead{height:72px}.flow-screen{margin:0 auto;max-width:100%;padding-bottom:20px}.entry{margin:0 auto;display:flex;flex-direction:column;align-items:stretch;gap:20px}.entry>div:first-child{display:contents}.welcome-logo{order:0;margin:0 auto;width:160px}.entry h1{font-size:34px;max-width:13ch;margin:8px 0;order:2}.entry>div:first-child>.small{order:1}.entry>div:first-child>p:not(.small){order:3}.welcome-preview{order:0;display:contents}.welcome-preview>.flow-video{display:none}.welcome-preview>.flow-mascot{order:1;justify-content:center;width:100%}.welcome-preview>.flow-mascot img{display:none}.welcome-preview>.small{display:none}.entry-actions{display:flex;flex-direction:column;align-items:stretch;order:4}.entry>.btn,.flow-screen .primary-action{width:100%;min-height:52px}.checking-layout,.claim-stage{grid-template-columns:minmax(0,1fr);gap:18px}.checking-layout>.flow-video{grid-row:1}.checking-mascot{grid-row:2;display:flex;flex-direction:row;align-items:center;justify-content:flex-start}.checking-mascot img{width:72px;height:72px;flex:none}.checking-main{display:contents}#live-steps{grid-row:3}.disclosure-proof{grid-template-columns:1fr}.disclosure-proof #disclosure-copy,.disclosure-proof #replay-disclosure,.disclosure-proof .flow-stamp{grid-column:1;grid-row:auto}.disclosure-proof .flow-stamp{justify-self:start;margin:8px 0}.flow-screen .verdict{font-size:34px}.flow-screen .quote{font-size:20px}.stage-actions{position:static;margin:18px 0 0;padding:12px 0}.stage-actions .primary-action{width:100%;min-width:0}.flow-video{margin:12px 0}.flow-mascot img{width:72px;height:72px}}
 @media(prefers-reduced-motion:reduce){.flow-screen,.welcome-chicky,.flow-mascot img{animation:none!important;transition:none!important}}
 </style>
@@ -345,6 +345,69 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
 .masthead .brand{flex-direction:column!important;align-items:flex-start!important;gap:2px!important}
 .masthead .brand-byline{font-size:14px;line-height:1;color:var(--muted,#5F636B);padding-left:1px}
 .masthead #new-check{display:inline-flex;align-items:center;justify-content:center;padding:0 18px!important;font-size:14px!important;font-weight:600}
+
+#result-card:not(.hidden){display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start;background:#fff;border:1px solid var(--line);border-radius:20px;padding:20px;margin:16px 0 24px}
+#result-thumb{width:240px;height:135px;border-radius:12px;display:block}
+.flag-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}
+.flag-list li{display:flex;gap:12px;align-items:baseline;font-size:17px;line-height:1.4}
+.flag-time{font-size:14px;font-weight:600;color:var(--muted);min-width:44px}
+.flag-quote{color:var(--marker);text-decoration:line-through;text-decoration-thickness:2px}
+.claim-reason{font-size:17px;line-height:1.5;margin:0 0 8px}
+.claim-label{font-size:14px!important;font-weight:600;color:var(--muted);margin:12px 0 4px!important}
+#done-screen #share-verdict{margin-top:12px}
+.checking-layout{grid-template-columns:minmax(0,1fr) 300px!important;grid-template-rows:auto 1fr}
+.checking-layout>#flow-video{grid-column:1;grid-row:1/3}
+.checking-layout>.mascot-wrap{grid-column:2;grid-row:1}
+.checking-layout>#live-steps{grid-column:2!important;grid-row:2;align-self:start}
+@media(max-width:760px){#result-card:not(.hidden){grid-template-columns:minmax(0,1fr)}#result-thumb{width:100%;height:auto;aspect-ratio:16/9}.checking-layout>#flow-video,.checking-layout>.mascot-wrap,.checking-layout>#live-steps{grid-column:1!important;grid-row:auto!important}}
+
+/* round 5: hierarchy + rhythm */
+.flow-screen h2,#sample-picker h2,#facts-screen h2{font-size:48px!important;line-height:1.08!important;letter-spacing:-0.01em;margin:0 0 12px!important}
+.flow-screen>p:not(.small):not(.claim-label),.flow-screen .lead,#done-copy,#decision-summary,#sample-picker>p,#facts-screen>p{font-size:20px!important;line-height:1.5!important;color:var(--muted)!important;margin:0 0 32px!important;max-width:34ch}
+.flow-screen{padding-top:24px}
+.flow-screen .flow-mascot{display:flex!important;align-items:center;gap:20px;background:var(--chick-soft);border-radius:24px;padding:20px 24px;margin:0 0 32px!important;width:100%;box-sizing:border-box}
+.flow-screen .flow-mascot img{width:120px!important;height:120px!important;flex:none}
+.flow-screen .flow-reaction{font-size:20px!important;font-weight:600;color:var(--ink);background:#fff;border-radius:18px;padding:14px 18px;margin:0;position:relative}
+.flow-screen .flow-reaction::before{content:"";position:absolute;left:-8px;top:50%;width:16px;height:16px;background:#fff;transform:translateY(-50%) rotate(45deg)}
+.flow-screen .primary-action,.flow-screen .stage-actions{margin-top:8px}
+.done-lines{list-style:none;padding:0;margin:0 0 32px;display:grid;gap:12px}
+.done-lines li{display:grid;gap:6px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.dl-old{font-size:14px;color:var(--marker);text-decoration:line-through}
+.dl-new{font-size:17px;font-weight:600;color:var(--pass)}
+#done-screen .primary-action,#done-screen #share-verdict{width:100%;max-width:420px}
+#decision-screen label{font-size:14px;font-weight:600;color:var(--muted);display:block;margin:0 0 8px}
+#decision-screen #flow-reviewer{margin-bottom:24px}
+.claim-stage .flow-mascot{margin-top:24px!important}
+@media(max-width:760px){.flow-screen h2,#sample-picker h2,#facts-screen h2{font-size:34px!important}.flow-screen>p:not(.small):not(.claim-label),.flow-screen .lead,#done-copy,#decision-summary{font-size:17px!important;margin-bottom:24px!important}.flow-screen .flow-mascot{padding:16px;gap:14px}.flow-screen .flow-mascot img{width:88px!important;height:88px!important}.flow-screen .flow-reaction{font-size:17px!important}}
+
+/* round 6: one host position, quieter density */
+#results-screen:not(.hidden),#disclosure-screen:not(.hidden),#decision-screen:not(.hidden),#done-screen:not(.hidden){display:flex!important;flex-direction:column;align-items:stretch}
+#results-screen .flow-mascot,#disclosure-screen .flow-mascot,#decision-screen .flow-mascot,#done-screen .flow-mascot{order:-1}
+#results-screen #review-time{order:0;margin:-20px 0 24px!important;font-size:14px}
+#decision-block,#decision-screen .small{letter-spacing:normal!important;text-transform:none!important;font-size:14px!important;color:var(--muted)!important;margin-top:12px}
+.flag-quote{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dl-old,.dl-new{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dl-more{background:transparent!important;border:0!important;padding:4px 2px!important;font-size:14px;color:var(--muted)}
+.flow-screen .primary-action,.flow-screen .stage-actions .btn{min-height:56px;border-radius:999px;font-size:17px}
+#done-screen .confetti{pointer-events:none}
+@media(max-width:760px){.claim-stage .flow-mascot{display:none!important}.claim-stage{gap:16px!important}#result-card:not(.hidden){padding:16px;gap:16px}}
+
+@media(max-width:760px){
+ .flow-screen .primary-action,.flow-screen>.stage-actions,.claim-stage-content .stage-actions,#done-screen #check-another{position:sticky;bottom:12px;z-index:5}
+ .flow-screen .primary-action,#done-screen #check-another{outline:12px solid var(--paper)}
+ .claim-stage-content .stage-actions{background:var(--paper);padding:8px 0 4px;outline:12px solid var(--paper)}
+ #result-card:not(.hidden){grid-template-columns:112px minmax(0,1fr)}#result-thumb{width:112px;height:auto;aspect-ratio:4/3;object-fit:cover}
+}
+
+@media(max-width:760px){#result-card:not(.hidden){grid-template-columns:minmax(0,1fr)!important}#result-thumb{display:none!important}}
+#review-time{letter-spacing:normal!important;text-transform:none!important}
+
+.checking-layout::after{grid-column:1!important;grid-row:3!important;margin-top:4px}
+@media(max-width:760px){.checking-layout::after{grid-row:auto!important}}
+
+@media(max-width:760px){.checking-layout{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:none!important}.checking-layout>#flow-video{order:1}.checking-layout::after{order:2}.checking-layout>.mascot-wrap{order:3}.checking-layout>#live-steps{order:4}}
+
+#run-label{letter-spacing:normal!important;text-transform:none!important;font-size:14px!important}
 </style>
 </head>
 <body>
@@ -367,11 +430,11 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
 
   <main id="flow" class="hidden">
   <section class="flow-screen hidden" id="checking-screen"><h2>Checking your post</h2><p class="small muted" id="run-label"></p><div class="checking-layout"><div class="flow-video" id="flow-video"></div><div id="live-steps"><p class="live-step is-active"><span class="step-icon" aria-hidden="true"></span>Listening to speech…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Comparing claims with product facts…</p><p class="live-step"><span class="step-icon" aria-hidden="true"></span>Checking the paid-partnership label…</p></div></div><button class="btn primary-action hidden" id="see-results">See results</button></section>
-    <section class="flow-screen hidden" id="results-screen"><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="flow-mascot"><img id="result-mascot" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review the lines</button><button class="btn tertiary" id="details-results" type="button">Review details and event log</button></section>
+    <section class="flow-screen hidden" id="results-screen"><h2 class="verdict" id="verdict"></h2><p id="result-counts"></p><div class="result-card hidden" id="result-card"><canvas id="result-thumb" width="320" height="180" aria-hidden="true"></canvas><div><p class="claim-label">Chicky flagged</p><ul class="flag-list" id="result-lines"></ul></div></div><div class="flow-mascot"><img id="result-mascot" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction" id="result-reaction">Let’s fix those claims.</p></div><p class="small muted" id="review-time"></p><button class="btn primary-action" id="review-claims">Review the lines</button><button class="btn tertiary" id="details-results" type="button">Review details and event log</button></section>
     <section class="flow-screen hidden" id="claim-screen"><div class="claim-stage"><div class="claim-stage-media"><div class="flow-video" id="claim-video"></div><div class="flow-mascot"><img src="/static/mascot/prop-magnifier.webp" alt="Chicky examining the claim"><p class="flow-reaction">Let’s check this line together.</p></div></div><div class="claim-stage-content"><p class="small muted" id="claim-count"></p><div id="claim-content"></div><button class="btn tertiary" id="details-claim" type="button">Review details and event log</button><button class="btn tertiary" type="button" id="see-source"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>See source</button><div class="source-panel hidden" id="claim-source"></div><div class="stage-actions"><button class="btn primary-action" id="next-claim">Add to change request</button><button class="btn secondary" id="back-claim" type="button">Back</button></div></div></div></section>
     <section class="flow-screen hidden" id="disclosure-screen"><h2 id="disclosure-title"></h2><div class="disclosure-proof"><p id="disclosure-copy"></p><button class="btn tertiary" id="replay-disclosure" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 11a8 8 0 1 1 2 6M4 4v7h7"/><path d="m10 8 5 4-5 4z"/></svg>Replay this moment</button><span class="flow-stamp hidden" id="disclosure-passed">PASSED</span></div><div class="flow-mascot"><img src="/static/mascot/cool.webp" alt="Chicky found the partnership label"><p class="flow-reaction">Found it.</p></div><button class="btn primary-action" id="to-decision">Continue to decision</button></section>
     <section class="flow-screen hidden" id="decision-screen"><div class="flow-mascot"><img src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><p class="flow-reaction">“Your call, human.”</p></div><h2>Your decision.</h2><p id="decision-summary"></p><p id="decision-block" class="small muted"></p><label for="flow-reviewer">Reviewed by</label><input type="text" id="flow-reviewer" autocomplete="name" placeholder="Your name"><div class="stage-actions"><button class="btn" id="human-changes">Request changes</button><button class="btn secondary" id="human-approve">Approve</button></div><p class="small muted" id="flow-note">AI review complete. Approval requires a named human.</p><div id="approval-imprint-flow" class="stamp-imprint hidden">APPROVED</div></section>
-    <section class="flow-screen hidden" id="done-screen"><h2 id="done-title"></h2><p id="done-copy"></p><div class="confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="flow-mascot"><img id="done-mascot" src="/static/mascot/party.webp" alt="Chicky celebrating"><p class="flow-reaction">I’ve sent the changes back!</p></div><button class="btn primary-action" id="check-another">Check another post</button></section>
+    <section class="flow-screen hidden" id="done-screen"><h2 id="done-title"></h2><p id="done-copy" class="lead"></p><ul class="done-lines hidden" id="done-lines"></ul><div class="confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="flow-mascot"><img id="done-mascot" src="/static/mascot/party.webp" alt="Chicky celebrating"><p class="flow-reaction">I’ve sent the changes back!</p></div><button class="btn primary-action" id="check-another">Check another post</button><button class="btn secondary" id="share-verdict" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 15V3m-5 5 5-5 5 5"/><path d="M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg>Share Chicky’s verdict</button><p class="small muted" id="share-note"></p></section>
   </main>
 
   <section class="setup hidden" id="setup">
@@ -587,6 +650,9 @@ function showResults(){
   $('#result-reaction').textContent = flagged ? 'I caught something.' : 'Everything looks good.';
   $('#review-claims').textContent = flagged ? 'Review that line' : 'Review disclosure';
   $('#review-time').textContent = `Checked in ${clock(S.lastT)}`;
+  try{ const v=$('#player'), cv=$('#result-thumb'), g=cv.getContext('2d'); g.fillStyle='#171717'; g.fillRect(0,0,cv.width,cv.height); if(v&&v.videoWidth){ const r=Math.min(cv.width/v.videoWidth,cv.height/v.videoHeight), w=v.videoWidth*r, h=v.videoHeight*r; g.drawImage(v,(cv.width-w)/2,(cv.height-h)/2,w,h);} }catch(e){}
+  $('#result-lines').innerHTML = flowClaims.filter(n=>n.kind==='claim').slice(0,4).map(n=>`<li><span class="flag-time">${tc(n.time)}</span><span class="flag-quote">“${esc(n.claim?.quote||'')}”</span></li>`).join('');
+  $('#result-card').classList.toggle('hidden', !flagged);
   $('#verdict').classList.remove('result-reveal'); void $('#verdict').offsetWidth; $('#verdict').classList.add('result-reveal');
   $('#result-mascot').src='/static/mascot/confused.webp'; setTimeout(()=>{if($('#results-screen').classList.contains('hidden'))return;$('#result-mascot').src='/static/mascot/popcorn.webp';},650);
   showScreen('results-screen');
@@ -594,9 +660,9 @@ function showResults(){
 function renderFlowClaim(){
   const n=flowClaims[flowIndex], c=n?.claim, r=c?.rounds?.[0]||{}, suggested=c?.rounds?.find(x=>x.verdict==='pass')||c?.rounds?.find(x=>x.round>0)||{};
   if(!n){ showDisclosure(); return; }
-  $('#claim-count').innerHTML=`Claim ${flowIndex+1} of ${flowClaims.length}, needs a fix <button type="button" class="play-time" id="play-claim">Play ${tc(n.time)}</button>`;
+  $('#claim-count').innerHTML=`Line ${flowIndex+1} of ${flowClaims.length} <button type="button" class="play-time" id="play-claim">Play ${tc(n.time)}</button>`;
   const passed=n.kind==='verified';
-  $('#claim-content').innerHTML=`${passed?'<p class="label">Passed</p>':'<p class="claim-label">Original line, not supported by product facts</p>'}<p class="quote ${passed?'':'struck'}">“${esc(c?.quote||'')}”</p>${passed?'<p>Matches the product facts.</p>':`<p>${esc(plain(r.reason||'No supporting evidence was supplied.'))}</p><p class="claim-label">Suggested wording</p><p class="quote suggested">“${esc(suggested.line||'Review this line with the creator.')}”</p>`}`;
+  $('#claim-content').innerHTML=`${passed?'<p class="label">Passed</p>':'<p class="claim-label">What the ad says</p>'}<p class="quote ${passed?'':'struck'}">“${esc(c?.quote||'')}”</p>${passed?'<p>Matches the product facts.</p>':`<p class="claim-label">Why it fails</p><p class="claim-reason">${esc(plain(r.reason||'No supporting evidence was supplied.'))}</p><p class="claim-label">Safer line</p><p class="quote suggested">“${esc(suggested.line||'Review this line with the creator.')}”</p>`}`;
   $('#play-claim').onclick=()=>{if(n.time!=null){scrubTo(n.time);const p=$('#player');p.play().catch(()=>{});}};
   $('#claim-source').innerHTML=sourceLine(passed?r:(suggested.verdict==='pass'?suggested:r))||'<p>Source facts are available in Details.</p>';
   $('#claim-source').classList.add('hidden');
@@ -630,7 +696,7 @@ function recordDecision(decision){
     S.replayDecision={reviewer,lines};
     $('#mascot').src='/static/mascot/party.webp'; $('#mascot').className='mascot happy';
     $('#done-mascot').src='/static/mascot/party.webp'; $('#done-mascot').className='mascot happy';
-    $('#done-title').textContent='Changes requested'; $('#done-copy').textContent=`Changes requested by ${reviewer}. ${lines.length} ${lines.length===1?'line':'lines'} sent back to the creator.`;
+    $('#done-title').textContent='Changes sent'; $('#done-copy').textContent=`${reviewer} sent ${lines.length} ${lines.length===1?'line':'lines'} back to the creator.`; const dl=document.getElementById('done-lines'); if(dl){dl.innerHTML=lines.slice(0,3).map(l=>`<li><span class="dl-old">“${esc(l.original)}”</span><span class="dl-new">“${esc(l.requested||'Rewrite with the creator')}”</span></li>`).join('')+(lines.length>3?`<li class="dl-more">+${lines.length-3} more</li>`:''); dl.classList.toggle('hidden',!lines.length);}
     showScreen('done-screen'); return;
   }
   fetch(`/api/reviews/${reviewId}/decision`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({decision,reviewer})}).then(async response=>{const body=await response.json();if(!response.ok){$('#flow-note').textContent=body.detail||'Could not record the decision.';return;} if(decision==='approved'){$('#mascot').src='/static/mascot/stamp-2-slam.webp';$('#mascot').className='mascot';stampSound(true);showStampImprint($('#approval-imprint-flow'));$('#done-title').textContent='Post approved';$('#done-copy').textContent=`Approved by ${body.reviewer}.`;}else{$('#mascot').src='/static/mascot/party.webp';$('#done-title').textContent='Changes requested';$('#done-copy').textContent=`Your change request is ready to share, ${body.reviewer}.`; } showScreen('done-screen');});
@@ -1141,6 +1207,33 @@ $('#request-changes').addEventListener('click', async () => {
   if (response.ok) { $('#mascot').src = '/static/mascot/prop-redcard.webp'; $('#mascot').className = 'mascot stamp-redcard'; }
 });
 init();
+</script>
+
+<script>
+(function(){
+  const btn=document.getElementById('share-verdict'); if(!btn) return;
+  function wrap(g,text,x,y,maxW,lh){const words=text.split(' ');let line='',lines=[];for(const w of words){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){lines.push(line);line=w}else line=t}if(line)lines.push(line);lines.slice(0,3).forEach((l,i)=>g.fillText(l,x,y+i*lh));return lines.slice(0,3).length}
+  async function makeCard(){
+    const c=document.createElement('canvas');c.width=1200;c.height=675;const g=c.getContext('2d');
+    g.fillStyle='#F7F6F3';g.fillRect(0,0,1200,675);
+    const v=document.getElementById('player');g.fillStyle='#171717';g.beginPath();g.roundRect(56,56,520,390,24);g.fill();
+    if(v&&v.videoWidth){g.save();g.beginPath();g.roundRect(56,56,520,390,24);g.clip();const r=Math.min(520/v.videoWidth,390/v.videoHeight),w=v.videoWidth*r,h=v.videoHeight*r;g.drawImage(v,56+(520-w)/2,56+(390-h)/2,w,h);g.restore();}
+    const sent=(typeof S!=='undefined'&&S.replayDecision&&S.replayDecision.lines)||[];
+    const pick=sent.find(l=>/moderate/i.test(l.original))||sent[sent.length-1]||{original:''};const q=pick.original||'';
+    await document.fonts.ready;
+    g.fillStyle='#5F636B';g.font='500 24px Inter, sans-serif';g.fillText('Chicky’s verdict',624,96);
+    g.font='700 38px Poppins, sans-serif';const words=('“'+q+'”').split(' ');let line='',L=[];for(const w of words){const tt=line?line+' '+w:w;if(g.measureText(tt).width>520&&line){L.push(line);line=w}else line=tt}if(line)L.push(line);L=L.slice(0,3);
+    g.fillStyle='#F72422';L.forEach((l,i)=>{const y=156+i*50;g.fillText(l,624,y);g.fillRect(624,y-13,g.measureText(l).width,4)});const n=L.length;
+    g.save();g.translate(640,156+n*50+36);g.rotate(-0.06);g.strokeStyle='#F72422';g.lineWidth=5;g.font='700 34px Poppins, sans-serif';const sw=g.measureText('NEEDS A FIX').width+48;g.strokeRect(0,0,sw,72);g.textAlign='center';g.textBaseline='middle';g.fillText('NEEDS A FIX',sw/2,37);g.textAlign='left';g.textBaseline='alphabetic';g.restore();
+    g.fillStyle='#171717';g.font='400 26px Inter, sans-serif';g.fillText(sent.length+' lines flagged, each with its source',624,156+n*50+160);
+    const img=new Image();img.src='/static/mascot/prop-magnifier.webp';await img.decode().catch(()=>{});try{g.drawImage(img,1010,470,150,150)}catch(e){}
+    g.fillStyle='#171717';g.font='700 28px Poppins, sans-serif';g.fillText('Claims Check',56,560);g.fillStyle='#5F636B';g.font='400 22px Inter, sans-serif';g.fillText('by Dasho. Built on Meta Muse models.',56,598);
+    return c;
+  }
+  btn.addEventListener('click',async()=>{const c=await makeCard();c.toBlob(async b=>{const f=new File([b],'chicky-verdict.png',{type:'image/png'});
+    const mobile=matchMedia('(pointer:coarse)').matches; if(mobile&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Chicky’s verdict'});return}catch(e){}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='chicky-verdict.png';a.click();document.getElementById('share-note').textContent='Verdict card saved as an image.';},'image/png');});
+})();
 </script>
 </body>
 </html>
