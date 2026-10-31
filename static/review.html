@@ -1340,7 +1340,7 @@ init();
     g.font='700 38px Poppins, sans-serif';const words=('“'+q+'”').split(' ');let line='',L=[];for(const w of words){const tt=line?line+' '+w:w;if(g.measureText(tt).width>520&&line){L.push(line);line=w}else line=tt}if(line)L.push(line);L=L.slice(0,3);
     g.fillStyle='#171717';L.forEach((l,i)=>{const y=156+i*50;g.fillText(l,624,y)});const n=L.length;
     g.save();g.translate(640,156+n*50+36);g.rotate(-0.06);g.strokeStyle='#F72422';g.lineWidth=5;g.font='700 34px Poppins, sans-serif';const sw=g.measureText('NEEDS A FIX').width+48;g.strokeRect(0,0,sw,72);g.textAlign='center';g.textBaseline='middle';g.fillText('NEEDS A FIX',sw/2,37);g.textAlign='left';g.textBaseline='alphabetic';g.restore();
-    g.fillStyle='#171717';g.font='400 26px Inter, sans-serif';g.fillText(sent.length+' lines flagged, each with its source',624,156+n*50+160);
+    g.fillStyle='#171717';g.font='400 26px Inter, sans-serif';const nl=sent.filter(l=>!String(l.original).startsWith('No paid')).length+((S.replayDecision&&S.replayDecision.kept)||[]).length, nolabel=sent.some(l=>String(l.original).startsWith('No paid')); g.fillText(nl+' risky lines'+(nolabel?' and no paid label':''),624,156+n*50+156); g.fillStyle='#5F636B'; g.fillText('Each one with its source',624,156+n*50+194);
     const img=new Image();img.src='/static/mascot/prop-magnifier.webp';await img.decode().catch(()=>{});try{g.drawImage(img,1010,470,150,150)}catch(e){}
     g.fillStyle='#171717';g.font='700 28px Poppins, sans-serif';g.fillText('Claims Check',56,560);g.fillStyle='#5F636B';g.font='400 22px Inter, sans-serif';g.fillText('by Dasho. Built on Meta Muse models.',56,598);
     return c;
