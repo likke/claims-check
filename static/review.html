@@ -499,10 +499,10 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid #
   </header>
   <p class="status muted" id="status"></p>
 
-  <section class="entry intro-mode" id="welcome"><div class="welcome-copy"><h1>Catch the claim before it goes live.</h1><p>Chicky checks a creator video against your product facts in minutes, on Meta's Muse models. You make the final call.</p></div>
-    <div class="welcome-preview"><div class="flow-video" id="welcome-video"><video id="intro-video" playsinline preload="none"></video><button type="button" class="intro-play" id="intro-play"><span class="play-chip">▶ Watch intro</span></button></div><div class="mascot-wrap intro-mascot" aria-label="Chicky the Judge"><img class="mascot welcome-chicky" id="intro-chicky" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><button type="button" class="bubble" id="intro-bubble">Ready when you are.</button></div><p class="intro-caption" id="intro-caption" aria-live="polite"></p><p class="intro-ai-label small muted" id="intro-ai-label"></p><button type="button" class="btn tertiary intro-skip" id="intro-skip"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Skip intro</button><video class="hidden" id="sample-preview" muted playsinline preload="metadata"></video></div>
+  <section class="entry" id="welcome"><div class="welcome-copy"><h1>Catch the claim before it goes live.</h1><p>Chicky checks a creator video against your product facts in minutes, on Meta's Muse models. You make the final call.</p></div>
+    <div class="welcome-preview"><div class="mascot-wrap intro-mascot" aria-label="Chicky the Judge"><img class="mascot welcome-chicky" id="intro-chicky" src="/static/mascot/popcorn.webp" alt="Chicky the Judge"><button type="button" class="bubble" id="intro-bubble">Ready when you are.</button></div><video class="hidden" id="sample-preview" muted playsinline preload="metadata"></video></div>
     <div class="entry-actions"><button type="button" class="btn" id="try-sample">Try the sample video</button>
-    <nav class="welcome-links"><button type="button" class="option-tile" id="choose-sample"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9h8M8 13h5"/></svg><span>Choose a sample<span class="visually-hidden">Choose another sample</span></span></button><button type="button" class="option-tile" id="upload-link"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg><span>Upload your own</span></button><button type="button" class="option-tile" id="welcome-replay"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/></svg><span>Watch Chicky judge a real 1956 TV ad</span></button><button type="button" class="btn tertiary intro-watch hidden" id="intro-watch"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 10 6-10 6z"/></svg>Watch intro</button></nav>
+    <nav class="welcome-links"><button type="button" class="option-tile" id="choose-sample"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9h8M8 13h5"/></svg><span>Choose a sample<span class="visually-hidden">Choose another sample</span></span></button><button type="button" class="option-tile" id="upload-link"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg><span>Upload your own</span></button><button type="button" class="option-tile" id="welcome-replay"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/></svg><span>Watch Chicky judge a real 1956 TV ad</span></button></nav>
     <p class="small">Fictional sample data. No account required.</p></div>
   </section>
   <section class="entry hidden" id="sample-picker"><h2>Choose a sample</h2><p>Three fictional brands. Three common claim risks.</p>
@@ -590,6 +590,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const tc = t => { if (t === null || t === undefined || isNaN(t)) return '—'; const s = Math.round(t); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 const params = new URLSearchParams(location.search);
 const INTRO_SEEN = 'claims-check-intro-seen';
+const introVideo = $('#intro-video');
 let introCues = [], introPlaying = false, introReacted = new Set();
 function rememberIntro(){ try { localStorage.setItem(INTRO_SEEN, '1'); } catch {} }
 function finishIntro(){ const video = $('#intro-video'); video.pause(); introPlaying = false; rememberIntro(); $('#welcome').classList.remove('intro-mode'); $('#intro-watch').classList.remove('hidden'); $('#intro-skip').classList.add('hidden'); $('#intro-caption').textContent = ''; $('#intro-bubble').textContent = 'Ready when you are.'; $('#intro-chicky').src = '/static/mascot/popcorn.webp'; }
@@ -607,6 +608,7 @@ function updateIntro(){
   }
 }
 async function loadIntro(){
+  if (!introVideo) return;
   try { const response = await fetch('/static/intro/cues.json'); if (!response.ok) return; const cues = await response.json();
     introCues = cues.cues || []; const video = $('#intro-video'); video.src = cues.video; video.poster = cues.poster;
     $('#intro-ai-label').textContent = cues.ai_label || ''; $('#intro-ai-label').classList.toggle('hidden', !cues.ai_label);
@@ -615,9 +617,11 @@ async function loadIntro(){
     if (seen) { $('#welcome').classList.remove('intro-mode'); $('#intro-watch').classList.remove('hidden'); $('#intro-skip').classList.add('hidden'); }
   } catch { $('#welcome').classList.remove('intro-mode'); $('#intro-skip').classList.add('hidden'); }
 }
-$('#intro-play').addEventListener('click', async () => { introPlaying = true; introReacted.clear(); $('#intro-play').classList.add('hidden'); $('#intro-video').controls = true; try { await $('#intro-video').play(); } catch { introPlaying = false; $('#intro-play').classList.remove('hidden'); } });
-$('#intro-skip').addEventListener('click', finishIntro);
-$('#intro-watch').addEventListener('click', () => { $('#welcome').classList.add('intro-mode'); $('#intro-play').classList.remove('hidden'); $('#intro-video').controls = false; $('#intro-video').currentTime = 0; $('#intro-bubble').textContent = 'Ready when you are.'; $('#intro-caption').textContent = ''; introReacted.clear(); });
+if (introVideo){
+  $('#intro-play').addEventListener('click', async () => { introPlaying = true; introReacted.clear(); $('#intro-play').classList.add('hidden'); introVideo.controls = true; try { await introVideo.play(); } catch { introPlaying = false; $('#intro-play').classList.remove('hidden'); } });
+  $('#intro-skip').addEventListener('click', finishIntro);
+  $('#intro-watch').addEventListener('click', () => { $('#welcome').classList.add('intro-mode'); $('#intro-play').classList.remove('hidden'); introVideo.controls = false; introVideo.currentTime = 0; $('#intro-bubble').textContent = 'Ready when you are.'; $('#intro-caption').textContent = ''; introReacted.clear(); });
+}
 // where a note sits: a timecode for video, "Image N" for an image post, nothing for the caption
 const place = t => t === null || t === undefined ? '—' : document.body.classList.contains('layout-images') ? `Image ${Math.round(t)}` : tc(t);
 const clock = t => { const s = Math.max(0, Math.round(t || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
